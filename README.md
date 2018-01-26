@@ -26,12 +26,12 @@
 #### Ubuntu
 
 1. set tensorboard executable file path in env_setting.py
-2. in console "python main.py"
+2. in console 'python main.py'
 
 #### Windows
 
 1. set tensorboard executable file path in env_setting.py
-2. in console "python main.py"
+2. in console 'python main.py'
 
 ## File Tree
 
