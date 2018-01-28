@@ -31,6 +31,14 @@ def PIL_img_from_file(path):
 
 
 # numpy
+def np_img_float_to_uint8(np_img):
+    return np.uint8(np_img * 255)
+
+
+def np_img_uint8_to_float32(np_img):
+    return np.float32(np_img) / 255.0
+
+
 def np_img_rgb_to_gray(np_img):
     return np.uint8(color.rgb2gray(np_img) * 255)
 
@@ -40,7 +48,7 @@ def np_img_gray_to_rgb(np_img):
 
 
 def np_img_to_PIL_img(np_img):
-    return Image.fromarray(np.uint8(np_img))
+    return Image.fromarray(np_img)
 
 
 def np_img_from_file(path):
@@ -103,3 +111,7 @@ def function_logger(func):
         return ret
 
     return wrapper(func)
+
+
+def np_img_NCWH_to_NHWC(imgs):
+    return np.transpose(imgs, [0, 2, 3, 1])

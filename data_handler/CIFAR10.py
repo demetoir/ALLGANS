@@ -8,10 +8,10 @@ import pickle
 class CIFAR10(AbstractDataset):
     PATTERN_TRAIN_FILE = "data_batch_*"
     PATTERN_TEST_FILE = "test_batch"
-    pkcl_key_train_data = b"data"
-    pkcl_key_train_label = b"labels"
-    pkcl_key_test_data = b"data"
-    pkcl_key_test_label = b"labels"
+    PKCL_KEY_TRAIN_DATA = b"data"
+    PKCL_KEY_TRAIN_LABEL = b"labels"
+    PKCL_KEY_TEST_DATA = b"data"
+    PKCL_KEY_TEST_LABEL = b"labels"
     LABEL_SIZE = 10
 
     def __init__(self, preprocess=None, batch_after_task=None):
@@ -27,9 +27,10 @@ class CIFAR10(AbstractDataset):
                 with open(file, 'rb') as fo:
                     dict_ = pickle.load(fo, encoding='bytes')
 
-                x = dict_[self.pkcl_key_train_data]
-                label = dict_[self.pkcl_key_train_label]
+                x = dict_[self.PKCL_KEY_TRAIN_DATA]
                 self._append_data(BATCH_KEY_TRAIN_X, x)
+
+                label = dict_[self.PKCL_KEY_TRAIN_LABEL]
                 self._append_data(BATCH_KEY_TRAIN_LABEL, label)
 
             # load test data
@@ -39,9 +40,10 @@ class CIFAR10(AbstractDataset):
                 with open(file, 'rb') as fo:
                     dict_ = pickle.load(fo, encoding='bytes')
 
-                x = dict_[self.pkcl_key_test_data]
-                label = dict_[self.pkcl_key_test_label]
+                x = dict_[self.PKCL_KEY_TEST_DATA]
                 self._append_data(BATCH_KEY_TEST_X, x)
+
+                label = dict_[self.PKCL_KEY_TEST_LABEL]
                 self._append_data(BATCH_KEY_TEST_LABEL, label)
 
         except Exception as e:
