@@ -32,5 +32,5 @@ def board_path():
     del pip
     print(tensorboard)
 
-    return 'here past your tensorboard executable file path'
-    # return 'tensorboard'
+    # return 'here past your tensorboard executable file path'
+    return '/home/demetoir/anaconda3/envs/tensor/bin/tensorboard'
