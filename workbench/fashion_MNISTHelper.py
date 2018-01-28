@@ -1,6 +1,5 @@
 from data_handler.Fashion_MNIST import Fashion_MNIST
 from env_settting import FASHION_MNIST_PATH
-from util.util import np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 import numpy as np
@@ -13,8 +12,8 @@ class fashion_MNISTHelper:
         data = dataset.data[BATCH_KEY_TRAIN_X]
         shape = data.shape
         data = np.reshape(data, [shape[0], 28, 28])
-        npad = ((0, 0), (2, 2), (2, 2))
-        data = np.pad(data, pad_width=npad, mode='constant', constant_values=0)
+        npad = [(0, 0), (2, 2), (2, 2)]
+        data = np.pad(data, pad_width=npad, mode='constant', constant_values=0.0)
         data = np.reshape(data, [shape[0], 32, 32, 1])
         dataset.data[BATCH_KEY_TRAIN_X] = data
 
@@ -26,18 +25,6 @@ class fashion_MNISTHelper:
         data = np.reshape(data, [shape[0], 32, 32, 1])
         dataset.data[BATCH_KEY_TEST_X] = data
 
-        # label index to onehot
-        data = dataset.data[BATCH_KEY_TRAIN_LABEL]
-        data = np.reshape(data, [len(data)])
-        data = data.astype(np.int32)
-        data = np_index_to_onehot(data, Fashion_MNIST.LABEL_SIZE)
-        dataset.data[BATCH_KEY_TRAIN_LABEL] = data
-
-        data = dataset.data[BATCH_KEY_TEST_LABEL]
-        data = np.reshape(data, [len(data)])
-        data = data.astype(np.int32)
-        data = np_index_to_onehot(data, Fashion_MNIST.LABEL_SIZE)
-        dataset.data[BATCH_KEY_TEST_LABEL] = data
 
     @staticmethod
     def load_dataset(limit=None):

@@ -1,41 +1,32 @@
 from data_handler.AbstractDataset import AbstractDataset
-import pandas as pd
-import numpy as np
-import os
+from tensorflow.examples.tutorials.mnist import input_data
+from dict_keys.dataset_batch_keys import *
 
 
-# TODO implement to label...
 class Fashion_MNIST(AbstractDataset):
-    PATTERN_TRAIN = "fashion-mnist_train.csv"
-    PATTERN_TEST = "fashion-mnist_test.csv"
-    TRAIN_x = 'train_x'
-    TRAIN_label = 'train_label'
-    TEST_x = 'test_x'
-    TEST_label = "test_label"
+    SOURCE_URL = 'http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'
     LABEL_SIZE = 10
+    TRAIN_SIZE = 60000
+    TEST_SIZE = 10000
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [self.TRAIN_x, self.TRAIN_label, self.TEST_x, self.TEST_label]
+        self.batch_keys = [BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, BATCH_KEY_TEST_LABEL]
 
     def load(self, path, limit=None):
-        # TODO load from byte file not csv
-
+        # fashion_mnist = input_data.read_data_sets(path, one_hot=True)
+        fashion_mnist = input_data.read_data_sets(path,
+                                                  source_url=self.SOURCE_URL,
+                                                  one_hot=True)
         # load train data
-        train_data = pd.read_csv(os.path.join(path, self.PATTERN_TRAIN), sep=',', header=None)
-        train_data = np.array(train_data)
-        train_x = train_data[1:, 1:]
-        train_label = train_data[1:, :1]
-        self.data[self.TRAIN_x] = train_x
-        self.data[self.TRAIN_label] = train_label
+        train_x, train_label = fashion_mnist.train.next_batch(self.TRAIN_SIZE)
+        self.data[BATCH_KEY_TRAIN_X] = train_x
+        self.data[BATCH_KEY_TRAIN_LABEL] = train_label
 
         # load test data
-        test_data = pd.read_csv(os.path.join(path, self.PATTERN_TEST), sep=',', header=None)
-        test_data = np.array(test_data)
-        test_x = test_data[1:, 1:]
-        test_label = test_data[1:, :1]
-        self.data[self.TEST_x] = test_x
-        self.data[self.TEST_label] = test_label
+        test_x, test_label = fashion_mnist.test.next_batch(self.TEST_SIZE)
+        self.data[BATCH_KEY_TEST_X] = test_x
+        self.data[BATCH_KEY_TEST_LABEL] = test_label
 
         super().load(path, limit)
 
