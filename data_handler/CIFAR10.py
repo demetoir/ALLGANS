@@ -6,7 +6,7 @@ import pickle
 import requests
 import tarfile
 
-from util.util import extract_data, download_data
+from util.util import extract_tar, download_data
 
 
 class CIFAR10(AbstractDataset):
@@ -48,7 +48,7 @@ class CIFAR10(AbstractDataset):
             download_data(self.SOURCE_URL, download_file)
 
             self.log("extract %s at %s" % (self.SOURCE_FILE, head))
-            extract_data(download_file, head)
+            extract_tar(download_file, head)
 
         try:
             # load train data

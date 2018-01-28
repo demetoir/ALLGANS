@@ -1,4 +1,5 @@
 import tarfile
+import zipfile
 
 import numpy as np
 import requests
@@ -125,6 +126,12 @@ def download_data(source_url, download_path):
     open(download_path, 'wb').write(r.content)
 
 
-def extract_data(source_path, destination_path):
+def extract_tar(source_path, destination_path):
     with tarfile.open(source_path) as file:
         file.extractall(destination_path)
+
+
+def extract_zip(source_path, destination_path):
+    with zipfile.ZipFile(source_path) as file:
+        file.extractall(destination_path)
+
