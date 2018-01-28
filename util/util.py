@@ -1,4 +1,7 @@
+import tarfile
+
 import numpy as np
+import requests
 from PIL import Image
 from skimage import io
 from skimage import color
@@ -79,6 +82,10 @@ def np_img_to_tile(np_imgs, column_size=10):
     return tile
 
 
+def np_img_NCWH_to_NHWC(imgs):
+    return np.transpose(imgs, [0, 2, 3, 1])
+
+
 def np_index_to_onehot(x, n=None, dtype=float):
     """1-hot encode x with the max value n (computed from data if n is None)."""
     x = np.asarray(x)
@@ -113,5 +120,11 @@ def function_logger(func):
     return wrapper(func)
 
 
-def np_img_NCWH_to_NHWC(imgs):
-    return np.transpose(imgs, [0, 2, 3, 1])
+def download_data(source_url, download_path):
+    r = requests.get(source_url, allow_redirects=True)
+    open(download_path, 'wb').write(r.content)
+
+
+def extract_data(source_path, destination_path):
+    with tarfile.open(source_path) as file:
+        file.extractall(destination_path)
