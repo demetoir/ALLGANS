@@ -24,7 +24,7 @@ class cifar100Helper:
         return x
 
     @staticmethod
-    def load_dataset():
+    def load_dataset(limit=None):
         cifar100 = CIFAR100(preprocess=cifar100Helper.preprocess)
-        cifar100.load(CIFAR100_PATH)
+        cifar100.load(CIFAR100_PATH, limit=limit)
         return cifar100, [32, 32, 3]

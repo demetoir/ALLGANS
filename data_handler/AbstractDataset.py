@@ -1,10 +1,10 @@
 from util.Logger import Logger
+from glob import glob
+from util.util import *
+import traceback
+import sys
 import numpy as np
 import os
-from glob import glob
-
-from util.util import download_data
-from util.util import extract_data
 
 
 def check_attr_is_None(attr):
@@ -31,11 +31,18 @@ class MetaTask(type):
         if 'load' in clsdict:
             def new_load(self, path, limit):
                 try:
-                    self.before_load(path)
+                    if self.before_load_task is None:
+                        self.before_load(path)
+                    else:
+                        self.before_load_task()
+
                     clsdict['load'](self, path, limit)
+
                     self.after_load(limit)
                 except Exception as e:
-                    self.log(e)
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    err_msg = traceback.format_exception(exc_type, exc_value, exc_traceback)
+                    self.log(*err_msg)
 
         setattr(cls, 'load', new_load)
 
@@ -55,7 +62,7 @@ class MetaTask(type):
 
 
 class AbstractDataset(metaclass=MetaTask):
-    def __init__(self, preprocess=None, batch_after_task=None):
+    def __init__(self, preprocess=None, batch_after_task=None, before_load_task=None):
         """
         init dataset attrs
 
@@ -68,6 +75,7 @@ class AbstractDataset(metaclass=MetaTask):
 
         :param preprocess: injected function for preprocess dataset
         :param batch_after_task: injected function for after iter mini_batch
+        :param before_load_task: hookable function for AbstractDataset.before_load
         """
         self._SOURCE_URL = None
         self._SOURCE_FILE = None
@@ -80,6 +88,7 @@ class AbstractDataset(metaclass=MetaTask):
         self.data = {}
         self.cursor = {}
         self.data_size = 0
+        self.before_load_task = before_load_task
 
     def __del__(self):
         del self.data
@@ -147,7 +156,7 @@ class AbstractDataset(metaclass=MetaTask):
             self.log('%s preprocess end' % self.__str__())
 
     def load(self, path, limit=None):
-        raise NotImplementedError
+        pass
 
     def save(self):
         raise NotImplementedError
