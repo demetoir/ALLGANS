@@ -11,7 +11,7 @@ VISUALIZER_MODULE_PATH = os.path.join(ROOT_PATH, 'visualizer')
 
 # dataset
 DATA_PATH = 'data'
-LLD_PATH = os.path.join(ROOT_PATH, DATA_PATH, 'LLD')
+LLD_PATH = os.path.join(ROOT_PATH, DATA_PATH, 'LLD_favicons_clean')
 MNIST_PATH = os.path.join(ROOT_PATH, DATA_PATH, 'mnist')
 CIFAR10_PATH = os.path.join(ROOT_PATH, DATA_PATH, 'cifar-10-batches-py')
 CIFAR100_PATH = os.path.join(ROOT_PATH, DATA_PATH, "cifar-100-python")
