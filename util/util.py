@@ -135,3 +135,10 @@ def extract_zip(source_path, destination_path):
     with zipfile.ZipFile(source_path) as file:
         file.extractall(destination_path)
 
+
+def extract_data(source_path, destination_path):
+    extend = source_path.split('.')[-1]
+    if extend == 'tar.gz' or extend == 'tar':
+        extract_tar(source_path, destination_path)
+    elif extend == 'zip':
+        extract_zip(source_path, destination_path)
