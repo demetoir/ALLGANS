@@ -61,6 +61,7 @@
     - tensorflow-gpu (1.4.1)
     - tensorflow-tensorboard (0.4.0)
     - opencv-python (3.4.0.12)
+    - requests (2.18.4)
   
 
 ## Reference
