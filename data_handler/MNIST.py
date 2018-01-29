@@ -13,6 +13,11 @@ class MNIST(AbstractDataset):
         super().__init__(preprocess, batch_after_task)
         self.batch_keys = [BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, BATCH_KEY_TEST_LABEL]
 
+        def dummy():
+            pass
+
+        self.before_load_task = dummy
+
     def __repr__(self):
         return self.__class__.__name__
 
@@ -34,8 +39,6 @@ class MNIST(AbstractDataset):
             BATCH_KEY_TEST_X: test_x,
             BATCH_KEY_TEST_LABEL: test_label
         }
-
-        super().load(path, limit)
 
     def save(self):
         raise NotImplementedError
