@@ -14,38 +14,24 @@ class LLD(AbstractDataset):
     LLD_CLEAN = 'CLEAN'
     LLD_FULL = 'FULL'
     PATTERN = 'LLD_favicon_data*.pkl'
-    SOURCE_URL = "https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip"
-    SOURCE_FILE = "LLD_favicons_clean.zip"
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
         self.batch_keys = [LLD_CLEAN]
+        self._SOURCE_URL = "https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip"
+        self._SOURCE_FILE = "LLD_favicons_clean.zip"
+        self._data_files = [
+            "LLD_favicon_data_0.pkl",
+            "LLD_favicon_data_1.pkl",
+            "LLD_favicon_data_2.pkl",
+            "LLD_favicon_data_3.pkl",
+            "LLD_favicon_data_4.pkl"
+        ]
 
     def __repr__(self):
         return 'Large Label Data set'
 
     def load(self, path, limit=None):
-        try:
-            os.makedirs(path)
-        except FileExistsError:
-            pass
-
-        download = False
-        # TODO hack better file inspection
-        files = glob(os.path.join(path, self.PATTERN))
-        if len(files) != 5:
-            download = True
-
-        if download:
-            head, tail = os.path.split(path)
-            download_file = os.path.join(head, self.SOURCE_FILE)
-            self.log('download %s at %s ' % (self.SOURCE_FILE, download_file))
-            download_data(source_url=self.SOURCE_URL,
-                          download_path=download_file)
-
-            self.log("extract %s at %s" % (self.SOURCE_FILE, head))
-            extract_zip(download_file, head)
-
         files = glob(os.path.join(path, self.PATTERN))
         files.sort()
         self.data[BATCH_KEY_TRAIN_X] = None
@@ -66,8 +52,6 @@ class LLD(AbstractDataset):
         self.data_size = len(self.data[BATCH_KEY_TRAIN_X])
 
         self.log('data set fully loaded')
-
-        super().load(path, limit)
 
     def save(self):
         # def save_icon_data(icons, data_path, package_size=100000):
