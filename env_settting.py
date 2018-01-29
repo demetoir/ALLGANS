@@ -19,18 +19,10 @@ FASHION_MNIST_PATH = os.path.join(ROOT_PATH, DATA_PATH, "fashionmnist")
 CELEBA_PATH = os.path.join(ROOT_PATH, DATA_PATH, 'img_align_celeba')
 
 
-def board_path():
-    # TODO : implement find tensorboard path
+def tensorboard_dir():
+    import tensorboard
+    path, _ = os.path.split(tensorboard.__file__)
+    tensorboard_main = os.path.join(path, 'main.py')
+    del tensorboard
+    return tensorboard_main
 
-    import pip
-    modules = pip.get_installed_distributions()
-    tensorboard = None
-    for module_ in modules:
-        if "tensorflow-tensorboard" in module_.key:
-            tensorboard = module_
-            break
-    del pip
-    print(tensorboard)
-
-    # return 'here past your tensorboard executable file path'
-    return '/home/demetoir/anaconda3/envs/tensor/bin/tensorboard'

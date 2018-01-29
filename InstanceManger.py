@@ -3,7 +3,9 @@ from time import strftime, localtime
 from util.Logger import Logger
 from util.util import load_class_from_source_path
 from dict_keys.model_metadata_keys import *
+from env_settting import tensorboard_dir
 
+import sys
 import tensorflow as tf
 import os
 import inspect
@@ -230,11 +232,10 @@ class InstanceManager:
             raise KeyError("fail close subprocess, '%s' not found" % process_name)
 
     def open_tensorboard(self):
-        from env_settting import board_path
+        python_path = sys.executable
         option = '--logdir=' + self.model.instance_summary_folder_path
-        args = [board_path(), option]
+        args = [python_path, tensorboard_dir(), option]
         self.open_subprocess(args=args, process_name="tensorboard")
-        del board_path
 
     def close_tensorboard(self):
         self.close_subprocess('tensorboard')
