@@ -23,15 +23,9 @@
 
 ## Getting Started
 
-#### Ubuntu
-
-1. set tensorboard executable file path in env_setting.py
+1. 'python setup.py install' and follow console
 2. in console 'python main.py'
-
-#### Windows
-
-1. set tensorboard executable file path in env_setting.py
-2. in console 'python main.py'
+    
 
 ## File Tree
 
