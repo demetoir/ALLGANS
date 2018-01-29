@@ -59,13 +59,13 @@
     
 * [design] 모든 생성된 instance 관리를 위한 db 설계 필요
 
-* [implemnt] InstanceManager CLI insterface
+* [implement] InstanceManager CLI insterface
     - 코드상 말고 consol로 작업실행 하는 코드 필요함
 
-* [fix] fashion mnist 바이트에서 읽도록 수정
+* [fix] ~~fashion mnist 바이트에서 읽도록 수정~~
 
-* [fix] dataset download script require
-    - 적용대상 : cifar10, cifar100, celebA
+* [fix] dataset download script require 
+    - 적용대상 : ~~cifar10~~ , ~~cifar100~~, ~~LLD~~, celebA
 
 * [fix] 변경된 api 맞게 tutorial code 수정
 
