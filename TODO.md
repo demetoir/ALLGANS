@@ -69,21 +69,21 @@
 
 * [fix] 변경된 api 맞게 tutorial code 수정
 
-* ~~[fix] unit test 폴더는 deprecated 되었음, 수정 또는 삭제~~
+* [fix] ~~unit test 폴더는 deprecated 되었음, 수정 또는 삭제~~
 
 * [fix] comment 개선 필요
     - 함수에 대한 인자 및 동작에 대한 설명 필요
 
-* [fix] todo 간소화
-- 현재 존재하는 todo중 해결 및 거의 다된것은 제거함
+* [fix] ~~todo 간소화~~
+- ~~현재 존재하는 todo중 해결 및 거의 다된것은 제거함~~
     
 
 * [refactoring] decompose util function and rename
     - ex) numpy related util  must move to util_numpy
 
-* [fix] fix warning message
-    - /home/demetoir/anaconda3/envs/tensor/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: compiletime version 3.5 of module 'tensorflow.python.framework.fast_tensor_util' does not match runtime version 3.6
-  return f(*args, **kwds)
+* [fix] ~fix warning message~~
+    ~~- /home/demetoir/anaconda3/envs/tensor/lib/python3.6/importlib/_bootstrap.py:219: RuntimeWarning: compiletime version 3.5 of module 'tensorflow.python.framework.fast_tensor_util' does not match runtime version 3.6
+  return f(*args, **kwds)~~
 
 
     
