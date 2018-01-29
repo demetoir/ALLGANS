@@ -13,6 +13,7 @@ from visualizer.log_classifier_loss import print_classifier_loss
 from workbench.MNISTHelper import MNISTHelper
 from workbench.fashion_MNISTHelper import fashion_MNISTHelper
 from workbench.cifar10Helper import cifar10Helper
+from workbench.cifar100Helper import cifar100Helper
 from workbench.MNISTHelper import MNISTHelper
 from workbench.LLDHelper import LLD_helper
 
@@ -41,6 +42,10 @@ def load_model_class_from_module(module_path, class_name):
 
 def main():
     dataset, input_shapes = cifar10Helper.load_dataset(limit=1000)
+    dataset, input_shapes = MNISTHelper.load_dataset(limit=1000)
+    dataset, input_shapes = cifar100Helper.load_dataset(limit=1000)
+    dataset, input_shapes = fashion_MNISTHelper.load_dataset(limit=1000)
+    dataset, input_shapes = LLD_helper.load_dataset(limit=1000)
 
     # dataset, input_shapes = MNISTHelper.load_dataset(limit=1000)
     # visualizers = [(image_tile, 40), (image_tile_data, 100), (print_GAN_loss, 10), (print_D_value, 10)]

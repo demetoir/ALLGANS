@@ -19,8 +19,8 @@ class CIFAR10(AbstractDataset):
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
         self.batch_keys = [BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, BATCH_KEY_TEST_LABEL]
-        self.SOURCE_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
-        self.SOURCE_FILE = 'cifar-10-python.tar.gz'
+        self._SOURCE_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
+        self._SOURCE_FILE = 'cifar-10-python.tar.gz'
         self._data_files = [
             "data_batch_1",
             "data_batch_2",
@@ -32,7 +32,6 @@ class CIFAR10(AbstractDataset):
         ]
 
     def load(self, path, limit=None):
-
         # load train data
         files = glob(os.path.join(path, self._PATTERN_TRAIN_FILE))
         files.sort()

@@ -43,8 +43,8 @@ class InstanceManager:
         # reset tensorflow graph
         tf.reset_default_graph()
 
-        if len(self.sub_process):
-            for process_name in self.sub_process:
+        for process_name in self.sub_process:
+            if self.sub_process[process_name].poll is None:
                 self.close_subprocess(process_name)
 
         del self.root_path
