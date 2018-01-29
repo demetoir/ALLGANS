@@ -137,8 +137,11 @@ def extract_zip(source_path, destination_path):
 
 
 def extract_data(source_path, destination_path):
+    extender_tar = ['tar.gz', 'tar', 'gz']
+    extender_zip = ['zip']
+
     extend = source_path.split('.')[-1]
-    if extend == 'tar.gz' or extend == 'tar':
+    if extend in extender_tar:
         extract_tar(source_path, destination_path)
-    elif extend == 'zip':
+    elif extend in extender_zip:
         extract_zip(source_path, destination_path)
