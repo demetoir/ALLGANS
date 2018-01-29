@@ -40,17 +40,16 @@ def load_model_class_from_module(module_path, class_name):
 
 
 def main():
-    # dataset, input_shapes = cifar10Helper.load_dataset(limit=1000)
-    dataset, input_shapes = MNISTHelper.load_dataset(limit=1000)
-    visualizers = [(image_tile, 40), (image_tile_data, 100), (print_GAN_loss, 10), (print_D_value, 10)]
-    model = load_model_class_from_module(MODEL_MODULE_PATH, 'GAN')
-    InstanceManagerHelper.gen_model_and_train(model=model,
-                                              input_shapes=input_shapes,
-                                              visualizers=visualizers,
-                                              env_path=ROOT_PATH,
-                                              dataset=dataset,
-                                              epoch_time=5)
+    dataset, input_shapes = cifar10Helper.load_dataset(limit=1000)
 
+    # dataset, input_shapes = MNISTHelper.load_dataset(limit=1000)
+    # visualizers = [(image_tile, 40), (image_tile_data, 100), (print_GAN_loss, 10), (print_D_value, 10)]
+    # model = load_model_class_from_module(MODEL_MODULE_PATH, 'GAN')
+    # InstanceManagerHelper.gen_model_and_train(model=model,
+    #                                           input_shapes=input_shapes,
+    #                                           visualizers=visualizers,
+    #                                           env_path=ROOT_PATH,
+    #                                           dataset=dataset,
+    #                                           epoch_time=5)
+    #
 
-if __name__ == '__main__':
-    main()
