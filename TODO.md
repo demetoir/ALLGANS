@@ -15,10 +15,11 @@
 * ~~작성자 정보 추가~~
 
 * [fix] 범용 환경에서 작동 가능한 코드로 수정
-    - detect tensorboard path in env_setting
-        - 사용환경을 자동으로 감지해야함
-    - interactive cli for initailize project
+    ~~- detect tensorboard path in env_setting~~
+        ~~- 사용환경을 자동으로 감지해야함~~
+    - interactive cli for initialize project
         - 처음 실행 할때는 프로그램 설치할떄처럼 CLI 로 instance,data 경로 지정하고 다운로드 하는 스크립트 필요함
+        - add setup.py or requirement file 
 
 * [implement] add more dataset from [http://deeplearning.net/datasets/]
 
