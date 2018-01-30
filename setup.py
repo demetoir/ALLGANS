@@ -35,7 +35,6 @@ def folder_init(description="description", default_path=""):
 
 install_requires_ = [
     "tensorflow==1.4.1",
-    "tensorflow-gpu==1.4.1",
     "requests==2.18.4",
     "opencv-python==3.4.0.12",
     "scikit-learn==0.19.1",
