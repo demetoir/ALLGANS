@@ -13,11 +13,48 @@
 
 ## Results
 
-### 1. Image
+GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
+training with MNIST, fashion-mnist, CIFAR10, LLD
+no data augmentation
 
-### 2. Loss
+### GAN
 
-### 3. ...
+| MNIST(20 epoch)                    | fashion-mnist(20 epoch)                    | CIFAR10(20 epoch)                    | LLD(20 epoch)                    |
+| ---------------------------------- | ------------------------------------------ | ------------------------------------ | -------------------------------- |
+| ![](./result_images/GAN-MNIST.png) | ![](./result_images/GAN-fashion_mnist.png) | ![](./result_images/GAN-CIFAR10.png) | ![](./result_images/GAN-LLD.png) |
+
+### LSGAN
+
+| MNIST(20 epoch)                      | fashion-mnist(20 epoch)                      | CIFAR10(20 epoch)                      | LLD(20 epoch)                      |
+| ------------------------------------ | -------------------------------------------- | -------------------------------------- | ---------------------------------- |
+| ![](./result_images/LSGAN-MNIST.png) | ![](./result_images/LSGAN-fashion_mnist.png) | ![](./result_images/LSGAN-CIFAR10.png) | ![](./result_images/LSGAN-LLD.png) |
+
+
+### WGAN
+
+| MNIST(20 epoch)                     | fashion-mnist(20 epoch)                     | CIFAR10(20 epoch)                     | LLD(5 epoch)                               |LLD(20 epoch)                     |
+| ----------------------------------- | ------------------------------------------- | ------------------------------------- | ------------------------------------------ |----------------------------------|
+| ![](./result_images/WGAN-MNIST.png) | ![](./result_images/WGAN-fashion_mnist.png) | ![](./result_images/WGAN-CIFAR10.png) | ![](./result_images/WGAN-LLD_35000iter.png)| ![](./result_images/WGAN-LLD.png)|
+
+## observation
+
+MNIST dataset is easy for GAN, LSGAN, WGAN.
+
+Training with fashion-mnist dataset, GAN is slightly better others.
+
+Training with CIFAR10 dataset, WGAN are better than others. but clearly does not generate looks pretty image like original image.
+
+Training with LLD dataset, three GANs generate similar image.
+Compare with original image, three GANs generate ugly image.
+Compare other GANs, WGAN generate best image in less epoch, but after 5 epoch generate worse than others.
+Above loss of generator and discriminator, generator overpowered discriminator.
+GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but did not train detail.
+
+
+
+
+
+
 
 ## Getting Started
 
