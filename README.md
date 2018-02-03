@@ -48,6 +48,7 @@ Training with LLD dataset, three GANs generate similar image.
 Compare with original image, three GANs generate ugly image.
 Compare other GANs, WGAN generate best image in less epoch, but after 5 epoch generate worse than others.
 Above loss of generator and discriminator, generator overpowered discriminator.
+
 GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but did not train detail.
 
 
