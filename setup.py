@@ -1,8 +1,9 @@
 from setuptools import setup
 from setuptools import find_packages
-from env_settting import *
-
 import io
+import os
+
+from env_settting import ROOT_PATH
 
 
 def readme_description():
@@ -11,25 +12,24 @@ def readme_description():
     return readme
 
 
-def folder_init(description="description", default_path=""):
+def folder_init(description='description', default_path=''):
     print(description)
     path = default_path
-    print("[default path=%s]" % path)
+    print('[Default Path= \'%s\']' % path)
     while True:
-        print("((y)es/(n)o)", end='')
-        user_input = input()
-        if user_input == 'y' or user_input == 'yes':
+        user_input = input('Yes(Y,y) | No(N,n) : ')
+        print()
+        if user_input == 'y' or user_input == 'yes' or user_input == 'Y':
             try:
                 os.makedirs(path)
             except FileExistsError:
                 pass
             break
-        elif user_input == 'n' or user_input == 'no':
-            print("input path=", end="")
-            path = input()
-            print("is path=%s ?" % path)
+        elif user_input == 'n' or user_input == 'no' or user_input == 'N':
+            path = input('Input path= ')
+            print('Is path= \'%s\' ?' % path)
         else:
-            print("abort setup")
+            print('Abort Setup')
             exit()
     print()
 
@@ -97,11 +97,30 @@ if is_install_tensorflow_gpu:
 else:
     install_requires = install_requires_no_tensorflow_gpu
 
+# init instance folder
+# folder_init('Setup Instance Directory', os.path.join(ROOT_PATH, 'instance'))
+
+# init data folder
+# folder_init('Setup Data Directory', os.path.join(ROOT_PATH, 'data'))
+
+install_requires_ = [
+    # 'tensorflow==1.4.1',
+    # 'tensorflow-gpu==1.4.1',
+    'requests==2.18.4',
+    'opencv-python==3.4.0.12',
+    'scikit-learn==0.19.1',
+    'scikit-image==0.13.1',
+    'pillow==5.0.0',
+    'pandas==0.22.0',
+    'matplotlib==2.1.2',
+]
+
+# ref : https://github.com/stunstunstun/awesome-algorithms
 setup(name='ALLGANS',
       version='0.1',
-      description=description,
+      description='Unsupervised Learning Model Implementation Project Using Machine Learning Framework',
       long_description=readme_description(),
-      url='https://github.com/stunstunstun/awesome-algorithms',
+      url='https://github.com/demetoir/ALLGANS',
       author='demetoir, WKBae, StarG',
       author_email='wnsqlehlswk@naver.com, williambae1@gmail.com, psk7142@naver.com',
       license='MIT',

@@ -2,8 +2,6 @@
 
 머신러닝 프레임워크를 활용한 비교사(Unsupervised) 학습 모델 구현 프로젝트
 
-
-
 ## Authors
 
 - [demetoir](https://github.com/demetoir)
@@ -15,25 +13,24 @@
 
 ## Results
 
-#### 1. Image
+### 1. Image
 
-#### 2. Loss
+### 2. Loss
 
-#### 3. ...
+### 3. ...
 
 ## Getting Started
 
-1. 'python setup.py install' and follow console
-2. in console 'python main.py'
-    
+1. `python ./setup.py install` and follow console
+2. in console `python ./main.py`
 
 ## File Tree
 
-```
-├─data          # dataset
+```terminal
+├─data          # default dataset
 ├─data_handler
 ├─dict_keys
-├─instance      # model instance
+├─instance      # default model instance
 ├─model
 ├─unit_test
 ├─util
@@ -44,18 +41,18 @@
 ## Dependencies
 
 - Python 3.5+
-    - matplotlib (2.1.2)
-    - numpy (1.14.0)
-    - pandas (0.22.0)
-    - Pillow (5.0.0)
-    - scikit-image (0.13.1)
-    - scikit-learn (0.19.1)
-    - scipy (1.0.0)
-    - tensorflow (1.4.1)
-    - tensorflow-tensorboard (0.4.0)
-    - opencv-python (3.4.0.12)
-    - requests (2.18.4)
-  
+  - matplotlib (2.1.2)
+  - numpy (1.14.0)
+  - pandas (0.22.0)
+  - Pillow (5.0.0)
+  - scikit-image (0.13.1)
+  - scikit-learn (0.19.1)
+  - scipy (1.0.0)
+  - tensorflow (1.4.1)
+  - tensorflow-gpu (1.4.1)
+  - tensorflow-tensorboard (0.4.0)
+  - opencv-python (3.4.0.12)
+  - requests (2.18.4)
 
 ## Reference
 
