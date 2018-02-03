@@ -17,24 +17,70 @@ GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
 training with MNIST, fashion-mnist, CIFAR10, LLD
 no data augmentation
 
+
 ### GAN
 
-| MNIST(20 epoch)                    | fashion-mnist(20 epoch)                    | CIFAR10(20 epoch)                    | LLD(20 epoch)                    |
-| ---------------------------------- | ------------------------------------------ | ------------------------------------ | -------------------------------- |
-| ![](./result_images/GAN-MNIST.png) | ![](./result_images/GAN-fashion_mnist.png) | ![](./result_images/GAN-CIFAR10.png) | ![](./result_images/GAN-LLD.png) |
+|   dataset    |             MNIST(20 epoch)              |         fashion-mnist(20 epoch)          |
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image |    ![](./result_images/GAN-MNIST.png)    | ![](./result_images/GAN-fashion_mnist.png) |
+|    loss D    | ![](./result_images/GAN-MNIST-loss_D.png ) | ![](./result_images/GAN-fashion-mnist-loss_D.png) |
+| loss D_real  | ![](./result_images/GAN-MNIST-loss_D_real.png ) | ![](./result_images/GAN-fashion-mnist-loss_D_real.png) |
+|  loss D_gen  | ![](./result_images/GAN-MNIST-loss_D_gen.png ) | ![](./result_images/GAN-fashion-mnist-loss_D_gen.png) |
+|    loss G    | ![](./result_images/GAN-MNIST-loss_G.png ) | ![](./result_images/GAN-fashion-mnist-loss_G.png) |
+
+
+|   dataset    |            CIFAR10(20 epoch)             |              LLD(20 epoch)               |
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image |   ![](./result_images/GAN-CIFAR10.png)   |     ![](./result_images/GAN-LLD.png)     |
+|    loss D    | ![](./result_images/GAN-CIFAR10-loss_D.png) | ![](./result_images/GAN-LLD-loss_D.png)  |
+| loss D_real  | ![](./result_images/GAN-CIFAR10-loss_D_real.png) | ![](./result_images/GAN-LLD-loss_D_real.png) |
+|  loss D_gen  | ![](./result_images/GAN-CIFAR10-loss_D_gen.png ) | ![](./result_images/GAN-LLD-loss_D_gen.png) |
+|    loss G    | ![](./result_images/GAN-CIFAR10-loss_G.png ) | ![](./result_images/GAN-LLD-loss_G.png)  |
+
 
 ### LSGAN
 
-| MNIST(20 epoch)                      | fashion-mnist(20 epoch)                      | CIFAR10(20 epoch)                      | LLD(20 epoch)                      |
-| ------------------------------------ | -------------------------------------------- | -------------------------------------- | ---------------------------------- |
-| ![](./result_images/LSGAN-MNIST.png) | ![](./result_images/LSGAN-fashion_mnist.png) | ![](./result_images/LSGAN-CIFAR10.png) | ![](./result_images/LSGAN-LLD.png) |
+|   dataset    |             MNIST(20 epoch)              |                  fashion-mnist(20 epoch) |
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image |   ![](./result_images/LSGAN-MNIST.png)   | ![](./result_images/LSGAN-fashion_mnist.png) |
+|    loss D    | ![](./result_images/LSGAN-MNIST-loss_D.png ) | ![](./result_images/LSGAN-fashion-mnist-loss_D.png) |
+| loss D_real  | ![](./result_images/LSGAN-MNIST-loss_D_real.png ) | ![](./result_images/LSGAN-fashion-mnist-loss_D_real.png) |
+|  loss D_gen  | ![](./result_images/LSGAN-MNIST-loss_D_gen.png ) | ![](./result_images/LSGAN-fashion-mnist-loss_D_gen.png) |
+|    loss G    | ![](./result_images/LSGAN-MNIST-loss_G.png ) | ![](./result_images/LSGAN-fashion-mnist-loss_G.png) |
+
+
+|   dataset    |            CIFAR10(20 epoch)             |                            LLD(20 epoch) |
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image |  ![](./result_images/LSGAN-CIFAR10.png)  |       ![](./result_images/LSGAN-LLD.png) |
+|    loss D    | ![](./result_images/LSGAN-CIFAR10-loss_D.png) | ![](./result_images/LSGAN-LLD-loss_D.png) |
+| loss D_real  | ![](./result_images/LSGAN-CIFAR10-loss_D_real.png) | ![](./result_images/LSGAN-LLD-loss_D_real.png) |
+|  loss D_gen  | ![](./result_images/LSGAN-CIFAR10-loss_D_gen.png ) | ![](./result_images/LSGAN-LLD-loss_D_gen.png) |
+|    loss G    | ![](./result_images/LSGAN-CIFAR10-loss_G.png ) | ![](./result_images/LSGAN-LLD-loss_G.png) |
 
 
 ### WGAN
 
-| MNIST(20 epoch)                     | fashion-mnist(20 epoch)                     | CIFAR10(20 epoch)                     | LLD(5 epoch)                               |LLD(20 epoch)                     |
-| ----------------------------------- | ------------------------------------------- | ------------------------------------- | ------------------------------------------ |----------------------------------|
-| ![](./result_images/WGAN-MNIST.png) | ![](./result_images/WGAN-fashion_mnist.png) | ![](./result_images/WGAN-CIFAR10.png) | ![](./result_images/WGAN-LLD_35000iter.png)| ![](./result_images/WGAN-LLD.png)|
+|   dataset    |             MNIST(20 epoch)              |                  fashion-mnist(20 epoch) |
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image |   ![](./result_images/WGAN-MNIST.png)    | ![](./result_images/WGAN-fashion_mnist.png) |
+|    loss D    | ![](./result_images/WGAN-MNIST-loss_D.png ) | ![](./result_images/WGAN-fashion-mnist-loss_D.png) |
+| loss D_real  | ![](./result_images/WGAN-MNIST-loss_D_real.png ) | ![](./result_images/WGAN-fashion-mnist-loss_D_real.png) |
+|  loss D_gen  | ![](./result_images/WGAN-MNIST-loss_D_gen.png ) | ![](./result_images/WGAN-fashion-mnist-loss_D_gen.png) |
+|    loss G    | ![](./result_images/WGAN-MNIST-loss_G.png ) | ![](./result_images/WGAN-fashion-mnist-loss_G.png) |
+
+
+| dataset      | CIFAR10(20 epoch) | LLD(20 epoch)|
+| :----------: | :--------------------------------------: | :--------------------------------------: |
+| result image | ![](./result_images/WGAN-CIFAR10.png)       |![](./result_images/WGAN-LLD.png)    |
+| loss D       | ![](./result_images/WGAN-CIFAR10-loss_D.png) | ![](./result_images/WGAN-LLD-loss_D.png) |
+| loss D_real  | ![](./result_images/WGAN-CIFAR10-loss_D_real.png) | ![](./result_images/WGAN-LLD-loss_D_real.png) |
+| loss D_gen   | ![](./result_images/WGAN-CIFAR10-loss_D_gen.png ) | ![](./result_images/WGAN-LLD-loss_D_gen.png) |
+| loss G       | ![](./result_images/WGAN-CIFAR10-loss_G.png ) | ![](./result_images/WGAN-LLD-loss_G.png) |
+
+| ![after 5 epoch](./result_images/WGAN-LLD_35000iter.png ) |
+| :----------: |
+| WGAN result - after training LLD dataset for 5 epoch|
+
 
 ## observation
 
@@ -48,6 +94,11 @@ Training with LLD dataset, three GANs generate similar image.
 Compare with original image, three GANs generate ugly image.
 Compare other GANs, WGAN generate best image in less epoch, but after 5 epoch generate worse than others.
 Above loss of generator and discriminator, generator overpowered discriminator.
+
+
+
+
+
 
 GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but did not train detail.
 
