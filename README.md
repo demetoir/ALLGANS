@@ -2,24 +2,31 @@
 
 머신러닝 프레임워크를 활용한 비교사(Unsupervised) 학습 모델 구현 프로젝트
 
-## Authors
+## Index
+*[ALLGANs](#allgans)
+  *[Training dataset](#training-dataset)
+  * [Results](#results)
+    + [GAN](#gan)
+    + [LSGAN](#lsgan)
+    + [WGAN](#wgan)
+  * [observation](#observation)
+  * [Getting Started](#getting-started)
+  * [Folder structure](#folder-structure)
+  * [Dependency](#dependency)
+  * [Authors](#authors)
+  * [Reference](#reference)
 
-- [demetoir](https://github.com/demetoir)
-  - e-mail: wnsqlehlswk@naver.com
-- [WKBae](https://github.com/WKBae)
-  - e-mail: williambae1@gmail.com
-- [StarG](https://github.com/psk7142)
-  - e-mail: psk7142@naver.com
+
+## Training dataset
+* [MNIST](http://yann.lecun.com/exdb/mnist/)
+* [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist)
+* [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html)
+* [LLD](https://data.vision.ee.ethz.ch/cvl/lld/)
 
 
 ## Results
 * GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
 * no data augmentation.
-* training dataset
-    * [MNIST](http://yann.lecun.com/exdb/mnist/)
-    * [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist)
-    * [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html)
-    * [LLD](https://data.vision.ee.ethz.ch/cvl/lld/)
 
 
 
@@ -87,7 +94,7 @@
 | WGAN result - after training LLD dataset for 5 epoch|
 
 
-## observation
+## Observation
 
 MNIST dataset is easy for GAN, LSGAN, WGAN.
 
@@ -99,10 +106,6 @@ Training with LLD dataset, three GANs generate similar image.
 Compare with original image, three GANs generate ugly image.
 Compare other GANs, WGAN generate best image in less epoch, but after 5 epoch generate worse than others.
 Above loss of generator and discriminator, generator overpowered discriminator.
-
-
-
-
 
 
 GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but did not train detail.
@@ -118,7 +121,7 @@ GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but d
 1. `python ./setup.py install` and follow console
 2. in console `python ./main.py`
 
-## File Tree
+## Folder structure
 
 ```terminal
 ├─data          # default dataset
@@ -132,7 +135,7 @@ GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but d
 └─workbench
 ```
 
-## Dependencies
+## Dependency
 
 - Python 3.5+
   - matplotlib (2.1.2)
@@ -147,6 +150,16 @@ GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but d
   - tensorflow-tensorboard (0.4.0)
   - opencv-python (3.4.0.12)
   - requests (2.18.4)
+
+
+## Authors
+
+- [demetoir](https://github.com/demetoir)
+  - e-mail: wnsqlehlswk@naver.com
+- [WKBae](https://github.com/WKBae)
+  - e-mail: williambae1@gmail.com
+- [StarG](https://github.com/psk7142)
+  - e-mail: psk7142@naver.com
 
 ## Reference
 
