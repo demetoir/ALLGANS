@@ -11,11 +11,16 @@
 - [StarG](https://github.com/psk7142)
   - e-mail: psk7142@naver.com
 
-## Results
 
-GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
-training with MNIST, fashion-mnist, CIFAR10, LLD
-no data augmentation
+## Results
+* GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
+* no data augmentation.
+* training dataset
+    * [MNIST](http://yann.lecun.com/exdb/mnist/)
+    * [fashion-mnist](https://github.com/zalandoresearch/fashion-mnist)
+    * [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html)
+    * [LLD](https://data.vision.ee.ethz.ch/cvl/lld/)
+
 
 
 ### GAN
