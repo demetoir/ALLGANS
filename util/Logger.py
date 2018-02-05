@@ -4,7 +4,7 @@ import os
 
 
 class Logger:
-    LOGGER_FORMAT = '[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s > %(message)s'
+    LOGGER_FORMAT = '%(asctime)s > %(message)s'
     PRINT_LOGGER_FORMAT = '%(asctime)s > %(message)s'
 
     def __init__(self, name, path=None, file_name='log', level=logging.INFO, stdout_only=False):
@@ -33,16 +33,11 @@ class Logger:
 
     def get_log(self, level='info'):
         # catch *args and make to str
-        def deco(func):
+        def deco(target_function):
             def wrapper(*args):
-                msg = " ".join(map(str, args))
-                return func(msg)
+                return target_function(" ".join(map(str, args)))
 
             return wrapper
 
         func = getattr(self.logger, level)
         return deco(func)
-
-
-if __name__ == '__main__':
-    pass
