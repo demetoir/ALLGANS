@@ -27,7 +27,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.gen_instance(model, input_shape)
+        manager.build_instance(model, input_shape)
 
     def test_02_load_visualizer(self):
         path = ROOT_PATH
@@ -35,7 +35,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.gen_instance(model, input_shape)
+        manager.build_instance(model, input_shape)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -49,7 +49,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.gen_instance(model, input_shape)
+        manager.build_instance(model, input_shape)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -59,7 +59,7 @@ class test_InstanceManger:
 
         dataset = DummyDataset()
         epoch_time = 10
-        manager.train_model(dataset, epoch_time)
+        manager.train_instance(dataset, epoch_time)
 
     def test_04_save_model(self):
         path = ROOT_PATH
@@ -67,7 +67,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.gen_instance(model, input_shape)
+        manager.build_instance(model, input_shape)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -78,7 +78,7 @@ class test_InstanceManger:
         dataset = DummyDataset()
         epoch_time = 10
         check_point_interval = 2
-        manager.train_model(dataset, epoch_time, check_point_interval)
+        manager.train_instance(dataset, epoch_time, check_point_interval)
 
     def test_05_load_model(self):
         path = ROOT_PATH
@@ -86,7 +86,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.gen_instance(model, input_shape)
+        manager.build_instance(model, input_shape)
         meta_data_path = manager.metadata_path
 
         visualizer_1 = DummyVisualizer_1
@@ -98,11 +98,11 @@ class test_InstanceManger:
         dataset = DummyDataset()
         epoch_time = 10
         check_point_interval = 2
-        manager.train_model(dataset, epoch_time, check_point_interval)
+        manager.train_instance(dataset, epoch_time, check_point_interval)
 
         #
         manager = InstanceManager(path)
-        manager.load_model(meta_data_path, input_shape)
+        manager.load_instance(meta_data_path, input_shape)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -113,7 +113,7 @@ class test_InstanceManger:
         dataset = DummyDataset()
         epoch_time = 10
         check_point_interval = 2
-        manager.train_model(dataset, epoch_time, check_point_interval)
+        manager.train_instance(dataset, epoch_time, check_point_interval)
 
 
 def f():
@@ -122,7 +122,7 @@ def f():
 
     model = DummyModel
     input_shape = (32, 32, 3)
-    manager.gen_instance(model, input_shape)
+    manager.build_instance(model, input_shape)
 
     visualizers = [(dummy_log, 10), ]
     manager.load_visualizer(visualizers)
@@ -130,7 +130,7 @@ def f():
     dataset = DummyDataset()
     epoch_time = 1
     check_point_interval = 500
-    manager.train_model(dataset, epoch_time, check_point_interval)
+    manager.train_instance(dataset, epoch_time, check_point_interval)
 
 
 if __name__ == '__main__':

@@ -23,7 +23,7 @@ if __name__ == '__main__':
 
     input_shape = [32, 32, 3]
     model = GAN
-    manager.gen_instance(model, input_shape)
+    manager.build_instance(model, input_shape)
     metadata_path = manager.metadata_path
 
     iter_cycle = 10
@@ -32,4 +32,4 @@ if __name__ == '__main__':
 
     epoch_time = 10
     check_point_interval_per_iter = 5000
-    manager.train_model(lld_data, epoch_time, check_point_interval_per_iter)
+    manager.train_instance(lld_data, epoch_time, check_point_interval_per_iter)

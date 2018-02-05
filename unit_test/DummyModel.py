@@ -26,7 +26,7 @@ class DummyModel(AbstractModel):
         self.inc_v1 = self.v1.assign(self.v1 + 1)
         self.dec_v2 = self.v2.assign(self.v2 - 1)
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         self.iter_count += 1
         sess.run([self.inc_v1, self.dec_v2])
 
@@ -36,5 +36,5 @@ class DummyModel(AbstractModel):
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
         pass
 
-    def summary_op(self):
+    def summary_ops(self):
         pass
