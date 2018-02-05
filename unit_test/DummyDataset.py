@@ -4,4 +4,4 @@ class DummyDataset:
 
     @staticmethod
     def next_batch(batch_size):
-        print('dummy dataset next_batch')
+        print('dummy dataset next_batch size = %d' % batch_size)

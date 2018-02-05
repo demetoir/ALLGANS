@@ -1,8 +1,11 @@
-from model.AbstractGANModel import AbstractGANModel
+from model.AbstractModel import AbstractModel
 import tensorflow as tf
 
 
-class DummyModel(AbstractGANModel):
+class DummyModel(AbstractModel):
+
+    def input_shapes(self, input_shapes):
+        pass
 
     def __init__(self, metadata, input_shapes):
         super().__init__(metadata, input_shapes)
@@ -31,7 +34,7 @@ class DummyModel(AbstractGANModel):
         pass
 
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
-        raise NotImplementedError
+        pass
 
     def summary_op(self):
-        raise NotImplementedError
+        pass
