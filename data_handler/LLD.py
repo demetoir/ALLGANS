@@ -7,8 +7,6 @@ import _pickle as cPickle
 import os
 import numpy as np
 
-from util.util import download_data, extract_tar, extract_zip
-
 
 class LLD(AbstractDataset):
     LLD_CLEAN = 'CLEAN'

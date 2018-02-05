@@ -1,5 +1,5 @@
+from util.numpy_utils import np_img_rgb_to_gray, np_img_to_PIL_img, np_img_to_tile
 from visualizer.AbstractVisualizer import AbstractVisualizer
-from util.util import *
 import numpy as np
 import os
 import cv2

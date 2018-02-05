@@ -1,10 +1,8 @@
 from data_handler.AbstractDataset import AbstractDataset
-from glob import glob
 from dict_keys.dataset_batch_keys import *
+from glob import glob
 import os
 import pickle
-
-from util.util import extract_tar, download_data
 
 
 class CIFAR10(AbstractDataset):

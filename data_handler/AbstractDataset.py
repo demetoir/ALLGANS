@@ -1,6 +1,6 @@
 from util.Logger import Logger
 from glob import glob
-from util.util import *
+from util.misc_util import *
 import traceback
 import sys
 import numpy as np
@@ -23,11 +23,10 @@ def check_attr_is_None(attr):
 class MetaTask(type):
     """
     metaclass ref from 'https://code.i-harness.com/ko/q/11fc307'
-
     """
-
     def __init__(cls, name, bases, clsdict):
         # add before, after task for AbstractDataset.load
+        new_load = None
         if 'load' in clsdict:
             def new_load(self, path, limit):
                 try:
@@ -39,7 +38,7 @@ class MetaTask(type):
                     clsdict['load'](self, path, limit)
 
                     self.after_load(limit)
-                except Exception as e:
+                except Exception:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     err_msg = traceback.format_exception(exc_type, exc_value, exc_traceback)
                     self.log(*err_msg)

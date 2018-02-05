@@ -1,6 +1,6 @@
 from data_handler.CIFAR10 import CIFAR10
 from env_settting import CIFAR10_PATH
-from util.util import np_index_to_onehot, np_img_NCWH_to_NHWC
+from util.numpy_utils import np_img_NCWH_to_NHWC, np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 import numpy as np

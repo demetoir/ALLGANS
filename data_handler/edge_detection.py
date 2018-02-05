@@ -1,6 +1,7 @@
 from data_handler.LLD import LLD
 from env_settting import *
-from util.util import *
+from util.numpy_utils import np_img_rgb_to_gray, np_img_gray_to_rgb, np_img_to_PIL_img, np_img_from_file, \
+    np_img_to_tile
 import numpy as np
 import cv2
 import os
