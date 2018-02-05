@@ -25,7 +25,7 @@ class AbstractModel:
         self.log('train ops build')
         self.misc_ops()
         self.log('misc ops build')
-        self.summary_op()
+        self.summary_ops()
         self.log('summary build')
 
     def load_meta_data(self, metadata):
@@ -49,9 +49,6 @@ class AbstractModel:
     def loss(self):
         raise NotImplementedError
 
-    def train_ops(self):
-        raise NotImplementedError
-
     def misc_ops(self):
         # TODO scope problem ..?
         with tf.variable_scope('misc_ops'):
@@ -59,10 +56,13 @@ class AbstractModel:
             with tf.variable_scope('op_inc_global_step'):
                 self.op_inc_global_step = self.global_step.assign(self.global_step + 1)
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train_ops(self):
         raise NotImplementedError
 
-    def summary_op(self):
+    def train(self, sess=None, iter_num=None, dataset=None):
+        raise NotImplementedError
+
+    def summary_ops(self):
         raise NotImplementedError
 
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):

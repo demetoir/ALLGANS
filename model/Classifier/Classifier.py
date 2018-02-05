@@ -130,14 +130,14 @@ class Classifier(AbstractModel):
         with tf.variable_scope('clip_op'):
             self.clip_op = [var.assign(tf.clip_by_value(var, -0.01, 0.01)) for var in self.vars]
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         batch_xs, batch_labels = dataset.next_batch(self.batch_size,
                                                     batch_keys=[BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL])
         sess.run([self.train, self.clip_op], feed_dict={self.X: batch_xs, self.label: batch_labels})
 
         sess.run([self.op_inc_global_step])
 
-    def summary_op(self):
+    def summary_ops(self):
         summary_variable(self.loss)
 
         self.op_merge_summary = tf.summary.merge_all()

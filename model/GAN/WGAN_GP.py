@@ -121,7 +121,7 @@ class WGAN_GP(AbstractGANModel):
         with tf.variable_scope('misc_ops', reuse=True):
             self.GD_rate = tf.div(tf.reduce_mean(self.loss_G), tf.reduce_mean(self.loss_D))
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         self.normal_train(sess, iter_num, dataset)
 
     def normal_train(self, sess, iter_num, dataset):
@@ -134,7 +134,7 @@ class WGAN_GP(AbstractGANModel):
 
         sess.run([self.op_inc_global_step])
 
-    def summary_op(self):
+    def summary_ops(self):
         summary_variable(self.loss_D_gen)
         summary_variable(self.loss_D_real)
         summary_variable(self.loss_D)

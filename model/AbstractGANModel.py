@@ -38,11 +38,11 @@ class AbstractGANModel(AbstractModel):
     def train_ops(self):
         raise NotImplementedError
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         raise NotImplementedError
 
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
         raise NotImplementedError
 
-    def summary_op(self):
+    def summary_ops(self):
         raise NotImplementedError

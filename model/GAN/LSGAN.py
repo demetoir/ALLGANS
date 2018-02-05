@@ -101,7 +101,7 @@ class LSGAN(AbstractGANModel):
     def misc_ops(self):
         super().misc_ops()
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         noise = self.get_noise()
         batch_xs = dataset.next_batch(self.batch_size, batch_keys=[BATCH_KEY_TRAIN_X])
         sess.run(self.train_G, feed_dict={self.z: noise})
@@ -111,7 +111,7 @@ class LSGAN(AbstractGANModel):
     def get_noise(self):
         return np.random.uniform(-1.0, 1.0, size=[self.batch_size, self.n_noise])
 
-    def summary_op(self):
+    def summary_ops(self):
         summary_variable(self.loss_D_gen)
         summary_variable(self.loss_D_real)
         summary_variable(self.loss_D)
