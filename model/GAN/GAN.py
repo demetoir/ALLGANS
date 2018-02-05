@@ -1,6 +1,6 @@
 from model.AbstractGANModel import AbstractGANModel
 from util.SequenceModel import SequenceModel
-from util.ops import *
+from util.tensor_ops import *
 from util.summary_func import summary_loss
 from dict_keys.dataset_batch_keys import *
 import numpy as np
@@ -25,19 +25,19 @@ class GAN(AbstractGANModel):
             seq.add_layer(linear, 4 * 4 * 512)
             seq.add_layer(tf.reshape, [self.batch_size, 4, 4, 512])
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 8, 8, 256], filter_5522)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 8, 8, 256], CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(relu)
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 16, 16, 128], filter_5522)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 16, 16, 128], CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(relu)
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 32, 32, 3], filter_5522)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 32, 32, 3], CONV_FILTER_5522)
             # seq.add_layer(bn)
             # seq.add_layer(relu)
 
-            seq.add_layer(conv2d, self.input_c, filter_3311)
+            seq.add_layer(conv2d, self.input_c, CONV_FILTER_3311)
             seq.add_layer(tf.sigmoid)
             net = seq.last_layer
 
@@ -49,15 +49,15 @@ class GAN(AbstractGANModel):
                 scope.reuse_variables()
 
             seq = SequenceModel(x)
-            seq.add_layer(conv2d, 64, filter_5533)
+            seq.add_layer(conv2d, 64, CONV_FILTER_5533)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
-            seq.add_layer(conv2d, 128, filter_5533)
+            seq.add_layer(conv2d, 128, CONV_FILTER_5533)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
-            seq.add_layer(conv2d, 256, filter_5533)
+            seq.add_layer(conv2d, 256, CONV_FILTER_5533)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
@@ -116,7 +116,7 @@ class GAN(AbstractGANModel):
     def misc_ops(self):
         super().misc_ops()
 
-    def train_model(self, sess=None, iter_num=None, dataset=None):
+    def train(self, sess=None, iter_num=None, dataset=None):
         noise = self.get_noise()
         batch_xs = dataset.next_batch(self.batch_size, batch_keys=[BATCH_KEY_TRAIN_X])
         sess.run(self.train_G, feed_dict={self.z: noise})
@@ -126,7 +126,7 @@ class GAN(AbstractGANModel):
     def get_noise(self):
         return np.random.uniform(-1.0, 1.0, size=[self.batch_size, self.n_noise])
 
-    def summary_op(self):
+    def summary_ops(self):
         summary_loss(self.loss_D_gen)
         summary_loss(self.loss_D_real)
         summary_loss(self.loss_D)

@@ -1,6 +1,6 @@
 from model.AbstractModel import AbstractModel
 from util.SequenceModel import SequenceModel
-from util.ops import *
+from util.tensor_ops import *
 from util.summary_func import *
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
@@ -10,25 +10,25 @@ def inception_layer(input_, channel_size, name='inception_layer'):
     with tf.variable_scope(name):
         with tf.variable_scope('out1'):
             seq = SequenceModel(input_)
-            seq.add_layer(avg_pooling, filter_2211)
+            seq.add_layer(avg_pooling, CONV_FILTER_2211)
             out1 = seq.last_layer
 
         with tf.variable_scope('out2'):
             seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             out2 = seq.last_layer
 
         with tf.variable_scope('out3'):
             seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, relu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, relu)
             out3 = seq.last_layer
 
         with tf.variable_scope('out4'):
             seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             out4 = seq.last_layer
 
         out = tf.concat([out1, out2 + out3 + out4], 3)
@@ -72,7 +72,7 @@ class Classifier(AbstractModel):
     def CNN(self, input_):
         with tf.variable_scope('classifier'):
             seq = SequenceModel(input_, name='seq1')
-            seq.add_layer(conv_block, 64, filter_5522, lrelu)
+            seq.add_layer(conv_block, 64, CONV_FILTER_5522, lrelu)
             size16 = seq.last_layer
             seq.add_layer(inception_layer, 32)
             seq.add_layer(inception_layer, 64)
@@ -80,7 +80,7 @@ class Classifier(AbstractModel):
             seq.add_layer(tf.reshape, [self.batch_size, -1])
 
             seq2 = SequenceModel(size16, name='seq2')
-            seq2.add_layer(conv_block, 128, filter_5522, lrelu)
+            seq2.add_layer(conv_block, 128, CONV_FILTER_5522, lrelu)
             size8 = seq2.last_layer
             seq2.add_layer(inception_layer, 64)
             seq2.add_layer(inception_layer, 128)
@@ -88,7 +88,7 @@ class Classifier(AbstractModel):
             seq2.add_layer(tf.reshape, [self.batch_size, -1])
 
             seq3 = SequenceModel(size8, name='seq3')
-            seq3.add_layer(conv_block, 256, filter_5522, lrelu)
+            seq3.add_layer(conv_block, 256, CONV_FILTER_5522, lrelu)
             seq3.add_layer(inception_layer, 128)
             seq3.add_layer(inception_layer, 256)
             seq3.add_layer(inception_layer, 512)

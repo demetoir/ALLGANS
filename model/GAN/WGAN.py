@@ -1,6 +1,6 @@
 from model.AbstractGANModel import AbstractGANModel
 from util.SequenceModel import SequenceModel
-from util.ops import *
+from util.tensor_ops import *
 from util.summary_func import *
 from dict_keys.dataset_batch_keys import *
 import numpy as np
@@ -24,16 +24,16 @@ class WGAN(AbstractGANModel):
             seq.add_layer(linear, 4 * 4 * 512)
             seq.add_layer(tf.reshape, [self.batch_size, 4, 4, 512])
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 8, 8, 256], filter_5522)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 8, 8, 256], CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(relu)
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 16, 16, 128], filter_5522)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 16, 16, 128], CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(relu)
 
-            seq.add_layer(conv2d_transpose, [self.batch_size, 32, 32, self.input_c], filter_5522)
-            seq.add_layer(conv2d, self.input_c, filter_5511)
+            seq.add_layer(conv2d_transpose, [self.batch_size, 32, 32, self.input_c], CONV_FILTER_5522)
+            seq.add_layer(conv2d, self.input_c, CONV_FILTER_5511)
             seq.add_layer(tf.sigmoid)
             net = seq.last_layer
 
@@ -42,19 +42,19 @@ class WGAN(AbstractGANModel):
     def discriminator(self, x, reuse=None, name='discriminator'):
         with tf.variable_scope(name, reuse=reuse):
             seq = SequenceModel(x)
-            seq.add_layer(conv2d, 64, filter_5522)
+            seq.add_layer(conv2d, 64, CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
-            seq.add_layer(conv2d, 128, filter_5522)
+            seq.add_layer(conv2d, 128, CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
-            seq.add_layer(conv2d, 256, filter_5522)
+            seq.add_layer(conv2d, 256, CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
-            seq.add_layer(conv2d, 256, filter_5522)
+            seq.add_layer(conv2d, 256, CONV_FILTER_5522)
             seq.add_layer(bn)
             seq.add_layer(lrelu)
 
