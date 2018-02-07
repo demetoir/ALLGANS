@@ -2,6 +2,17 @@
 
 머신러닝 프레임워크를 활용한 비교사(Unsupervised) 학습 모델 구현 프로젝트
 
+Unsupervised Learning Model Implementation Project Using Machine Learning Framework
+
+## Authors
+
+- 김유준([demetoir](https://github.com/demetoir), Yu Jun Kim)
+  - e-mail: wnsqlehlswk@naver.com
+- 배경민([WKBae](https://github.com/WKBae), William Kyungmin Bae)
+  - e-mail: williambae1@gmail.com
+- 박성규([StarG](https://github.com/psk7142), Soung Gyu Park)
+  - e-mail: psk7142@naver.com
+
 ## Index
 
 - [ALLGANs](#allgans)
@@ -10,7 +21,7 @@
     - [GAN](#gan)
     - [LSGAN](#lsgan)
     - [WGAN](#wgan)
-  - [observation](#observation)
+  - [Observation](#observation)
   - [Getting Started](#getting-started)
   - [Folder structure](#folder-structure)
   - [Dependency](#dependency)
@@ -20,14 +31,14 @@
 ## Training Dataset
 
 - [MNIST](http://yann.lecun.com/exdb/mnist/)
-- [Fashion-mnist](https://github.com/zalandoresearch/fashion-mnist)
-- [CIFAR10](https://www.cs.toronto.edu/~kriz/cifar.html)
-- [LLD](https://data.vision.ee.ethz.ch/cvl/lld/)(Large Logo Dataset)
+- [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist)
+- [CIFAR 10](https://www.cs.toronto.edu/~kriz/cifar.html)
+- [LLD(Large Logo Dataset)](https://data.vision.ee.ethz.ch/cvl/lld/)
 
 ## Results
 
-- GAN, LSGAN, WGAN are have same generator and discriminator CNN structure.
-- no data augmentation.
+- GAN, LSGAN, WGAN are have same generator and discriminator `CNN` structure.
+- No data augmentation.
 
 ### GAN
 
@@ -89,22 +100,21 @@
 
 ## Observation
 
-`MNIST` dataset is easy for `GAN`, `LSGAN`, `WGAN`.
+1. `MNIST` dataset is easy for `GAN`, `LSGAN`, `WGAN`.
+2. Training with `Fashion-MNIST` dataset, **`GAN`** is slightly better others.
+3. Training with `CIFAR 10` dataset, **`WGAN`** are better than others. but clearly does not generate looks pretty image like original image.
+4. Training with `LLD` dataset, three GANs generate **similar** image.
+    Compare with original image, three GANs generate ugly image.
 
-Training with `Fashion-MNIST` dataset, **`GAN`** is slightly better others.
+Compare other GANs, `WGAN` generate **best image in less epoch**, but **after 5 epoch generate worse** than others.
 
-Training with `CIFAR 10` dataset, **`WGAN`** are better than others. but clearly does not generate looks pretty image like original image.
-
-Training with `LLD` dataset, three GANs generate **similar** image.
-Compare with original image, three GANs generate ugly image.
-Compare other GANs, WGAN generate best image in less epoch, but after 5 epoch generate worse than others.
 Above loss of generator and discriminator, generator overpowered discriminator.
 
-GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but did not train detail.
+GANs **trained outline of all original dataset**(fashion-mnist, CIFAR10, LLD), but did not train detail.
 
 ## Getting Started
 
-1. `python ./setup.py install` and follow console (If you already install dependencies, follow step 2.)
+1. `python ./setup.py install` and follow console (If you already installed dependencies, follow step 2.)
 2. Run bench code `python ./main.py`
 3. If you want to run another model, modify `workbench/bench_code.py`.
 
@@ -137,15 +147,6 @@ GANs trained outline of all original dataset(fashion-mnist, CIFAR10, LLD), but d
   - tensorflow-tensorboard (0.4.0)
   - opencv-python (3.4.0.12)
   - requests (2.18.4)
-
-## Authors
-
-- [demetoir](https://github.com/demetoir)
-  - e-mail: wnsqlehlswk@naver.com
-- [WKBae](https://github.com/WKBae)
-  - e-mail: williambae1@gmail.com
-- [StarG](https://github.com/psk7142)
-  - e-mail: psk7142@naver.com
 
 ## Reference
 
