@@ -9,4 +9,4 @@ class test_AbstractModel:
     def test__00(self):
         shape = (32, 32, 3)
         path = ROOT_PATH
-        model = DummyModel(path, shape)
+        model = DummyModel(path)

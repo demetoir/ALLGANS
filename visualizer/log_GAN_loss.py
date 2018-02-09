@@ -2,7 +2,7 @@ from visualizer.AbstractPrintLog import AbstractPrintLog
 from dict_keys.dataset_batch_keys import *
 
 
-class print_GAN_loss(AbstractPrintLog):
+class log_GAN_loss(AbstractPrintLog):
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         noise = model.get_noise()
         batch_xs = dataset.next_batch(model.batch_size, batch_keys=[BATCH_KEY_TRAIN_X], lookup=True)

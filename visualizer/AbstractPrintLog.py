@@ -3,8 +3,8 @@ from util.Logger import Logger
 
 
 class AbstractPrintLog(AbstractVisualizer):
-    def __init__(self, path=None, iter_cycle=None, name=None):
-        super().__init__(path, iter_cycle, name)
+    def __init__(self, path=None, execute_interval=None, name=None):
+        super().__init__(path, execute_interval, name)
         self.logger = Logger(self.__class__.__name__, self.visualizer_path)
         self.log = self.logger.get_log()
 

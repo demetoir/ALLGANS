@@ -4,14 +4,14 @@ from InstanceManger import InstanceManager
 class InstanceManagerHelper:
     @staticmethod
     def build_and_train(model=None, input_shapes=None, dataset=None, visualizers=None, env_path=None, epoch_time=50,
-                        check_point_interval_per_iter=5000):
+                        check_point_interval=5000):
         manager = InstanceManager(env_path)
         metadata_path = manager.build_instance(model)
         manager.load_instance(metadata_path, input_shapes)
         manager.load_visualizer(visualizers)
 
         manager.open_tensorboard()
-        manager.train_instance(dataset, epoch_time, check_point_interval_per_iter)
+        manager.train_instance(epoch_time, dataset=dataset, check_point_interval=check_point_interval)
         manager.close_tensorboard()
         del manager
 
@@ -19,7 +19,7 @@ class InstanceManagerHelper:
     def build_models(model_list=None, input_shapes=None, env_setting=None):
         for model in model_list:
             manager = InstanceManager(env_setting)
-            manager.build_instance(model, input_shapes)
+            manager.build_instance(model)
             del manager
 
     @staticmethod

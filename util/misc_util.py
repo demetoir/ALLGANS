@@ -1,10 +1,10 @@
+"""misc util
+pickle, import module, zip, etc ..."""
 import tarfile
 import zipfile
-
 import requests
 
 
-# pickle util
 def dump(path, data):
     import pickle
     with open(path, 'wb') as f:
@@ -20,7 +20,6 @@ def load(path):
     return data
 
 
-# TODO need relocate
 def load_class_from_source_path(module_path, class_name):
     from importlib._bootstrap_external import SourceFileLoader
 

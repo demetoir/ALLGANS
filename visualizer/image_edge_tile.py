@@ -1,4 +1,4 @@
-from util.numpy_utils import np_img_rgb_to_gray, np_img_to_PIL_img, np_img_to_tile
+from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
 import numpy as np
 import os
@@ -16,12 +16,12 @@ def extract_edge(imgs, threshold1=100, threshold2=200):
     return ret
 
 
-class edge_tile(AbstractVisualizer):
+class image_edge_tile(AbstractVisualizer):
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         sample_imgs0 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs1 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
-        sample_imgs = np.uint8(sample_imgs * 255)
+        sample_imgs = np_img_float_to_uint8(sample_imgs)
 
         threshold_list = []
         for i in range(200, 250, 10):

@@ -1,5 +1,9 @@
+"""operation util for tensorflow"""
 import tensorflow as tf
 
+"""convolution filter option
+(kernel height, kernel width, stride height, stride width)
+"""
 CONV_FILTER_1111 = (1, 1, 1, 1)
 CONV_FILTER_2211 = (2, 2, 1, 1)
 CONV_FILTER_2222 = (2, 2, 2, 2)

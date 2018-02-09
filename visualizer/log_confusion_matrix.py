@@ -4,9 +4,8 @@ import numpy as np
 from dict_keys.dataset_batch_keys import *
 
 
-class print_confusion_matrix(AbstractPrintLog):
+class log_confusion_matrix(AbstractPrintLog):
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
-        # test data
         matrix = np.zeros([dataset.LABEL_SIZE, dataset.LABEL_SIZE], dtype=np.int32)
 
         for _ in range(10):

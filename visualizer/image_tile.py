@@ -1,4 +1,4 @@
-from util.numpy_utils import np_img_uint8_to_float32, np_img_to_PIL_img, np_img_to_tile
+from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
 import os
 import numpy as np
@@ -9,7 +9,7 @@ class image_tile(AbstractVisualizer):
         sample_imgs0 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs1 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
-        sample_imgs = np_img_uint8_to_float32(sample_imgs)
+        sample_imgs = np_img_float_to_uint8(sample_imgs)
 
         img_path = os.path.join(self.visualizer_path, '{}.png'.format(str(iter_num).zfill(5)))
         tile = np_img_to_tile(sample_imgs, column_size=8)
