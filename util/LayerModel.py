@@ -4,11 +4,20 @@ import tensorflow as tf
 class LayerModel:
     """help easily make graph model and naming for tensorflow
 
-
     ex)
+    layer = layerModel(input_)
+    layer.add_layer(conv2d, 64, CONV_FILTER_5522)
+    layer.add_layer(bn)
+    layer.add_layer(lrelu)
 
-    todo
+    layer.add_layer(conv2d, 128, CONV_FILTER_5522)
+    layer.add_layer(bn)
+    layer.add_layer(lrelu)
 
+    layer.add_layer(conv2d, 256, CONV_FILTER_5522)
+    layer.add_layer(bn)
+    layer.add_layer(lrelu)
+    output = layer.last_layer
     """
     def __init__(self, start_layer=None, reuse=False, name="layerModel"):
         """create SequenceModel

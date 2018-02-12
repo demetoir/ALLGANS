@@ -5,6 +5,8 @@ from dict_keys.dataset_batch_keys import *
 
 
 class log_confusion_matrix(AbstractPrintLog):
+    """visualize confusion matrix by print log"""
+
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         matrix = np.zeros([dataset.LABEL_SIZE, dataset.LABEL_SIZE], dtype=np.int32)
 

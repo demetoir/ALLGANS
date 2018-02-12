@@ -3,6 +3,8 @@ from dict_keys.dataset_batch_keys import *
 
 
 class log_D_AE_error(AbstractPrintLog):
+    """visualizer error of discriminator AE in BEGAN"""
+
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         noise = model.get_noise()
         batch_xs = dataset.next_batch(model.batch_size, batch_keys=[BATCH_KEY_TRAIN_X], lookup=True)

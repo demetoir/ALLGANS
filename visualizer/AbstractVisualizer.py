@@ -2,11 +2,11 @@ import os
 
 
 class AbstractVisualizer:
-    """
+    """abstract class for visualizer for instance
 
     """
     def __init__(self, path=None, execute_interval=None, name=None):
-        """create AbstractVisualizer
+        """create Visualizer
 
         :type path: str
         :type execute_interval: int

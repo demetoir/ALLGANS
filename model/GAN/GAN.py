@@ -34,8 +34,6 @@ class GAN(AbstractGANModel):
             layer.add_layer(relu)
 
             layer.add_layer(conv2d_transpose, [self.batch_size, 32, 32, 3], CONV_FILTER_5522)
-            # seq.add_layer(bn)
-            # seq.add_layer(relu)
 
             layer.add_layer(conv2d, self.input_c, CONV_FILTER_3311)
             layer.add_layer(tf.sigmoid)
@@ -46,15 +44,15 @@ class GAN(AbstractGANModel):
     def discriminator(self, x, reuse=None):
         with tf.variable_scope('discriminator', reuse=reuse):
             layer = LayerModel(x)
-            layer.add_layer(conv2d, 64, CONV_FILTER_5533)
+            layer.add_layer(conv2d, 64, CONV_FILTER_5522)
             layer.add_layer(bn)
             layer.add_layer(lrelu)
 
-            layer.add_layer(conv2d, 128, CONV_FILTER_5533)
+            layer.add_layer(conv2d, 128, CONV_FILTER_5522)
             layer.add_layer(bn)
             layer.add_layer(lrelu)
 
-            layer.add_layer(conv2d, 256, CONV_FILTER_5533)
+            layer.add_layer(conv2d, 256, CONV_FILTER_5522)
             layer.add_layer(bn)
             layer.add_layer(lrelu)
 

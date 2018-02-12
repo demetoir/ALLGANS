@@ -21,7 +21,7 @@ def check_attr_is_None(attr):
 
 
 class MetaTask(type):
-    """
+    """Metaclass for hook inherited class's function
     metaclass ref from 'https://code.i-harness.com/ko/q/11fc307'
     """
 

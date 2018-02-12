@@ -3,6 +3,8 @@ from dict_keys.dataset_batch_keys import *
 
 
 class log_classifier_loss(AbstractPrintLog):
+    """visualize log of classifier's loss"""
+
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         batch_xs, batch_labels = dataset.next_batch(model.batch_size,
                                                     batch_keys=[BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL])

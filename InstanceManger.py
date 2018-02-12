@@ -109,12 +109,6 @@ class InstanceManager:
         instance_id = model_name + '_' + strftime("%Y-%m-%d_%H-%M-%S", localtime())
         self.log('build instance: %s' % instance_id)
 
-        # init instance directory
-        # TODO goto setup.py
-        # instance_path = os.path.join(self.root_path, INSTANCE_FOLDER)
-        # if not os.path.exists(instance_path):
-        #     os.mkdir(instance_path)
-
         # init new instance directory
         self.log('init instance directory')
         instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, instance_id)

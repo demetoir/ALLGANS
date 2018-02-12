@@ -9,27 +9,27 @@ from dict_keys.input_shape_keys import *
 def inception_layer(input_, channel_size, name='inception_layer'):
     with tf.variable_scope(name):
         with tf.variable_scope('out1'):
-            seq = LayerModel(input_)
-            seq.add_layer(avg_pooling, CONV_FILTER_2211)
-            out1 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(avg_pooling, CONV_FILTER_2211)
+            out1 = layer.last_layer
 
         with tf.variable_scope('out2'):
-            seq = LayerModel(input_)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
-            out2 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            out2 = layer.last_layer
 
         with tf.variable_scope('out3'):
-            seq = LayerModel(input_)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, relu)
-            out3 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, relu)
+            out3 = layer.last_layer
 
         with tf.variable_scope('out4'):
-            seq = LayerModel(input_)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
-            out4 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            out4 = layer.last_layer
 
         out = tf.concat([out1, out2 + out3 + out4], 3)
 
@@ -71,30 +71,30 @@ class Classifier(AbstractModel):
 
     def CNN(self, input_):
         with tf.variable_scope('classifier'):
-            seq = LayerModel(input_, name='seq1')
-            seq.add_layer(conv_block, 64, CONV_FILTER_5522, lrelu)
-            size16 = seq.last_layer
-            seq.add_layer(inception_layer, 32)
-            seq.add_layer(inception_layer, 64)
-            seq.add_layer(inception_layer, 128)
-            seq.add_layer(tf.reshape, [self.batch_size, -1])
+            layer = LayerModel(input_, name='seq1')
+            layer.add_layer(conv_block, 64, CONV_FILTER_5522, lrelu)
+            size16 = layer.last_layer
+            layer.add_layer(inception_layer, 32)
+            layer.add_layer(inception_layer, 64)
+            layer.add_layer(inception_layer, 128)
+            layer.add_layer(tf.reshape, [self.batch_size, -1])
 
-            seq2 = LayerModel(size16, name='seq2')
-            seq2.add_layer(conv_block, 128, CONV_FILTER_5522, lrelu)
-            size8 = seq2.last_layer
-            seq2.add_layer(inception_layer, 64)
-            seq2.add_layer(inception_layer, 128)
-            seq2.add_layer(inception_layer, 256)
-            seq2.add_layer(tf.reshape, [self.batch_size, -1])
+            layer2 = LayerModel(size16, name='seq2')
+            layer2.add_layer(conv_block, 128, CONV_FILTER_5522, lrelu)
+            size8 = layer2.last_layer
+            layer2.add_layer(inception_layer, 64)
+            layer2.add_layer(inception_layer, 128)
+            layer2.add_layer(inception_layer, 256)
+            layer2.add_layer(tf.reshape, [self.batch_size, -1])
 
-            seq3 = LayerModel(size8, name='seq3')
-            seq3.add_layer(conv_block, 256, CONV_FILTER_5522, lrelu)
-            seq3.add_layer(inception_layer, 128)
-            seq3.add_layer(inception_layer, 256)
-            seq3.add_layer(inception_layer, 512)
-            seq3.add_layer(tf.reshape, [self.batch_size, -1])
+            layer3 = LayerModel(size8, name='seq3')
+            layer3.add_layer(conv_block, 256, CONV_FILTER_5522, lrelu)
+            layer3.add_layer(inception_layer, 128)
+            layer3.add_layer(inception_layer, 256)
+            layer3.add_layer(inception_layer, 512)
+            layer3.add_layer(tf.reshape, [self.batch_size, -1])
 
-            merge = tf.concat([seq.last_layer, seq2.last_layer, seq3.last_layer], axis=1)
+            merge = tf.concat([layer.last_layer, layer2.last_layer, layer3.last_layer], axis=1)
             after_merge = LayerModel(merge, name='after_merge')
             after_merge.add_layer(linear, self.label_size)
 
@@ -138,7 +138,7 @@ class Classifier(AbstractModel):
         sess.run([self.op_inc_global_step])
 
     def load_summary_ops(self):
-        summary_variable(self.loss)
+        summary_loss(self.loss)
 
         self.op_merge_summary = tf.summary.merge_all()
 
