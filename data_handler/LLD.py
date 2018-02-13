@@ -3,6 +3,8 @@ from glob import glob
 from PIL import Image
 from data_handler.AbstractDataset import AbstractDataset
 from dict_keys.dataset_batch_keys import *
+from env_settting import LLD_PATH
+from dict_keys.input_shape_keys import *
 import _pickle as cPickle
 import os
 import numpy as np
@@ -76,3 +78,20 @@ class LLD(AbstractDataset):
             imgs += [im_arr]
 
         return np.array(imgs)
+
+
+class LLDHelper:
+    @staticmethod
+    def next_batch_task(batch):
+        x = batch[0]
+        return x
+
+    @staticmethod
+    def load_dataset(limit=None):
+        lld_data = LLD(batch_after_task=LLDHelper.next_batch_task)
+        lld_data.load(LLD_PATH, limit=limit)
+        input_shapes = {
+            INPUT_SHAPE_KEY_DATA_X: [32, 32, 3],
+        }
+
+        return lld_data, input_shapes

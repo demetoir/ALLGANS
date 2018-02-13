@@ -1,21 +1,21 @@
+from dict_keys.model_metadata_keys import *
+from util.Logger import Logger
+from util.misc_util import import_class_from_module_path
+from shutil import copy
+from time import strftime, localtime
+from env_settting import *
+import tensorflow as tf
 import inspect
 import json
 import os
 import subprocess
 import sys
-from shutil import copy
-from time import strftime, localtime
-
-import tensorflow as tf
 import traceback
-from dict_keys.model_metadata_keys import *
-from env_settting import tensorboard_dir
-from util.Logger import Logger
-from util.misc_util import load_class_from_source_path
 
 META_DATA_FILE_NAME = 'instance.meta'
 INSTANCE_FOLDER = 'instance'
 VISUAL_RESULT_FOLDER = 'visual_results'
+
 
 def log_exception(func):
     """wrapper for catch exception and log
@@ -58,13 +58,13 @@ class InstanceManager:
     manager.train_instance(dataset, epoch, check_point_interval, is_restore=True)
     """
 
-    def __init__(self, env_path):
+    def __init__(self, root_path=ROOT_PATH):
         """ create a 'InstanceManager' at env_path
 
-        :type env_path: str
-        :param env_path: env path for manager
+        :type root_path: str
+        :param root_path: env path for manager
         """
-        self.root_path = env_path
+        self.root_path = root_path
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()
         self.instance = None
@@ -173,7 +173,7 @@ class InstanceManager:
 
         instance_class_name = metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME]
         instance_source_path = metadata[MODEL_METADATA_KEY_INSTANCE_SOURCE_PATH]
-        model = load_class_from_source_path(instance_source_path, instance_class_name)
+        model = import_class_from_module_path(instance_source_path, instance_class_name)
         self.log('instance source code load')
 
         self.instance = model(metadata[MODEL_METADATA_KEY_INSTANCE_PATH])

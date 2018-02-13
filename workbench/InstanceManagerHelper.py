@@ -3,9 +3,9 @@ from InstanceManger import InstanceManager
 
 class InstanceManagerHelper:
     @staticmethod
-    def build_and_train(model=None, input_shapes=None, dataset=None, visualizers=None, env_path=None, epoch_time=50,
+    def build_and_train(model=None, input_shapes=None, dataset=None, visualizers=None, epoch_time=50,
                         check_point_interval=5000):
-        manager = InstanceManager(env_path)
+        manager = InstanceManager()
         metadata_path = manager.build_instance(model)
         manager.load_instance(metadata_path, input_shapes)
         manager.load_visualizer(visualizers)

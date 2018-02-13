@@ -3,6 +3,9 @@ pickle, import module, zip, etc ..."""
 import tarfile
 import zipfile
 import requests
+import os
+from glob import glob
+from importlib._bootstrap_external import SourceFileLoader
 
 
 def dump(path, data):
@@ -20,11 +23,26 @@ def load(path):
     return data
 
 
-def load_class_from_source_path(module_path, class_name):
-    from importlib._bootstrap_external import SourceFileLoader
+def import_class_from_module_path(module_path, class_name):
+    try:
+        module_ = SourceFileLoader('', module_path).load_module()
+        return getattr(module_, class_name)
+    except AttributeError:
+        raise ImportError("%s class not found in %s" % (class_name, module_path))
 
-    module_ = SourceFileLoader('', module_path).load_module()
-    return getattr(module_, class_name)
+
+def module_path_finder(module_path, module_name, recursive=True):
+    path_ = None
+    paths = glob(os.path.join(module_path, '**', '*.py'), recursive=recursive)
+    for path in paths:
+        file_name = os.path.basename(path)
+        if file_name == module_name + '.py':
+            path_ = path
+
+    if path_ is None:
+        raise ModuleNotFoundError("module %s not found" % module_name)
+
+    return path_
 
 
 def imports():
