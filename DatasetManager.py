@@ -1,6 +1,5 @@
 from env_settting import *
 from util.Logger import Logger
-from util.misc_util import *
 from data_handler.CIFAR10 import CIFAR10
 from data_handler.CIFAR10 import CIFAR10Helper
 from data_handler.CIFAR100 import CIFAR100

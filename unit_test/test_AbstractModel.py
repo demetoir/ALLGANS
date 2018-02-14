@@ -7,6 +7,4 @@ class test_AbstractModel:
         pass
 
     def test__00(self):
-        shape = (32, 32, 3)
-        path = ROOT_PATH
-        model = DummyModel(path)
+        DummyModel(ROOT_PATH)

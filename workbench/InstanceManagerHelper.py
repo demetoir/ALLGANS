@@ -16,7 +16,7 @@ class InstanceManagerHelper:
         del manager
 
     @staticmethod
-    def build_models(model_list=None, input_shapes=None, env_setting=None):
+    def build_models(model_list=None, env_setting=None):
         for model in model_list:
             manager = InstanceManager(env_setting)
             manager.build_instance(model)

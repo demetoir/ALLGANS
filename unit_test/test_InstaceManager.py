@@ -26,16 +26,14 @@ class test_InstanceManger:
         manager = InstanceManager(path)
 
         model = DummyModel
-        input_shape = (32, 32, 3)
-        manager.build_instance(model, input_shape)
+        manager.build_instance(model)
 
     def test_02_load_visualizer(self):
         path = ROOT_PATH
         manager = InstanceManager(path)
 
         model = DummyModel
-        input_shape = (32, 32, 3)
-        manager.build_instance(model, input_shape)
+        manager.build_instance(model)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -48,8 +46,7 @@ class test_InstanceManger:
         manager = InstanceManager(path)
 
         model = DummyModel
-        input_shape = (32, 32, 3)
-        manager.build_instance(model, input_shape)
+        manager.build_instance(model)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -66,8 +63,7 @@ class test_InstanceManger:
         manager = InstanceManager(path)
 
         model = DummyModel
-        input_shape = (32, 32, 3)
-        manager.build_instance(model, input_shape)
+        manager.build_instance(model)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -86,8 +82,7 @@ class test_InstanceManger:
 
         model = DummyModel
         input_shape = (32, 32, 3)
-        manager.build_instance(model, input_shape)
-        meta_data_path = manager.metadata_path
+        manager.build_instance(model)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -102,7 +97,7 @@ class test_InstanceManger:
 
         #
         manager = InstanceManager(path)
-        manager.load_instance(meta_data_path, input_shape)
+        manager.load_instance(input_shape)
 
         visualizer_1 = DummyVisualizer_1
         visualizer_2 = DummyVisualizer_2
@@ -116,13 +111,13 @@ class test_InstanceManger:
         manager.train_instance(dataset, epoch_time, check_point_interval)
 
 
-def f():
+if __name__ == '__main__':
     path = ROOT_PATH
     manager = InstanceManager(path)
 
     model = DummyModel
     input_shape = (32, 32, 3)
-    manager.build_instance(model, input_shape)
+    manager.build_instance(model)
 
     visualizers = [(dummy_log, 10), ]
     manager.load_visualizer(visualizers)
@@ -131,9 +126,3 @@ def f():
     epoch_time = 1
     check_point_interval = 500
     manager.train_instance(dataset, epoch_time, check_point_interval)
-
-
-if __name__ == '__main__':
-    f()
-    f()
-    f()

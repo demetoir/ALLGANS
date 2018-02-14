@@ -1,9 +1,10 @@
 from dict_keys.model_metadata_keys import *
+from model.AbstractModel import AbstractModel
 from util.Logger import Logger
 from util.misc_util import import_class_from_module_path
+from env_settting import *
 from shutil import copy
 from time import strftime, localtime
-from env_settting import *
 import tensorflow as tf
 import inspect
 import json
@@ -27,8 +28,7 @@ def log_exception(func):
         except KeyboardInterrupt:
             self = args[0]
             self.log("KeyboardInterrupt detected abort process")
-            print("KeyboardInterrupt detected abort process")
-        except Exception as e:
+        except Exception:
             self = args[0]
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.log("\n", "".join(traceback.format_tb(exc_traceback)))
@@ -104,6 +104,9 @@ class InstanceManager:
 
         :return: built instance's path
         """
+        if not issubclass(model, AbstractModel):
+            raise TypeError("argument model expect subclass of AbstractModel")
+
         # gen instance id
         model_name = "%s_%s_%.1f" % (model.AUTHOR, model.__name__, model.VERSION)
         instance_id = model_name + '_' + strftime("%Y-%m-%d_%H-%M-%S", localtime())
@@ -134,7 +137,6 @@ class InstanceManager:
         except IOError as e:
             print(e)
 
-        # init and dump metadata
         self.log("build_metadata")
         metadata = model.build_metadata()
 
@@ -225,7 +227,6 @@ class InstanceManager:
                 self.log('restore check point')
 
             batch_size = self.instance.batch_size
-            print(dataset)
             iter_per_epoch = int(dataset.data_size / batch_size)
             self.log('total Epoch: %d, total iter: %d, iter per epoch: %d' % (
                 epoch, epoch * iter_per_epoch, iter_per_epoch))

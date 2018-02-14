@@ -1,15 +1,16 @@
 from workbench.InstanceManagerHelper import InstanceManagerHelper
 from DatasetManager import DatasetManager
 
+from visualizer.image_tile import image_tile
+from visualizer.log_GAN_loss import log_GAN_loss
+from visualizer.image_tile_data import image_tile_data
+from ModelLoader import ModelLoader
+
 
 def main():
-    from unit_test.DummyVisualizer import DummyVisualizer_1
-    from unit_test.DummyVisualizer import DummyVisualizer_2
-    from unit_test.DummyModel import DummyModel
-
-    dataset, input_shapes = DatasetManager().load_dataset("MNIST", limit=100)
-    visualizers = [(DummyVisualizer_1, 40), (DummyVisualizer_2, 40), ]
-    model = DummyModel
+    dataset, input_shapes = DatasetManager().load_dataset("fashion-mnist")
+    visualizers = [(image_tile, 20), (log_GAN_loss, 10), (image_tile_data, 20)]
+    model = ModelLoader.load("GAN")
     InstanceManagerHelper.build_and_train(model=model,
                                           input_shapes=input_shapes,
                                           visualizers=visualizers,

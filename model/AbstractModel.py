@@ -1,6 +1,3 @@
-import os
-
-from InstanceManger import INSTANCE_FOLDER
 from util.Logger import Logger
 from dict_keys.model_metadata_keys import *
 import tensorflow as tf

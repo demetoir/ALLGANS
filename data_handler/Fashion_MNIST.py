@@ -68,7 +68,7 @@ class Fashion_MNISTHelper:
 
     @staticmethod
     def load_dataset(limit=None):
-        dataset = Fashion_MNIST(preprocess=fashion_MNISTHelper.preprocess)
+        dataset = Fashion_MNIST(preprocess=Fashion_MNISTHelper.preprocess)
         dataset.load(FASHION_MNIST_PATH, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 1],
