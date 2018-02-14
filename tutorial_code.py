@@ -8,6 +8,7 @@ def main():
     from unit_test.DummyModel import DummyModel
 
     dataset, input_shapes = DatasetManager().load_dataset("MNIST")
+
     visualizers = [(DummyVisualizer_1, 40), (DummyVisualizer_2, 40), ]
     model = DummyModel
     InstanceManagerHelper.build_and_train(model=model,

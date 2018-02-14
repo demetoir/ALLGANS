@@ -8,7 +8,8 @@ class InstanceManagerHelper:
         manager = InstanceManager()
         metadata_path = manager.build_instance(model)
         manager.load_instance(metadata_path, input_shapes)
-        manager.load_visualizer(visualizers)
+        for visualizer, interval in visualizers:
+            manager.load_visualizer(visualizer, interval)
 
         manager.open_tensorboard()
         manager.train_instance(epoch_time, dataset=dataset, check_point_interval=check_point_interval)

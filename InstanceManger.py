@@ -283,28 +283,23 @@ class InstanceManager:
         tf.reset_default_graph()
         self.log('reset default graph')
 
-    def load_visualizer(self, visualizers):
-        """load visualizers for training and sampling result of instance
+    def load_visualizer(self, visualizer, execute_interval):
+        """load visualizer for training and sampling result of instance
 
-        visualizers is list of tuples, each tuple is contain visualizer class and execute iter interval
-        ex)
-        visualizers = [(visualizer1, execute_interval1),
-            [(visualizer2, execute_interval2),
-            [(visualizer3, execute_interval3),]
+        TODO change docstring
+        todo load single visualizer
 
-        :type visualizers: list
-        :param visualizers: list of tuple,
-        :return:
+        :type visualizer: AbstractVisualizer
+        :param visualizer: list of tuple,
+        :type execute_interval: int
+        :param execute_interval: interval to execute visualizer per iteration
         """
         visualizer_path = self.instance.instance_visual_result_folder_path
-        for visualizer, execute_interval in visualizers:
-            if not os.path.exists(visualizer_path):
-                os.mkdir(visualizer_path)
+        if not os.path.exists(visualizer_path):
+            os.mkdir(visualizer_path)
 
-            self.visualizers += [visualizer(visualizer_path, execute_interval=execute_interval)]
-            self.log('visualizer %s loaded' % visualizer.__name__)
-
-        self.log('visualizer fully Load')
+        self.visualizers += [visualizer(visualizer_path, execute_interval=execute_interval)]
+        self.log('visualizer %s loaded' % visualizer.__name__)
 
     def __visualizer_task(self, sess, iter_num=None, dataset=None):
         """execute loaded visualizers

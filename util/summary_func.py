@@ -2,37 +2,80 @@
 import tensorflow as tf
 
 
-def summary_variable(var):
-    scope_str = str(var.name)[:-2]
-    with tf.variable_scope(scope_str, reuse=True):
+def mean_summary(var):
+    """mean scalar summary
+
+    :type var: tensorflow.Variable
+    :param var: variable to add summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
         mean = tf.reduce_mean(var)
         tf.summary.scalar('mean', mean)
-        with tf.variable_scope('stddev', reuse=True):
-            stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
-        tf.summary.scalar('stddev', stddev)
-        tf.summary.scalar('max', tf.reduce_max(var))
-        tf.summary.scalar('min', tf.reduce_min(var))
+
+
+def stddev_summary(var):
+    """stddev scalar summary
+
+    :type var: tensorflow.Variable
+    :param var: variable to add summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
+        mean = tf.reduce_mean(var)
+        stddev = tf.sqrt(tf.reduce_mean(tf.square(var - mean)))
+        tf.summary.scalar("stddev", stddev)
+
+
+def histogram_summary(var):
+    """histogram summary
+
+    :type var: tensorflow.Variable
+    :param var: variable to add summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
         tf.summary.histogram('histogram', var)
 
 
-def summary_variable_mean(var, var_name='variable_mean'):
-    """Attach a lot of summaries to a Tensor (for TensorBoard visualization)."""
+def max_summary(var):
+    """max scalar summary
 
-    mean = tf.reduce_mean(var)
-    tf.summary.scalar(var_name, mean)
-    tf.summary.histogram(var_name, var)
+    :type var: tensorflow.Variable
+    :param var: variable to add summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
+        tf.summary.scalar("max", tf.reduce_max(var))
+
+
+def min_summary(var):
+    """min summary
+
+    :type var: tensorflow.Variable
+    :param var: variable to add summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
+        tf.summary.scalar("min", tf.reduce_min(var))
 
 
 def summary_loss(var):
-    """summary for loss"""
-    scope_str = str(var.name)[:-2]
-    with tf.name_scope(scope_str):
+    """loss summary
+
+    loss's scalar and histogram summary
+
+    :type var: tensorflow.Variable
+    :param var: variable to summary
+    """
+    with tf.name_scope(var.name.split(":")[0]):
         mean = tf.reduce_mean(var)
         tf.summary.scalar('mean', mean)
         tf.summary.histogram('histogram', var)
 
 
-def summary_image(var, max_outputs=0, var_name='image'):
-    tf.summary.image(var_name, var, max_outputs=max_outputs)
+def summary_image(var, max_outputs=0):
+    """image summary
 
-
+    :type var: tensorflow.Variable
+    :type max_outputs: int
+    :param var: variable to summary
+    :param max_outputs: max output to summary image
+    """
+    with tf.name_scope(var.name.split(":")[0]):
+        tf.summary.image("image", var, max_outputs=max_outputs)
