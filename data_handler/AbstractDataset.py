@@ -108,10 +108,10 @@ class AbstractDataset(metaclass=MetaTask):
             download_file = os.path.join(head, self._SOURCE_FILE)
 
             self.log('download %s at %s ' % (self._SOURCE_FILE, download_file))
-            download_data(self._SOURCE_URL, download_file)
+            download_from_url(self._SOURCE_URL, download_file)
 
             self.log("extract %s at %s" % (self._SOURCE_FILE, head))
-            extract_data(download_file, head)
+            extract_file(download_file, head)
 
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset

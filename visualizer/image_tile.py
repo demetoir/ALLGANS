@@ -11,7 +11,7 @@ class image_tile(AbstractVisualizer):
         sample_imgs0 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs1 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
-        sample_imgs = np_img_float_to_uint8(sample_imgs)
+        sample_imgs = np_img_float32_to_uint8(sample_imgs)
 
         img_path = os.path.join(self.visualizer_path, '{}.png'.format(str(iter_num).zfill(5)))
         tile = np_img_to_tile(sample_imgs, column_size=8)

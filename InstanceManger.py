@@ -1,13 +1,12 @@
 from dict_keys.model_metadata_keys import *
 from model.AbstractModel import AbstractModel
 from util.Logger import Logger
-from util.misc_util import import_class_from_module_path
+from util.misc_util import import_class_from_module_path, dump_json, load_json
 from env_settting import *
 from shutil import copy
 from time import strftime, localtime
 import tensorflow as tf
 import inspect
-import json
 import os
 import subprocess
 import sys
@@ -18,8 +17,8 @@ INSTANCE_FOLDER = 'instance'
 VISUAL_RESULT_FOLDER = 'visual_results'
 
 
-def log_exception(func):
-    """wrapper for catch exception and log
+def _log_exception(func):
+    """decorator for catch exception and log
     """
 
     def wrapper(*args, **kwargs):
@@ -150,7 +149,7 @@ class InstanceManager:
         metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME] = model.__name__
         metadata[MODEL_METADATA_KEY_README] = self.gen_readme()
         metadata[MODEL_METADATA_KEY_METADATA_PATH] = os.path.join(instance_path, 'instance.meta')
-        self.dump_json(metadata, metadata[MODEL_METADATA_KEY_METADATA_PATH])
+        dump_json(metadata, metadata[MODEL_METADATA_KEY_METADATA_PATH])
 
         self.log('build complete')
         return instance_path
@@ -170,7 +169,7 @@ class InstanceManager:
         :param instance_path: instance path to loading
         :param input_shapes: input shapes for tensorflow placeholder
         """
-        metadata = self.load_json(os.path.join(instance_path, 'instance.meta'))
+        metadata = load_json(os.path.join(instance_path, 'instance.meta'))
         self.log('load metadata')
 
         instance_class_name = metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME]
@@ -185,7 +184,7 @@ class InstanceManager:
         instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
         self.log('load instance id : %s' % instance_id)
 
-    @log_exception
+    @_log_exception
     def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False):
         """training loaded instance with dataset for epoch and loaded visualizers will execute
 
@@ -249,7 +248,7 @@ class InstanceManager:
         tf.reset_default_graph()
         self.log('reset default graph')
 
-    @log_exception
+    @_log_exception
     def sampling_instance(self, dataset=None, is_restore=False):
         """sampling result from trained instance by running loaded visualizers
 
@@ -380,17 +379,6 @@ class InstanceManager:
     def close_tensorboard(self):
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
-
-    @staticmethod
-    def dump_json(obj, path):
-        with open(path, 'w') as f:
-            json.dump(obj, f)
-
-    @staticmethod
-    def load_json(path):
-        with open(path, 'r') as f:
-            metadata = json.load(f)
-        return metadata
 
     @staticmethod
     def gen_readme():

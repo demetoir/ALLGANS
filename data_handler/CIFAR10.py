@@ -1,6 +1,6 @@
 from data_handler.AbstractDataset import AbstractDataset
 from env_settting import CIFAR10_PATH
-from util.numpy_utils import np_img_NCWH_to_NHWC, np_index_to_onehot
+from util.numpy_utils import np_imgs_NCWH_to_NHWC, np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 from glob import glob
@@ -76,12 +76,12 @@ class CIFAR10Helper:
         # convert image format from NCWH to NHWC
         data = dataset.data[BATCH_KEY_TRAIN_X]
         data = np.reshape(data, [-1, 3, 32, 32])
-        data = np_img_NCWH_to_NHWC(data)
+        data = np_imgs_NCWH_to_NHWC(data)
         dataset.data[BATCH_KEY_TRAIN_X] = data
 
         data = dataset.data[BATCH_KEY_TEST_X]
         data = np.reshape(data, [-1, 3, 32, 32])
-        data = np_img_NCWH_to_NHWC(data)
+        data = np_imgs_NCWH_to_NHWC(data)
         dataset.data[BATCH_KEY_TEST_X] = data
 
         # make label index to onehot

@@ -1,6 +1,6 @@
 from data_handler.LLD import LLD
 from env_settting import *
-from util.numpy_utils import np_img_rgb_to_gray, np_img_gray_to_rgb, np_img_to_PIL_img, np_img_from_file, \
+from util.numpy_utils import np_img_rgb_to_gray, np_img_gray_to_rgb, np_img_to_PIL_img, np_img_load_file, \
     np_img_to_tile
 import numpy as np
 import cv2
@@ -21,7 +21,7 @@ def edge_tile():
     img_list = []
     for img_number in range(1, 50 + 1):
         img_path = os.path.join(ROOT_PATH, 'dataset', 'LLD_decomposed', '0000', str(img_number).zfill(3) + '.jpg')
-        np_img_rgb = np_img_from_file(img_path)
+        np_img_rgb = np_img_load_file(img_path)
 
         img = cv2.imread(img_path, 0)
         edges0 = np_img_gray_to_rgb(cv2.Canny(img, 100, 200))

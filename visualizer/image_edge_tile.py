@@ -21,7 +21,7 @@ class image_edge_tile(AbstractVisualizer):
         sample_imgs0 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs1 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
-        sample_imgs = np_img_float_to_uint8(sample_imgs)
+        sample_imgs = np_img_float32_to_uint8(sample_imgs)
 
         threshold_list = []
         for i in range(200, 250, 10):
