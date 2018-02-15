@@ -1,6 +1,5 @@
 from util.Logger import Logger
-from glob import glob
-from util.util import *
+from util.misc_util import *
 import traceback
 import sys
 import numpy as np
@@ -21,13 +20,13 @@ def check_attr_is_None(attr):
 
 
 class MetaTask(type):
-    """
+    """Metaclass for hook inherited class's function
     metaclass ref from 'https://code.i-harness.com/ko/q/11fc307'
-
     """
 
     def __init__(cls, name, bases, clsdict):
         # add before, after task for AbstractDataset.load
+        new_load = None
         if 'load' in clsdict:
             def new_load(self, path, limit):
                 try:
@@ -39,43 +38,28 @@ class MetaTask(type):
                     clsdict['load'](self, path, limit)
 
                     self.after_load(limit)
-                except Exception as e:
+                except Exception:
                     exc_type, exc_value, exc_traceback = sys.exc_info()
                     err_msg = traceback.format_exception(exc_type, exc_value, exc_traceback)
                     self.log(*err_msg)
 
         setattr(cls, 'load', new_load)
 
-        # check subclass init value
-        # if '__init__' in clsdict:
-        #     def new__init__(self, *args, **kwargs):
-        #         clsdict['__init__'](self, *args, **kwargs)
-        #             def is_None(name, value):
-        #                 if value is None:
-        #                     raise ValueError("%s expect not None" % name)
-        #         is_None('self._SOURCE_URL', self._SOURCE_URL)
-        #         is_None('self._SOURCE_FILE', self._SOURCE_FILE)
-        #         is_None('self._data_files', self._data_files)
-        #         is_None('self.batch_keys', self.batch_keys)
-        #
-        # setattr(cls, '__init__', new__init__)
-
 
 class AbstractDataset(metaclass=MetaTask):
     def __init__(self, preprocess=None, batch_after_task=None, before_load_task=None):
-        """
-        init dataset attrs
+        """create dataset handler class
 
-        *** bellow attrs must initiate other value ***
+        ***bellow attrs must initiate other value after calling super()***
         self._SOURCE_URL: (str) url for download dataset
         self._SOURCE_FILE: (str) file name of zipped dataset
-        self._data_files = (str) files name in dataset
-        self.batch_keys = (str) feature label of dataset,
+        self._data_files: (str) files name in dataset
+        self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
 
         :param preprocess: injected function for preprocess dataset
-        :param batch_after_task: injected function for after iter mini_batch
-        :param before_load_task: hookable function for AbstractDataset.before_load
+        :param batch_after_task: function for inject into after iter mini_batch task
+        :param before_load_task: function for injecting into AbstractDataset.before_load
         """
         self._SOURCE_URL = None
         self._SOURCE_FILE = None
@@ -102,11 +86,10 @@ class AbstractDataset(metaclass=MetaTask):
         return self.__class__.__name__
 
     def before_load(self, path):
-        """
-        check dataset is valid and if dataset is not valid download dataset
+        """check dataset is valid and if dataset is not valid download dataset
 
+        :type path: str
         :param path: dataset path
-        :return:
         """
         try:
             os.makedirs(path)
@@ -125,21 +108,20 @@ class AbstractDataset(metaclass=MetaTask):
             download_file = os.path.join(head, self._SOURCE_FILE)
 
             self.log('download %s at %s ' % (self._SOURCE_FILE, download_file))
-            download_data(self._SOURCE_URL, download_file)
+            download_from_url(self._SOURCE_URL, download_file)
 
             self.log("extract %s at %s" % (self._SOURCE_FILE, head))
-            extract_data(download_file, head)
+            extract_file(download_file, head)
 
     def after_load(self, limit=None):
-        """
-        after task for dataset and do execute preprocess for dataset
+        """after task for dataset and do execute preprocess for dataset
 
         init cursor for each batch_key
         limit dataset size
         execute preprocess
 
+        :type limit: int
         :param limit: limit size of dataset
-        :return:
         """
         for key in self.batch_keys:
             self.cursor[key] = 0
@@ -157,6 +139,7 @@ class AbstractDataset(metaclass=MetaTask):
             self.log('%s preprocess end' % self.__str__())
 
     def load(self, path, limit=None):
+        """"""
         pass
 
     def save(self):
@@ -199,17 +182,7 @@ class AbstractDataset(metaclass=MetaTask):
         return batch
 
     def next_batch(self, batch_size, batch_keys=None, lookup=False):
-        """
-        return iter mini batch
-
-        :param batch_size: size of mini batch
-        :param batch_keys: (iterable type) select keys,
-            if  batch_keys length is 1 than just return mini batch
-            else return list of mini batch
-        :param lookup: lookup == True cursor will not update
-        :return: (numpy array type) list of mini batch, order is same with batch_keys
-
-
+        """return iter mini batch
 
         ex)
         dataset.next_batch(3, ["train_x", "train_label"]) =
@@ -221,6 +194,12 @@ class AbstractDataset(metaclass=MetaTask):
         dataset.next_batch(3, ["train_x", "train_label"]) =
             [[train_x4, train_x5, train_x6], [train_label4, train_label5, train_label6]]
 
+        :param batch_size: size of mini batch
+        :param batch_keys: (iterable type) select keys,
+            if  batch_keys length is 1 than just return mini batch
+            else return list of mini batch
+        :param lookup: lookup == True cursor will not update
+        :return: (numpy array type) list of mini batch, order is same with batch_keys
         """
         if batch_keys is None:
             batch_keys = self.batch_keys

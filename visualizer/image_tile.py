@@ -1,16 +1,17 @@
-import os
-
+from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
-from util.util import *
+import os
 import numpy as np
 
 
 class image_tile(AbstractVisualizer):
+    """visualize a tile image from GAN's result images"""
+
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         sample_imgs0 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs1 = sess.run(model.G, feed_dict={model.z: model.get_noise()})
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
-        sample_imgs = np_img_uint8_to_float32(sample_imgs)
+        sample_imgs = np_img_float32_to_uint8(sample_imgs)
 
         img_path = os.path.join(self.visualizer_path, '{}.png'.format(str(iter_num).zfill(5)))
         tile = np_img_to_tile(sample_imgs, column_size=8)

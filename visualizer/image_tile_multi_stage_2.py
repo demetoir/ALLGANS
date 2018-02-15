@@ -1,5 +1,5 @@
 from visualizer.AbstractVisualizer import AbstractVisualizer
-from util.util import *
+from util.numpy_utils import np_img_to_tile, np_img_to_PIL_img
 import os
 import numpy as np
 

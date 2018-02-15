@@ -1,35 +1,18 @@
-from data_handler.LLD import LLD
-from env_settting import ROOT_PATH
-from model.GAN import GAN
-from InstanceManger import InstanceManager
-from visualizer.AbstractPrintLog import AbstractPrintLog
-
-import os
+from workbench.InstanceManagerHelper import InstanceManagerHelper
+from DatasetManager import DatasetManager
 
 
-class dummy_log(AbstractPrintLog):
-    def task(self, sess=None, iter_num=None, model=None, dataset=None):
-        super().task(sess, iter_num, model, dataset)
-        self.log('this is dummy log')
+def main():
+    from unit_test.DummyVisualizer import DummyVisualizer_1
+    from unit_test.DummyVisualizer import DummyVisualizer_2
+    from unit_test.DummyModel import DummyModel
 
+    dataset, input_shapes = DatasetManager().load_dataset("MNIST")
 
-if __name__ == '__main__':
-    root_path = ROOT_PATH
-    LLD_PATH = os.path.join(root_path, 'dataset', 'LLD')
-    lld_data = LLD()
-    lld_data.load(LLD_PATH)
-
-    manager = InstanceManager(ROOT_PATH)
-
-    input_shape = [32, 32, 3]
-    model = GAN
-    manager.gen_instance(model, input_shape)
-    metadata_path = manager.metadata_path
-
-    iter_cycle = 10
-    visualizers = [(dummy_log, iter_cycle)]
-    manager.load_visualizer(visualizers)
-
-    epoch_time = 10
-    check_point_interval_per_iter = 5000
-    manager.train_model(lld_data, epoch_time, check_point_interval_per_iter)
+    visualizers = [(DummyVisualizer_1, 40), (DummyVisualizer_2, 40), ]
+    model = DummyModel
+    InstanceManagerHelper.build_and_train(model=model,
+                                          input_shapes=input_shapes,
+                                          visualizers=visualizers,
+                                          dataset=dataset,
+                                          epoch_time=2)

@@ -1,6 +1,6 @@
 from model.AbstractModel import AbstractModel
-from util.SequenceModel import SequenceModel
-from util.ops import *
+from util.LayerModel import LayerModel
+from util.tensor_ops import *
 from util.summary_func import *
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
@@ -9,27 +9,27 @@ from dict_keys.input_shape_keys import *
 def inception_layer(input_, channel_size, name='inception_layer'):
     with tf.variable_scope(name):
         with tf.variable_scope('out1'):
-            seq = SequenceModel(input_)
-            seq.add_layer(avg_pooling, filter_2211)
-            out1 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(avg_pooling, CONV_FILTER_2211)
+            out1 = layer.last_layer
 
         with tf.variable_scope('out2'):
-            seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            out2 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            out2 = layer.last_layer
 
         with tf.variable_scope('out3'):
-            seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, relu)
-            out3 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, relu)
+            out3 = layer.last_layer
 
         with tf.variable_scope('out4'):
-            seq = SequenceModel(input_)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            seq.add_layer(conv_block, channel_size, filter_5511, lrelu)
-            out4 = seq.last_layer
+            layer = LayerModel(input_)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
+            out4 = layer.last_layer
 
         out = tf.concat([out1, out2 + out3 + out4], 3)
 
@@ -43,13 +43,13 @@ class Classifier(AbstractModel):
     def __str__(self):
         return "Classifier"
 
-    def hyper_parameter(self):
+    def load_hyper_parameter(self):
         self.batch_size = 64
         self.learning_rate = 0.0002
         self.beta1 = 0.5
         self.disc_iters = 1
 
-    def input_shapes(self, input_shapes):
+    def load_input_shapes(self, input_shapes):
         shape_data_x = input_shapes[INPUT_SHAPE_KEY_DATA_X]
         if len(shape_data_x) == 3:
             self.shape_data_x = shape_data_x
@@ -71,31 +71,31 @@ class Classifier(AbstractModel):
 
     def CNN(self, input_):
         with tf.variable_scope('classifier'):
-            seq = SequenceModel(input_, name='seq1')
-            seq.add_layer(conv_block, 64, filter_5522, lrelu)
-            size16 = seq.last_layer
-            seq.add_layer(inception_layer, 32)
-            seq.add_layer(inception_layer, 64)
-            seq.add_layer(inception_layer, 128)
-            seq.add_layer(tf.reshape, [self.batch_size, -1])
+            layer = LayerModel(input_, name='seq1')
+            layer.add_layer(conv_block, 64, CONV_FILTER_5522, lrelu)
+            size16 = layer.last_layer
+            layer.add_layer(inception_layer, 32)
+            layer.add_layer(inception_layer, 64)
+            layer.add_layer(inception_layer, 128)
+            layer.add_layer(tf.reshape, [self.batch_size, -1])
 
-            seq2 = SequenceModel(size16, name='seq2')
-            seq2.add_layer(conv_block, 128, filter_5522, lrelu)
-            size8 = seq2.last_layer
-            seq2.add_layer(inception_layer, 64)
-            seq2.add_layer(inception_layer, 128)
-            seq2.add_layer(inception_layer, 256)
-            seq2.add_layer(tf.reshape, [self.batch_size, -1])
+            layer2 = LayerModel(size16, name='seq2')
+            layer2.add_layer(conv_block, 128, CONV_FILTER_5522, lrelu)
+            size8 = layer2.last_layer
+            layer2.add_layer(inception_layer, 64)
+            layer2.add_layer(inception_layer, 128)
+            layer2.add_layer(inception_layer, 256)
+            layer2.add_layer(tf.reshape, [self.batch_size, -1])
 
-            seq3 = SequenceModel(size8, name='seq3')
-            seq3.add_layer(conv_block, 256, filter_5522, lrelu)
-            seq3.add_layer(inception_layer, 128)
-            seq3.add_layer(inception_layer, 256)
-            seq3.add_layer(inception_layer, 512)
-            seq3.add_layer(tf.reshape, [self.batch_size, -1])
+            layer3 = LayerModel(size8, name='seq3')
+            layer3.add_layer(conv_block, 256, CONV_FILTER_5522, lrelu)
+            layer3.add_layer(inception_layer, 128)
+            layer3.add_layer(inception_layer, 256)
+            layer3.add_layer(inception_layer, 512)
+            layer3.add_layer(tf.reshape, [self.batch_size, -1])
 
-            merge = tf.concat([seq.last_layer, seq2.last_layer, seq3.last_layer], axis=1)
-            after_merge = SequenceModel(merge, name='after_merge')
+            merge = tf.concat([layer.last_layer, layer2.last_layer, layer3.last_layer], axis=1)
+            after_merge = LayerModel(merge, name='after_merge')
             after_merge.add_layer(linear, self.label_size)
 
             logit = after_merge.last_layer
@@ -103,7 +103,7 @@ class Classifier(AbstractModel):
 
         return logit, h
 
-    def network(self):
+    def load_main_tensor_graph(self):
         self.X = tf.placeholder(tf.float32, [self.batch_size] + self.shape_data_x, name='X')
         self.label = tf.placeholder(tf.float32, [self.batch_size] + self.label_shape, name='label')
 
@@ -114,12 +114,12 @@ class Classifier(AbstractModel):
         self.batch_acc = tf.reduce_mean(tf.cast(tf.equal(self.predict_index, self.label_index), tf.float64),
                                         name="batch_acc")
 
-    def loss(self):
+    def load_loss_function(self):
         with tf.variable_scope('loss'):
             self.loss = tf.nn.softmax_cross_entropy_with_logits(labels=self.label, logits=self.logit)
             self.loss_mean = tf.reduce_mean(self.loss)
 
-    def train_ops(self):
+    def load_train_ops(self):
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
                                       scope='classifier')
 
@@ -137,8 +137,8 @@ class Classifier(AbstractModel):
 
         sess.run([self.op_inc_global_step])
 
-    def summary_op(self):
-        summary_variable(self.loss)
+    def load_summary_ops(self):
+        summary_loss(self.loss)
 
         self.op_merge_summary = tf.summary.merge_all()
 

@@ -1,8 +1,7 @@
-import os
-
+from util.numpy_utils import np_img_to_PIL_img, np_img_to_tile
 from visualizer.AbstractVisualizer import AbstractVisualizer
-from util.util import *
 import numpy as np
+import os
 
 
 class image_tile_multi_stage_3(AbstractVisualizer):

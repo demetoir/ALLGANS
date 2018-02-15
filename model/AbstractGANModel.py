@@ -6,10 +6,10 @@ class AbstractGANModel(AbstractModel):
     VERSION = 1.0
     AUTHOR = 'demetoir'
 
-    def __init__(self, metadata, input_shapes):
-        super().__init__(metadata, input_shapes)
+    def __init__(self, logger_path):
+        super().__init__(logger_path)
 
-    def input_shapes(self, input_shapes):
+    def load_input_shapes(self, input_shapes):
         shape_data_x = input_shapes[INPUT_SHAPE_KEY_DATA_X]
         if len(shape_data_x) == 3:
             self.shape_data_x = shape_data_x
@@ -26,16 +26,16 @@ class AbstractGANModel(AbstractModel):
             self.input_h = H
             self.input_c = 1
 
-    def hyper_parameter(self):
+    def load_hyper_parameter(self):
         raise NotImplementedError
 
-    def network(self):
+    def load_main_tensor_graph(self):
         raise NotImplementedError
 
-    def loss(self):
+    def load_loss_function(self):
         raise NotImplementedError
 
-    def train_ops(self):
+    def load_train_ops(self):
         raise NotImplementedError
 
     def train_model(self, sess=None, iter_num=None, dataset=None):
@@ -44,5 +44,5 @@ class AbstractGANModel(AbstractModel):
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
         raise NotImplementedError
 
-    def summary_op(self):
+    def load_summary_ops(self):
         raise NotImplementedError

@@ -1,30 +1,28 @@
+"""operation util for tensorflow"""
 import tensorflow as tf
 
-filter_1111 = (1, 1, 1, 1)
-
-filter_2211 = (2, 2, 1, 1)
-filter_2222 = (2, 2, 2, 2)
-
-filter_3311 = (3, 3, 1, 1)
-filter_3322 = (3, 3, 2, 2)
-
-filter_4411 = (4, 4, 1, 1)
-filter_4422 = (4, 4, 2, 2)
-
-filter_5511 = (5, 5, 1, 1)
-filter_5522 = (5, 5, 2, 2)
-filter_5533 = (5, 5, 3, 3)
-
-filter_6611 = (6, 6, 1, 1)
-filter_6622 = (6, 6, 2, 2)
-
-filter_7711 = (7, 7, 1, 1)
-filter_7722 = (7, 7, 2, 2)
-
-filter_9911 = (9, 9, 1, 1)
-filter_9922 = (9, 9, 2, 2)
+"""convolution filter option
+(kernel height, kernel width, stride height, stride width)
+"""
+CONV_FILTER_1111 = (1, 1, 1, 1)
+CONV_FILTER_2211 = (2, 2, 1, 1)
+CONV_FILTER_2222 = (2, 2, 2, 2)
+CONV_FILTER_3311 = (3, 3, 1, 1)
+CONV_FILTER_3322 = (3, 3, 2, 2)
+CONV_FILTER_4411 = (4, 4, 1, 1)
+CONV_FILTER_4422 = (4, 4, 2, 2)
+CONV_FILTER_5511 = (5, 5, 1, 1)
+CONV_FILTER_5522 = (5, 5, 2, 2)
+CONV_FILTER_5533 = (5, 5, 3, 3)
+CONV_FILTER_6611 = (6, 6, 1, 1)
+CONV_FILTER_6622 = (6, 6, 2, 2)
+CONV_FILTER_7711 = (7, 7, 1, 1)
+CONV_FILTER_7722 = (7, 7, 2, 2)
+CONV_FILTER_9911 = (9, 9, 1, 1)
+CONV_FILTER_9922 = (9, 9, 2, 2)
 
 
+# normalization
 def bn(x, is_training=True, name='bn'):
     return tf.contrib.layers.batch_norm(x,
                                         decay=0.9,
@@ -98,7 +96,7 @@ def conv2d(input_, output_channel, filter_, stddev=0.02, name="conv2d"):
 
 
 def conv2d_one_by_one(input_, output_channel, name='conv2d_one_by_one'):
-    out = conv2d(input_, output_channel, filter_1111, name=name)
+    out = conv2d(input_, output_channel, CONV_FILTER_1111, name=name)
     return out
 
 

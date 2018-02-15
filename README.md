@@ -116,7 +116,7 @@ GANs **trained outline of all original dataset**(fashion-mnist, CIFAR10, LLD), b
 
 1. `python ./setup.py install` and follow console (If you already installed dependencies, follow step 2.)
 2. Run bench code `python ./main.py`
-3. If you want to run another model, modify `workbench/bench_code.py`.
+3. If you want to run another instance, modify `workbench/bench_code.py`.
 
 ## Folder structure
 

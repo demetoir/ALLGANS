@@ -1,3 +1,4 @@
+"""key for dataset's batch dict"""
 BATCH_KEY_TRAIN_X = "TRAIN_X"
 BATCH_KEY_TRAIN_LABEL = 'TRAIN_LABEL'
 BATCH_KEY_TEST_X = 'TEST_X'
