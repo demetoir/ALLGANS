@@ -185,7 +185,7 @@ class InstanceManager:
         self.log('load instance id : %s' % instance_id)
 
     @_log_exception
-    def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False):
+    def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False, with_tensorboard=True):
         """training loaded instance with dataset for epoch and loaded visualizers will execute
 
         * if you want to use visualizer call load_visualizer function first
@@ -206,7 +206,12 @@ class InstanceManager:
         :param dataset: dataset for train
         :param check_point_interval: interval for check point to save train tensor variables
         :param is_restore: option for restoring from check point
+        :param with_tensorboard: option for open child process for tensorboard to monitor summary
         """
+
+        if with_tensorboard:
+            self.open_tensorboard()
+
         saver = tf.train.Saver()
         save_path = os.path.join(self.instance.instance_path, 'check_point')
         check_point_path = os.path.join(save_path, 'instance.ckpt')
@@ -247,6 +252,9 @@ class InstanceManager:
 
         tf.reset_default_graph()
         self.log('reset default graph')
+
+        if with_tensorboard:
+            self.close_tensorboard()
 
     @_log_exception
     def sampling_instance(self, dataset=None, is_restore=False):
