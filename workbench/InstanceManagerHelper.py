@@ -11,34 +11,14 @@ class InstanceManagerHelper:
         for visualizer, interval in visualizers:
             manager.load_visualizer(visualizer, interval)
 
-        manager.open_tensorboard()
         manager.train_instance(epoch_time, dataset=dataset, check_point_interval=check_point_interval)
-        manager.close_tensorboard()
         del manager
 
     @staticmethod
-    def build_models(model_list=None, env_setting=None):
+    def build_test_model(model_list=None, env_setting=None):
         for model in model_list:
             manager = InstanceManager(env_setting)
             manager.build_instance(model)
-            del manager
-
-    @staticmethod
-    def load_and_train(input_shapes=None, visualizers=None, metadata_path=None, env_setting=None, dataset=None,
-                       epoch_time=50, check_point_interval_per_iter=5000):
-        manager = None
-        try:
-            manager = InstanceManager(env_setting)
-            manager.load_instance(instance_path=metadata_path, input_shapes=input_shapes)
-            manager.load_visualizer(visualizers)
-
-            manager.open_tensorboard()
-
-            manager.train_instance(dataset, epoch_time, check_point_interval_per_iter, is_restore=True)
-        except Exception as e:
-            print(e)
-        finally:
-            manager.close_tensorboard()
             del manager
 
     @staticmethod
