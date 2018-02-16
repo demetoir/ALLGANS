@@ -1,6 +1,6 @@
 from __future__ import division
 from tensorflow.examples.tutorials.mnist import input_data
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
 from env_settting import MNIST_PATH
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
@@ -47,7 +47,7 @@ class MNIST(AbstractDataset):
         raise NotImplementedError
 
 
-class MNISTHelper:
+class MNISTHelper(AbstractDatasetHelper):
     @staticmethod
     def preprocess(dataset):
         # original MNIST image size is 28*28 but need to resize 32*32

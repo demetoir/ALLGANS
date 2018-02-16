@@ -12,6 +12,9 @@ from data_handler.MNIST import MNIST
 from data_handler.MNIST import MNISTHelper
 
 
+"""auto """
+mnist = "MNIST"
+
 class DatasetManager:
     """
     Todo

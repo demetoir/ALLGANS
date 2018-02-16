@@ -31,7 +31,7 @@ class MetaTask(type):
             def new_load(self, path, limit):
                 try:
                     if self.before_load_task is None:
-                        self.before_load(path)
+                        self.if_need_download(path)
                     else:
                         self.before_load_task()
 
@@ -46,7 +46,12 @@ class MetaTask(type):
         setattr(cls, 'load', new_load)
 
 
+# todo may be dataset path in env_setting will be better, if automatically assign path as class name
 class AbstractDataset(metaclass=MetaTask):
+    """
+    TODO
+    """
+
     def __init__(self, preprocess=None, batch_after_task=None, before_load_task=None):
         """create dataset handler class
 
@@ -85,7 +90,7 @@ class AbstractDataset(metaclass=MetaTask):
     def __repr__(self):
         return self.__class__.__name__
 
-    def before_load(self, path):
+    def if_need_download(self, path):
         """check dataset is valid and if dataset is not valid download dataset
 
         :type path: str
@@ -139,7 +144,12 @@ class AbstractDataset(metaclass=MetaTask):
             self.log('%s preprocess end' % self.__str__())
 
     def load(self, path, limit=None):
-        """"""
+        """
+        TODO
+        :param path:
+        :param limit:
+        :return:
+        """
         pass
 
     def save(self):
@@ -215,3 +225,31 @@ class AbstractDataset(metaclass=MetaTask):
             batches = batches[0]
 
         return batches
+
+
+class AbstractDatasetHelper:
+    @staticmethod
+    def preprocess(dataset):
+        """preprocess for loaded data
+
+        :param dataset: target dataset
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def next_batch_task(batch):
+        """pre process for every iteration for mini batch
+
+        :param batch: mini batch
+        :return: data...
+        """
+        raise NotImplementedError
+
+    @staticmethod
+    def load_dataset(limit=None):
+        """load dataset and  return
+
+        :param limit:
+        :return:
+        """
+        raise NotImplementedError

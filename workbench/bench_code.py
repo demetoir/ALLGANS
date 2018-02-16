@@ -14,7 +14,7 @@ def main():
     # name = "GANd"
     # class_ = import_class_from_module_path(path, name)
 
-    dataset, input_shapes = DatasetManager().load_dataset("CIFAR10")
+    dataset, input_shapes = DatasetManager().load_dataset("MNIST")
     visualizers = [(image_tile, 20), (log_GAN_loss, 10), (image_tile_data, 20)]
     model = ModelLoader.load("GAN")
     InstanceManagerHelper.build_and_train(model=model,

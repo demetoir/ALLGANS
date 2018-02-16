@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 import traceback
+import multiprocessing
 
 META_DATA_FILE_NAME = 'instance.meta'
 INSTANCE_FOLDER = 'instance'
@@ -212,28 +213,28 @@ class InstanceManager:
         if with_tensorboard:
             self.open_tensorboard()
 
-        saver = tf.train.Saver()
-        save_path = os.path.join(self.instance.instance_path, 'check_point')
-        check_point_path = os.path.join(save_path, 'instance.ckpt')
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-            self.log('make save dir')
-
         with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            self.log('init global variables')
+            saver = tf.train.Saver()
+            save_path = os.path.join(self.instance.instance_path, 'check_point')
+            check_point_path = os.path.join(save_path, 'instance.ckpt')
+            if not os.path.exists(save_path):
+                os.mkdir(save_path)
+                self.log('make save dir')
 
-            summary_writer = tf.summary.FileWriter(self.instance.instance_summary_folder_path, sess.graph)
+            self.log('init global variables')
+            sess.run(tf.global_variables_initializer())
+
             self.log('init summary_writer')
+            summary_writer = tf.summary.FileWriter(self.instance.instance_summary_folder_path, sess.graph)
 
             if is_restore:
-                saver.restore(sess, check_point_path)
                 self.log('restore check point')
+                saver.restore(sess, check_point_path)
 
             batch_size = self.instance.batch_size
             iter_per_epoch = int(dataset.data_size / batch_size)
-            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d' % (
-                epoch, epoch * iter_per_epoch, iter_per_epoch))
+            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d'
+                     % (epoch, epoch * iter_per_epoch, iter_per_epoch))
 
             iter_num, loss_val_D, loss_val_G = 0, 0, 0
             for epoch_ in range(epoch):
