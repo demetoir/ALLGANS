@@ -17,19 +17,18 @@ class LLD(AbstractDataset):
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [LLD_CLEAN]
-        self._SOURCE_URL = "https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip"
-        self._SOURCE_FILE = "LLD_favicons_clean.zip"
-        self._data_files = [
+        self.batch_keys = [
+            LLD_CLEAN,
+        ]
+        self.DOWNLOAD_URL = "https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip"
+        self.DOWNLOAD_FILE_NAME = "LLD_favicons_clean.zip"
+        self.extracted_data_files = [
             "LLD_favicon_data_0.pkl",
             "LLD_favicon_data_1.pkl",
             "LLD_favicon_data_2.pkl",
             "LLD_favicon_data_3.pkl",
             "LLD_favicon_data_4.pkl"
         ]
-
-    def __repr__(self):
-        return 'Large Label Data set'
 
     def load(self, path, limit=None):
         files = glob(os.path.join(path, self.PATTERN))

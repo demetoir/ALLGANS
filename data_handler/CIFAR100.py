@@ -26,9 +26,9 @@ class CIFAR100(AbstractDataset):
             BATCH_KEY_TEST_COARSE_LABELS,
             BATCH_KEY_TEST_FINE_LABELS
         ]
-        self._SOURCE_URL = "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
-        self._SOURCE_FILE = "cifar-100-python.tar.gz"
-        self._data_files = [
+        self.DOWNLOAD_URL = "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
+        self.DOWNLOAD_FILE_NAME = "cifar-100-python.tar.gz"
+        self.extracted_data_files = [
             "meta",
             "test",
             "train",

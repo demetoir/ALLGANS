@@ -56,9 +56,9 @@ class AbstractDataset(metaclass=MetaTask):
         """create dataset handler class
 
         ***bellow attrs must initiate other value after calling super()***
-        self._SOURCE_URL: (str) url for download dataset
-        self._SOURCE_FILE: (str) file name of zipped dataset
-        self._data_files: (str) files name in dataset
+        self.DOWNLOAD_URL: (str) url for download dataset
+        self.DOWNLOAD_FILE_NAME: (str) file name of zipped dataset
+        self.extracted_data_files: (list) list of extracted files name in dataset
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
 
@@ -66,9 +66,9 @@ class AbstractDataset(metaclass=MetaTask):
         :param batch_after_task: function for inject into after iter mini_batch task
         :param before_load_task: function for injecting into AbstractDataset.before_load
         """
-        self._SOURCE_URL = None
-        self._SOURCE_FILE = None
-        self._data_files = None
+        self.DOWNLOAD_URL = None
+        self.DOWNLOAD_FILE_NAME = None
+        self.extracted_data_files = None
         self.batch_keys = None
         self.logger = Logger(self.__class__.__name__, stdout_only=True)
         self.log = self.logger.get_log()
@@ -104,18 +104,18 @@ class AbstractDataset(metaclass=MetaTask):
         is_Invalid = False
         files = glob(os.path.join(path, '*'))
         names = list(map(lambda file: os.path.split(file)[1], files))
-        for data_file in self._data_files:
+        for data_file in self.extracted_data_files:
             if data_file not in names:
                 is_Invalid = True
 
         if is_Invalid:
             head, _ = os.path.split(path)
-            download_file = os.path.join(head, self._SOURCE_FILE)
+            download_file = os.path.join(head, self.DOWNLOAD_FILE_NAME)
 
-            self.log('download %s at %s ' % (self._SOURCE_FILE, download_file))
-            download_from_url(self._SOURCE_URL, download_file)
+            self.log('download %s at %s ' % (self.DOWNLOAD_FILE_NAME, download_file))
+            download_from_url(self.DOWNLOAD_URL, download_file)
 
-            self.log("extract %s at %s" % (self._SOURCE_FILE, head))
+            self.log("extract %s at %s" % (self.DOWNLOAD_FILE_NAME, head))
             extract_file(download_file, head)
 
     def after_load(self, limit=None):
@@ -143,6 +143,7 @@ class AbstractDataset(metaclass=MetaTask):
             self.preprocess(self)
             self.log('%s preprocess end' % self.__str__())
 
+    # todo may be arg path default value is None and if None just feed default dataset path
     def load(self, path, limit=None):
         """
         TODO
@@ -234,22 +235,28 @@ class AbstractDatasetHelper:
 
         :param dataset: target dataset
         """
-        raise NotImplementedError
+        pass
 
     @staticmethod
     def next_batch_task(batch):
         """pre process for every iteration for mini batch
 
+        * must return some mini batch
+
         :param batch: mini batch
-        :return: data...
+        :return: batch
         """
-        raise NotImplementedError
+        return batch
 
     @staticmethod
     def load_dataset(limit=None):
-        """load dataset and  return
+        """load dataset and return dataset and input_shapes of data
 
-        :param limit:
-        :return:
+        * return value of input_shapes must contain every input_shape of data
+
+        :type limit: int
+        :param limit: limit number of dataset_size
+
+        :return: dataset, input_shapes
         """
         raise NotImplementedError
