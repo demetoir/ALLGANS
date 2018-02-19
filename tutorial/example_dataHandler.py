@@ -1,33 +1,3 @@
-"""example of implementing data handler
-
-using MNIST dataset
-
-implement step
-1. add dataset folder path in env_setting.py
-
-    EXAMPLE_DATASET_PATH = os.path.join(DATA_PATH, 'example_dataset')
-
-2. add dataset_batch_keys in dict_keys.dataset_batch_keys.py
-
-3. add input_shapes_keys in dict_keys.dataset_batch_keys.py
-
-
-
-2. implement dataset class in data_handler.dataset_name.py
-    1. implement self.__init__
-
-    2. implement self.load()
-
-    3. implement self.
-
-3. implement datasetHelper class in data_handler.dataset_name.py
-    implement self.preprocess()
-
-    implement self.next_batch_task()
-
-    implement self.load_dataset()
-
-"""
 from tensorflow.examples.tutorials.mnist import input_data
 from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
 from dict_keys.dataset_batch_keys import BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, \
@@ -109,12 +79,12 @@ class ExampleDatasetHelper(AbstractDatasetHelper):
         # input_shapes is dict.
         # key is input_shape_key in dict_keys.input_shape_keys
         # value numpy shape of data
-        mnist_data = ExampleDataset(preprocess=ExampleDatasetHelper.preprocess)
-        mnist_data.load(EXAMPLE_DATASET_PATH, limit=limit)
+        example_data = ExampleDataset(preprocess=ExampleDatasetHelper.preprocess)
+        example_data.load(EXAMPLE_DATASET_PATH, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 1],
             INPUT_SHAPE_KEY_LABEL: [10],
             INPUT_SHAPE_KEY_LABEL_SIZE: 10,
         }
 
-        return mnist_data, input_shapes
+        return example_data, input_shapes
