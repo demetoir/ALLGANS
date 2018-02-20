@@ -1,5 +1,5 @@
 from model.AbstractModel import AbstractModel
-from util.LayerModel import LayerModel
+from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import *
 from dict_keys.dataset_batch_keys import *
@@ -9,23 +9,23 @@ from dict_keys.input_shape_keys import *
 def inception_layer(input_, channel_size, name='inception_layer'):
     with tf.variable_scope(name):
         with tf.variable_scope('out1'):
-            layer = LayerModel(input_)
+            layer = Stacker(input_)
             layer.add_layer(avg_pooling, CONV_FILTER_2211)
             out1 = layer.last_layer
 
         with tf.variable_scope('out2'):
-            layer = LayerModel(input_)
+            layer = Stacker(input_)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             out2 = layer.last_layer
 
         with tf.variable_scope('out3'):
-            layer = LayerModel(input_)
+            layer = Stacker(input_)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, relu)
             out3 = layer.last_layer
 
         with tf.variable_scope('out4'):
-            layer = LayerModel(input_)
+            layer = Stacker(input_)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
             layer.add_layer(conv_block, channel_size, CONV_FILTER_5511, lrelu)
@@ -71,7 +71,7 @@ class Classifier(AbstractModel):
 
     def CNN(self, input_):
         with tf.variable_scope('classifier'):
-            layer = LayerModel(input_, name='seq1')
+            layer = Stacker(input_, name='seq1')
             layer.add_layer(conv_block, 64, CONV_FILTER_5522, lrelu)
             size16 = layer.last_layer
             layer.add_layer(inception_layer, 32)
@@ -79,7 +79,7 @@ class Classifier(AbstractModel):
             layer.add_layer(inception_layer, 128)
             layer.add_layer(tf.reshape, [self.batch_size, -1])
 
-            layer2 = LayerModel(size16, name='seq2')
+            layer2 = Stacker(size16, name='seq2')
             layer2.add_layer(conv_block, 128, CONV_FILTER_5522, lrelu)
             size8 = layer2.last_layer
             layer2.add_layer(inception_layer, 64)
@@ -87,7 +87,7 @@ class Classifier(AbstractModel):
             layer2.add_layer(inception_layer, 256)
             layer2.add_layer(tf.reshape, [self.batch_size, -1])
 
-            layer3 = LayerModel(size8, name='seq3')
+            layer3 = Stacker(size8, name='seq3')
             layer3.add_layer(conv_block, 256, CONV_FILTER_5522, lrelu)
             layer3.add_layer(inception_layer, 128)
             layer3.add_layer(inception_layer, 256)
@@ -95,7 +95,7 @@ class Classifier(AbstractModel):
             layer3.add_layer(tf.reshape, [self.batch_size, -1])
 
             merge = tf.concat([layer.last_layer, layer2.last_layer, layer3.last_layer], axis=1)
-            after_merge = LayerModel(merge, name='after_merge')
+            after_merge = Stacker(merge, name='after_merge')
             after_merge.add_layer(linear, self.label_size)
 
             logit = after_merge.last_layer

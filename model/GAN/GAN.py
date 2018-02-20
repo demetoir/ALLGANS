@@ -1,5 +1,5 @@
 from model.AbstractGANModel import AbstractGANModel
-from util.LayerModel import LayerModel
+from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import summary_loss
 from dict_keys.dataset_batch_keys import *
@@ -21,7 +21,7 @@ class GAN(AbstractGANModel):
 
     def generator(self, z, reuse=False):
         with tf.variable_scope('generator', reuse=reuse):
-            layer = LayerModel(z)
+            layer = Stacker(z)
             layer.add_layer(linear, 4 * 4 * 512)
             layer.add_layer(tf.reshape, [self.batch_size, 4, 4, 512])
 
@@ -43,7 +43,7 @@ class GAN(AbstractGANModel):
 
     def discriminator(self, x, reuse=None):
         with tf.variable_scope('discriminator', reuse=reuse):
-            layer = LayerModel(x)
+            layer = Stacker(x)
             layer.add_layer(conv2d, 64, CONV_FILTER_5522)
             layer.add_layer(bn)
             layer.add_layer(lrelu)
