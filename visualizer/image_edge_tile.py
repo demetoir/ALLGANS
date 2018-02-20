@@ -1,7 +1,6 @@
 from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
 import numpy as np
-import os
 import cv2
 
 
@@ -30,8 +29,6 @@ class image_edge_tile(AbstractVisualizer):
         for threshold1, threshold2 in threshold_list:
             edge_image = extract_edge(sample_imgs, threshold1, threshold2)
 
-            img_path = os.path.join(self.visualizer_path, 'edge_tile_(%d, %d).png' % (threshold1, threshold2))
+            file_name = 'edge_tile_(%d, %d).png' % (threshold1, threshold2)
             tile = np_img_to_tile(edge_image, column_size=8)
-            pil_img = np_img_to_PIL_img(tile)
-            with open(img_path, 'wb') as fp:
-                pil_img.save(fp)
+            self.save_np_img(tile, file_name)

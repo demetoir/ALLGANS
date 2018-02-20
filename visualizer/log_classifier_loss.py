@@ -1,8 +1,8 @@
-from visualizer.AbstractPrintLog import AbstractPrintLog
 from dict_keys.dataset_batch_keys import *
+from visualizer.AbstractVisualizer import AbstractVisualizer
 
 
-class log_classifier_loss(AbstractPrintLog):
+class log_classifier_loss(AbstractVisualizer):
     """visualize log of classifier's loss"""
 
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
