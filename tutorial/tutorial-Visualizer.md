@@ -4,6 +4,19 @@
 Visualizer class is visualize current training instance or sampling instance
 
 
+## usage
+
+* execute_interval: interval to execute visualizer
+
+```python
+# after load instance to InstanceManager
+from VisualizerClassLoader import VisualizerClassLoader
+
+visualizer = VisualizerClassLoader.load_class("visualizer_name")
+manager.load_visualizer(visualizer, execute_interval=10)
+```
+
+
 ## Implement step
 
 1. define visualizer class and inherit AbstractVisualizer
@@ -30,7 +43,6 @@ Visualizer class is visualize current training instance or sampling instance
     * iter_num : current iteration number
     * model : current training or sampling model
     * dataset : current training or sampling dataset
-
 
     ```python
     ...
