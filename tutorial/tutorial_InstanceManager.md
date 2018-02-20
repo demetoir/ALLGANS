@@ -1,21 +1,62 @@
-from DatasetManager import DatasetManager
-from InstanceManger import InstanceManager
-from ModelLoader import ModelLoader
-from visualizer.image_tile import image_tile
-from visualizer.image_tile_data import image_tile_data
-from visualizer.log_GAN_loss import log_GAN_loss
+# Tutorial - InstanceManager
 
+## Detail
+1. build instance from model class
+2. load instance
+3. load visualizer
+4. train instance or sample instance
 
-dataset, input_shapes = DatasetManager().load_dataset("CIFAR10")
+## Usage step
 
-model = ModelLoader.load("GAN")
+### build instance
 
-manager = InstanceManager()
-metadata_path = manager.build_instance(model)
+    ```python
+    from ModelClassLoader import ModelClassLoader
+    from InstanceManger import InstanceManager
 
-manager.load_instance(metadata_path, input_shapes)
+    model = ModelClassLoader.load_model_class("model")
+    manager = InstanceManager()
+    model_metadata_path = manager.build_instance(model)
+    ```
 
-manager.load_visualizer(image_tile, 20)
-manager.load_visualizer(log_GAN_loss, 10)
-manager.load_visualizer(image_tile_data, 20)
-manager.train_instance(epoch=10, dataset=dataset)
+### load Instance
+
+    ```python
+    # after build model
+    manager.load_instance(model_metadata_path, input_shapes_from_dataset)
+    ```
+
+### load Visualizer
+
+```python
+from VisualizerClassLoader import VisualizerClassLoader
+
+visualizer = VisualizerClassLoader.load_class("visualizer_name")
+manager.load_visualizer(visualizer, execute_interval=10)
+```
+
+### train Instance
+
+    ```python
+    # after load instance into manager train model
+    manager.train_instance(
+            epoch_time,
+        dataset=dataset,
+        check_point_interval=check_point_interval,
+        # if need to start train from checkpoint
+        # set is_restore to True
+        # is_restore=True
+
+        # default to start with tensorboard sub process while train instance and after train instance close tensorboard
+        # if does not need tensorboard set with_tensorboard to False
+        # with_tensorboard=true
+    )
+    ```
+
+### sample Instance
+    ```python
+    # after load instance
+    manager.sampling_instance(
+        dataset=dataset
+    )
+    ```

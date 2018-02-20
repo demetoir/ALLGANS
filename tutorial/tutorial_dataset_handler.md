@@ -1,5 +1,30 @@
 # example - implementing data handler
 
+## detail
+dataset handler class for InstanceManager
+* auto download dataset
+* preprocess after load dataset
+* preprocess after iterate mini batch
+
+
+## Usage
+
+    ```python
+    from DatasetLoader import DatasetLoader
+
+    # load dataset by calling DatasetLoader
+    # input_shapes is for tensorflow.PlaceHolder's shape
+    # need to build instanc e
+    dataset, input_shapes = DatasetLoader().load_dataset("dataset_name")
+
+    # apply to train model
+    instanceManager.train_instance(
+        epoch_time,
+        dataset=dataset,
+        check_point_interval=check_point_interval
+    )
+
+    ```
 
 ## Implement step
 
@@ -145,7 +170,7 @@
         ```
 
 
-    2. implement self.next_batch_task()
+    3. implement self.next_batch_task()
 
         * if don't need next_batch_task, just skip this step
         * must return result of next_batch_task
@@ -163,7 +188,7 @@
         ```
 
 
-    3. implement self.load_dataset()
+    4. implement self.load_dataset()
 
         * must return dataset and input_shapes
 
