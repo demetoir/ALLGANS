@@ -6,7 +6,7 @@ import numpy as np
 import os
 
 
-def check_attr_is_None(attr):
+def _check_attr_is_None(attr):
     def _check_attr_empty(f):
         def wrapper(self, *args):
             ret = f(self, *args)
@@ -46,6 +46,36 @@ class MetaTask(type):
         setattr(cls, 'load', new_load)
 
 
+class DownloadInfo:
+    """download information for dataset
+    self.url : download url
+    self.is_zipped :
+    self.zip_file_name:
+    self.file_type :
+
+    """
+
+    def __init__(self, url, is_zipped=False, download_file_name=None, extracted_file_names=None):
+        """create dataset download info
+
+        :type url: str
+        :type is_zipped: bool
+        :type download_file_name: str
+        :type extracted_file_names: list
+        :param url: download url
+        :param is_zipped: if zip file set True, else False
+        :param download_file_name: file name of downloaded file
+        :param extracted_file_names: file names of unzipped file
+        """
+        self.url = url
+        self.is_zipped = is_zipped
+        self.download_file_name = download_file_name
+        self.extracted_file_names = extracted_file_names
+
+    def attrs(self):
+        return self.url, self.is_zipped, self.download_file_name, self.extracted_file_names
+
+
 # todo may be dataset path in env_setting will be better, if automatically assign path as class name
 class AbstractDataset(metaclass=MetaTask):
     """
@@ -56,9 +86,7 @@ class AbstractDataset(metaclass=MetaTask):
         """create dataset handler class
 
         ***bellow attrs must initiate other value after calling super()***
-        self.DOWNLOAD_URL: (str) url for download dataset
-        self.DOWNLOAD_FILE_NAME: (str) file name of zipped dataset
-        self.extracted_data_files: (list) list of extracted files name in dataset
+        self.download_infos: (list) dataset download info
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
 
@@ -66,9 +94,7 @@ class AbstractDataset(metaclass=MetaTask):
         :param batch_after_task: function for inject into after iter mini_batch task
         :param before_load_task: function for injecting into AbstractDataset.before_load
         """
-        self.DOWNLOAD_URL = None
-        self.DOWNLOAD_FILE_NAME = None
-        self.extracted_data_files = None
+        self.download_infos = []
         self.batch_keys = None
         self.logger = Logger(self.__class__.__name__, stdout_only=True)
         self.log = self.logger.get_log()
@@ -101,22 +127,30 @@ class AbstractDataset(metaclass=MetaTask):
         except FileExistsError:
             pass
 
-        is_Invalid = False
-        files = glob(os.path.join(path, '*'))
-        names = list(map(lambda file: os.path.split(file)[1], files))
-        for data_file in self.extracted_data_files:
-            if data_file not in names:
-                is_Invalid = True
+        for info in self.download_infos:
+            is_Invalid = False
+            files = glob(os.path.join(path, '*'))
+            names = list(map(lambda file: os.path.split(file)[1], files))
 
-        if is_Invalid:
-            head, _ = os.path.split(path)
-            download_file = os.path.join(head, self.DOWNLOAD_FILE_NAME)
+            if info.is_zipped:
+                file_list = info.extracted_file_names
+            else:
+                file_list = info.download_file_name
 
-            self.log('download %s at %s ' % (self.DOWNLOAD_FILE_NAME, download_file))
-            download_from_url(self.DOWNLOAD_URL, download_file)
+            for data_file in file_list:
+                if data_file not in names:
+                    is_Invalid = True
 
-            self.log("extract %s at %s" % (self.DOWNLOAD_FILE_NAME, head))
-            extract_file(download_file, head)
+            if is_Invalid:
+                head, _ = os.path.split(path)
+                download_file = os.path.join(head, info.download_file_name)
+
+                self.log('download %s at %s ' % (info.download_file_name, download_file))
+                download_from_url(info.url, download_file)
+
+                if info.is_zipped:
+                    self.log("extract %s at %s" % (info.download_file_name, head))
+                    extract_file(download_file, head)
 
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset

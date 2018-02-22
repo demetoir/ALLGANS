@@ -20,10 +20,6 @@ class MNIST(AbstractDataset):
             BATCH_KEY_TEST_X,
             BATCH_KEY_TEST_LABEL
         ]
-        self.DOWNLOAD_URL = ""
-        self.DOWNLOAD_FILE_NAME = ""
-        self.extracted_data_files = []
-
         def dummy():
             pass
 

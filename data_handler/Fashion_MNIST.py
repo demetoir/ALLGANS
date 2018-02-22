@@ -1,4 +1,4 @@
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo
 from tensorflow.examples.tutorials.mnist import input_data
 from env_settting import FASHION_MNIST_PATH
 from dict_keys.dataset_batch_keys import *
@@ -19,9 +19,15 @@ class Fashion_MNIST(AbstractDataset):
             BATCH_KEY_TEST_X,
             BATCH_KEY_TEST_LABEL
         ]
-        self.DOWNLOAD_URL = 'http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/'
-        self.DOWNLOAD_FILE_NAME = "..."
-        self.extracted_data_files = []
+
+        self.download_infos = [
+            DownloadInfo(
+                url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/',
+                is_zipped=True,
+                download_file_name='...',
+                extracted_file_names=[]
+            )
+        ]
 
         def dummy():
             pass
@@ -31,7 +37,7 @@ class Fashion_MNIST(AbstractDataset):
     def load(self, path, limit=None):
         # fashion_mnist = input_data.read_data_sets(path, one_hot=True)
         fashion_mnist = input_data.read_data_sets(path,
-                                                  source_url=self.DOWNLOAD_URL,
+                                                  source_url=self.download_infos[0].url,
                                                   one_hot=True)
         # load train data
         train_x, train_label = fashion_mnist.train.next_batch(self.TRAIN_SIZE)

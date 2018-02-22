@@ -1,4 +1,4 @@
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo
 from env_settting import CIFAR100_PATH
 from dict_keys.dataset_batch_keys import *
 import pickle
@@ -26,13 +26,19 @@ class CIFAR100(AbstractDataset):
             BATCH_KEY_TEST_COARSE_LABELS,
             BATCH_KEY_TEST_FINE_LABELS
         ]
-        self.DOWNLOAD_URL = "https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz"
-        self.DOWNLOAD_FILE_NAME = "cifar-100-python.tar.gz"
-        self.extracted_data_files = [
-            "meta",
-            "test",
-            "train",
-            "file.txt~"
+
+        self.download_infos = [
+            DownloadInfo(
+                url='https://www.cs.toronto.edu/~kriz/cifar-100-python.tar.gz',
+                is_zipped=True,
+                download_file_name="cifar-100-python.tar.gz",
+                extracted_file_names=[
+                    "meta",
+                    "test",
+                    "train",
+                    "file.txt~"
+                ]
+            )
         ]
 
     def load(self, path, limit=None):

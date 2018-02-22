@@ -4,6 +4,7 @@ from util.numpy_utils import np_imgs_NCWH_to_NHWC, np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 from glob import glob
+from data_handler.AbstractDataset import DownloadInfo
 import numpy as np
 import os
 import pickle
@@ -25,16 +26,22 @@ class CIFAR10(AbstractDataset):
             BATCH_KEY_TRAIN_LABEL,
             BATCH_KEY_TEST_X,
             BATCH_KEY_TEST_LABEL]
-        self.DOWNLOAD_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
-        self.DOWNLOAD_FILE_NAME = 'cifar-10-python.tar.gz'
-        self.extracted_data_files = [
-            "data_batch_1",
-            "data_batch_2",
-            "data_batch_3",
-            "data_batch_4",
-            "data_batch_5",
-            "test_batch",
-            "batches.meta"
+
+        self.download_infos = [
+            DownloadInfo(
+                url='https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
+                is_zipped=True,
+                download_file_name='cifar-10-python.tar.gz',
+                extracted_file_names=[
+                    "data_batch_1",
+                    "data_batch_2",
+                    "data_batch_3",
+                    "data_batch_4",
+                    "data_batch_5",
+                    "test_batch",
+                    "batches.meta"
+                ]
+            )
         ]
 
     def load(self, path, limit=None):
