@@ -64,6 +64,17 @@ def import_class_from_module_path(path, class_name):
         raise AttributeError("%s class not found in %s" % (class_name, path))
 
 
+def import_module_from_module_path(path):
+    """import module from module_path
+
+    :type path: str
+    :param path: path to import module
+    :return module for
+    :rtype module
+    """
+    return SourceFileLoader('', path).load_module()
+
+
 def module_path_finder(path, name, recursive=True):
     """find module's absolute path in path
 
@@ -147,7 +158,6 @@ def download_from_url(url, path):
                 done = int(50 * dl / total_length)
                 sys.stdout.write("\r[%s%s] %s%%" % ('=' * done, ' ' * (50 - done), done * 2))
                 sys.stdout.flush()
-
 
 
 def extract_tar(source_path, destination_path):

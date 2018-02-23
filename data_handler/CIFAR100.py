@@ -1,4 +1,4 @@
-from data_handler.AbstractDataset import AbstractDataset, DownloadInfo
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
 from env_settting import CIFAR100_PATH
 from dict_keys.dataset_batch_keys import *
 import pickle
@@ -68,7 +68,7 @@ class CIFAR100(AbstractDataset):
         raise NotImplementedError
 
 
-class CIFAR100Helper:
+class CIFAR100Helper(AbstractDatasetHelper):
     @staticmethod
     def preprocess(dataset):
         # convert image format from NCWH to NWHC

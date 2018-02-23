@@ -1,4 +1,4 @@
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
 from env_settting import CIFAR10_PATH
 from util.numpy_utils import np_imgs_NCWH_to_NHWC, np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
@@ -75,7 +75,7 @@ class CIFAR10(AbstractDataset):
         raise NotImplementedError
 
 
-class CIFAR10Helper:
+class CIFAR10Helper(AbstractDatasetHelper):
     @staticmethod
     def next_batch_task(batch):
         x = batch[0]

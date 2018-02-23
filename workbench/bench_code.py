@@ -7,7 +7,11 @@ from ModelClassLoader import ModelClassLoader
 
 
 def main():
-    dataset, input_shapes = DatasetLoader().load_dataset("MNIST")
+    # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR10")
+    # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR100")
+    # dataset, input_shapes = DatasetLoader().load_dataset("LLD")
+    # dataset, input_shapes = DatasetLoader().load_dataset("MNIST")
+    dataset, input_shapes = DatasetLoader().load_dataset("Fashion_MNIST")
     visualizers = [(image_tile, 20), (log_GAN_loss, 10), (image_tile_data, 20)]
     model = ModelClassLoader.load_model_class("GAN")
     InstanceManagerHelper.build_and_train(model=model,

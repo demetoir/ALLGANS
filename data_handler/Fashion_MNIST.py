@@ -1,4 +1,4 @@
-from data_handler.AbstractDataset import AbstractDataset, DownloadInfo
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
 from tensorflow.examples.tutorials.mnist import input_data
 from env_settting import FASHION_MNIST_PATH
 from dict_keys.dataset_batch_keys import *
@@ -53,7 +53,7 @@ class Fashion_MNIST(AbstractDataset):
         raise NotImplementedError
 
 
-class Fashion_MNISTHelper:
+class Fashion_MNISTHelper(AbstractDatasetHelper):
     @staticmethod
     def preprocess(dataset):
         # original fashion_mnist image size is 28*28 but need to resize 32*32

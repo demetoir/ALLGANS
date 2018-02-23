@@ -11,6 +11,9 @@ MODEL_MODULE_PATH = os.path.join(ROOT_PATH, 'model')
 # visualizer
 VISUALIZER_MODULE_PATH = os.path.join(ROOT_PATH, 'visualizer')
 
+# dataset handler
+DATA_HANDLER_PATH = os.path.join(ROOT_PATH, 'data_handler')
+
 # dataset
 DATA_PATH = os.path.join(ROOT_PATH, 'data')
 LLD_PATH = os.path.join(DATA_PATH, 'LLD_favicons_clean')

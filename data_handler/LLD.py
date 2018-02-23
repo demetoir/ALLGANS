@@ -1,7 +1,7 @@
 from __future__ import division
 from glob import glob
 from PIL import Image
-from data_handler.AbstractDataset import AbstractDataset, DownloadInfo
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
 from dict_keys.dataset_batch_keys import *
 from env_settting import LLD_PATH
 from dict_keys.input_shape_keys import *
@@ -85,7 +85,7 @@ class LLD(AbstractDataset):
         return np.array(imgs)
 
 
-class LLDHelper:
+class LLDHelper(AbstractDatasetHelper):
     @staticmethod
     def next_batch_task(batch):
         x = batch[0]
