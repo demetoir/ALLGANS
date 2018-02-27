@@ -248,7 +248,7 @@ class InstanceManager:
 
                     if iter_num % check_point_interval == 0:
                         saver.save(sess, check_point_path)
-                self.log("epoch %s end" % (epoch_ + 1))
+                # self.log("epoch %s end" % (epoch_ + 1))
         self.log('train end')
 
         tf.reset_default_graph()
