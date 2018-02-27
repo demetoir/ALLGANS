@@ -1,7 +1,7 @@
 from __future__ import division
 from glob import glob
 from PIL import Image
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
 from dict_keys.dataset_batch_keys import *
 from env_settting import LLD_PATH
 from dict_keys.input_shape_keys import *
@@ -17,19 +17,24 @@ class LLD(AbstractDataset):
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [LLD_CLEAN]
-        self._SOURCE_URL = "https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip"
-        self._SOURCE_FILE = "LLD_favicons_clean.zip"
-        self._data_files = [
-            "LLD_favicon_data_0.pkl",
-            "LLD_favicon_data_1.pkl",
-            "LLD_favicon_data_2.pkl",
-            "LLD_favicon_data_3.pkl",
-            "LLD_favicon_data_4.pkl"
+        self.batch_keys = [
+            LLD_CLEAN,
         ]
 
-    def __repr__(self):
-        return 'Large Label Data set'
+        self.download_infos = [
+            DownloadInfo(
+                url="https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip",
+                is_zipped=True,
+                download_file_name="LLD_favicons_clean.zip",
+                extracted_file_names=[
+                    "LLD_favicon_data_0.pkl",
+                    "LLD_favicon_data_1.pkl",
+                    "LLD_favicon_data_2.pkl",
+                    "LLD_favicon_data_3.pkl",
+                    "LLD_favicon_data_4.pkl"
+                ]
+            )
+        ]
 
     def load(self, path, limit=None):
         files = glob(os.path.join(path, self.PATTERN))
@@ -80,7 +85,7 @@ class LLD(AbstractDataset):
         return np.array(imgs)
 
 
-class LLDHelper:
+class LLDHelper(AbstractDatasetHelper):
     @staticmethod
     def next_batch_task(batch):
         x = batch[0]

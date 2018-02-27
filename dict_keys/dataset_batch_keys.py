@@ -1,4 +1,5 @@
 """key for dataset's batch dict"""
+# todo 키를 등록하고 접근해주는 클래스를 만들어야하나?
 BATCH_KEY_TRAIN_X = "TRAIN_X"
 BATCH_KEY_TRAIN_LABEL = 'TRAIN_LABEL'
 BATCH_KEY_TEST_X = 'TEST_X'

@@ -1,8 +1,8 @@
-from visualizer.AbstractPrintLog import AbstractPrintLog
 from dict_keys.dataset_batch_keys import *
+from visualizer.AbstractVisualizer import AbstractVisualizer
 
 
-class log_GAN_loss(AbstractPrintLog):
+class log_GAN_loss(AbstractVisualizer):
     """visualize log loss of GAN"""
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         noise = model.get_noise()

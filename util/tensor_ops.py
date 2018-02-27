@@ -24,6 +24,7 @@ CONV_FILTER_9922 = (9, 9, 2, 2)
 
 # normalization
 def bn(x, is_training=True, name='bn'):
+    """batch normalization layer"""
     return tf.contrib.layers.batch_norm(x,
                                         decay=0.9,
                                         updates_collections=None,
@@ -35,22 +36,48 @@ def bn(x, is_training=True, name='bn'):
 
 # activation function
 def sigmoid(x, name='sigmoid'):
+    """sigmoid activation function layer"""
     return tf.sigmoid(x, name=name)
 
 
 def lrelu(x, leak=0.2, name="lrelu"):
+    """leak relu activate function layer"""
     return tf.maximum(x, leak * x, name=name)
 
 
 def relu(input_, name='relu'):
+    """relu activate function layer"""
     return tf.nn.relu(features=input_, name=name)
 
 
 def elu(input_, name="elu"):
+    """elu activate function layer"""
     return tf.nn.elu(features=input_, name=name)
 
 
 def linear(input_, output_size, name="linear", stddev=0.02, bias_start=0.0, with_w=False):
+    """pre-activated linear layer
+
+    typical one layer of neural net, return just before activate
+    input * weight + bias
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_size: int
+    :type name: str
+    :type stddev: float
+    :type bias_start: float
+    :type with_w: bool
+    :param input_: input variable or placeholder of tensorflow
+    :param output_size: output layer size
+    :param name: tensor scope name
+    :param stddev: stddev for initialize weight
+    :param bias_start: initial value of baise
+    :param with_w: return with weight and bias tensor variable
+
+    :return: before activate neural net
+    :rtype tensorflow.Variable
+
+    """
     shape = input_.get_shape().as_list()
 
     with tf.variable_scope(name):
@@ -66,6 +93,24 @@ def linear(input_, output_size, name="linear", stddev=0.02, bias_start=0.0, with
 
 def conv2d_transpose(input_, output_shape, filter_, name="conv2d_transpose", stddev=0.02,
                      with_w=False):
+    """transposed 2d convolution layer
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_shape: Union[list, tuple]
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :type with_w: bool
+    :type stddev: float
+    :param input_: input variable or placeholder of tensorflow
+    :param output_shape: output shape of after transposed convolution
+    :param filter_: convolution filter(kernel and stride)
+    :param name: tensor scope name
+    :param stddev: stddev for initialize weight
+    :param with_w: return with weight and bias tensor variable
+
+    :return: result of 2d transposed convolution
+    :rtype tensorflow.Variable
+    """
     k_h, k_w, d_h, d_w = filter_
     with tf.variable_scope(name):
         weight = tf.get_variable('weight', [k_h, k_w, output_shape[-1], input_.get_shape()[-1]],
@@ -83,6 +128,22 @@ def conv2d_transpose(input_, output_shape, filter_, name="conv2d_transpose", std
 
 
 def conv2d(input_, output_channel, filter_, stddev=0.02, name="conv2d"):
+    """2d convolution layer
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_channel: int
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :type stddev: float
+    :param input_: input variable or placeholder of tensorflow
+    :param output_channel: output shape of after convolution
+    :param filter_: convolution filter(kernel and stride)
+    :param name: tensor scope name
+    :param stddev: stddev for initialize weight
+
+    :return: result of 2d convolution
+    :rtype tensorflow.Variable
+    """
     k_h, k_w, d_h, d_w = filter_
     with tf.variable_scope(name):
         weight = tf.get_variable('weight', [k_h, k_w, input_.get_shape()[-1], output_channel],
@@ -96,39 +157,125 @@ def conv2d(input_, output_channel, filter_, stddev=0.02, name="conv2d"):
 
 
 def conv2d_one_by_one(input_, output_channel, name='conv2d_one_by_one'):
+    """bottle neck convolution layer
+
+    1*1 kernel 1*1 stride convolution
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_channel: int
+    :type name: str
+    :param input_: input variable or placeholder of tensorflow
+    :param output_channel: output shape of after convolution
+    :param name: tensor scope name
+
+    :return: bottle neck convolution
+    :rtype tensorflow.Variable
+    """
     out = conv2d(input_, output_channel, CONV_FILTER_1111, name=name)
     return out
 
 
 def upscale_2x(input_, output_channel, filter_, name='upscale_2x'):
+    """transposed convolution to double scale up layer
+
+    doubled width and height of input
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_channel: int
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :param input_: input variable or placeholder of tensorflow
+    :param output_channel: output shape of after transposed convolution
+    :param filter_: convolution filter(kernel and stride)
+    :param name: tensor scope name
+
+    :return: result of 2*2 upscale
+    :rtype tensorflow.Variable
+    """
     shape = input_.get_shape()
     n, h, w, _ = shape
     output_shape = [int(n), int(h) * 2, int(w) * 2, int(output_channel)]
     return conv2d_transpose(input_, output_shape, filter_, name=name)
 
 
-def upscale_2x_block(net, output_channel, filter_, activate, name='upscale_2x_block'):
+def upscale_2x_block(input_, output_channel, filter_, activate, name='upscale_2x_block'):
+    """2*2 upscale tensor block(transposed convolution, batch normalization, activation)
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_channel: int
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :type activate: func
+    :param input_: input variable or placeholder of tensorflow
+    :param output_channel: output shape of after transposed convolution
+    :param filter_: convolution filter(kernel and stride)
+    :param name: tensor scope name
+    :param activate: activate function
+
+    :return: result of tensor block
+    :rtype tensorflow.Variable
+    """
     with tf.variable_scope(name):
-        net = upscale_2x(net, output_channel, filter_)
-        net = bn(net)
-        net = activate(net)
-    return net
+        input_ = upscale_2x(input_, output_channel, filter_)
+        input_ = bn(input_)
+        input_ = activate(input_)
+    return input_
 
 
-def conv_block(net, output_channel, filter_, activate, name='conv_block'):
+def conv_block(input_, output_channel, filter_, activate, name='conv_block'):
+    """convolution tensor block(convolution, batch normalization, activation)
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type output_channel: int
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :type activate: func
+    :param input_: input variable or placeholder of tensorflow
+    :param output_channel: output shape of after convolution
+    :param filter_: convolution filter(kernel and stride)
+    :param name: tensor scope name
+    :param activate: activate function
+
+    :return: result of tensor block
+    :rtype tensorflow.Variable
+    """
     with tf.variable_scope(name):
-        net = conv2d(net, output_channel, filter_, name='conv')
-        net = bn(net, name='bn')
-        net = activate(net)
-    return net
+        input_ = conv2d(input_, output_channel, filter_, name='conv')
+        input_ = bn(input_, name='bn')
+        input_ = activate(input_)
+    return input_
 
 
 def avg_pooling(input_, filter_, name='avg_pooling'):
+    """average pooling layer
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :param input_: input variable or placeholder of tensorflow
+    :param filter_: pooling filter(kernel and stride)
+    :param name: tensor scope name
+
+    :return: result of average pooling
+    :rtype tensorflow.Variable
+    """
     kH, kW, sH, sW = filter_
     return tf.nn.avg_pool(input_, ksize=[1, kH, kW, 1], strides=[1, sH, sW, 1], padding='SAME', name=name)
 
 
 def max_pooling(input_, filter_, name='max_pooling'):
+    """max pooling layer
+
+    :type input_: Union[tensorflow.Variable, tensorflow.PlaceHolder]
+    :type filter_: tuple[int, int, int, int]
+    :type name: str
+    :param input_: input variable or placeholder of tensorflow
+    :param filter_: pooling filter(kernel and stride)
+    :param name: tensor scope name
+
+    :return: result of max pooling
+    :rtype tensorflow.Variable
+    """
     kH, kW, sH, sW = filter_
     return tf.nn.max_pool(input_, ksize=[1, kH, kW, 1], strides=[1, sH, sW, 1], padding='SAME', name=name)
 
@@ -146,4 +293,6 @@ def index_to_onehot(index, size):
 
 
 def softmax(input_, name='softmax'):
+    """softmax layer"""
     return tf.nn.softmax(input_, name=name)
+

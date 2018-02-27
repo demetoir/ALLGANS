@@ -1,6 +1,6 @@
 from __future__ import division
 from tensorflow.examples.tutorials.mnist import input_data
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
 from env_settting import MNIST_PATH
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
@@ -14,27 +14,22 @@ class MNIST(AbstractDataset):
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, BATCH_KEY_TEST_LABEL]
-
+        self.batch_keys = [
+            BATCH_KEY_TRAIN_X,
+            BATCH_KEY_TRAIN_LABEL,
+            BATCH_KEY_TEST_X,
+            BATCH_KEY_TEST_LABEL
+        ]
         def dummy():
             pass
 
         self.before_load_task = dummy
 
-    def __repr__(self):
-        return self.__class__.__name__
-
     def load(self, path, limit=None):
         mnist = input_data.read_data_sets(path, one_hot=True)
 
-        if limit is None:
-            self.__train_size = self.TRAIN_SIZE
-            self.__test_size = self.TEST_SIZE
-        else:
-            self.__train_size = limit
-            self.__test_size = limit
-        train_x, train_label = mnist.train.next_batch(self.__train_size)
-        test_x, test_label = mnist.test.next_batch(self.__test_size)
+        train_x, train_label = mnist.train.next_batch(self.TRAIN_SIZE)
+        test_x, test_label = mnist.test.next_batch(self.TEST_SIZE)
 
         self.data = {
             BATCH_KEY_TRAIN_X: train_x,
@@ -47,7 +42,7 @@ class MNIST(AbstractDataset):
         raise NotImplementedError
 
 
-class MNISTHelper:
+class MNISTHelper(AbstractDatasetHelper):
     @staticmethod
     def preprocess(dataset):
         # original MNIST image size is 28*28 but need to resize 32*32
