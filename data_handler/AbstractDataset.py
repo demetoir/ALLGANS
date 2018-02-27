@@ -129,28 +129,28 @@ class AbstractDataset(metaclass=MetaTask):
 
         for info in self.download_infos:
             is_Invalid = False
-            files = glob(os.path.join(path, '*'))
+            files = glob(os.path.join(path, '**'), recursive=True)
             names = list(map(lambda file: os.path.split(file)[1], files))
 
             if info.is_zipped:
                 file_list = info.extracted_file_names
+                for data_file in file_list:
+                    if data_file not in names:
+                        is_Invalid = True
             else:
-                file_list = info.download_file_name
-
-            for data_file in file_list:
-                if data_file not in names:
+                if info.download_file_name not in names:
                     is_Invalid = True
 
             if is_Invalid:
                 head, _ = os.path.split(path)
-                download_file = os.path.join(head, info.download_file_name)
+                download_file = os.path.join(path, info.download_file_name)
 
                 self.log('download %s at %s ' % (info.download_file_name, download_file))
                 download_from_url(info.url, download_file)
 
                 if info.is_zipped:
-                    self.log("extract %s at %s" % (info.download_file_name, head))
-                    extract_file(download_file, head)
+                    self.log("extract %s at %s" % (info.download_file_name, path))
+                    extract_file(download_file, path)
 
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset
@@ -165,8 +165,9 @@ class AbstractDataset(metaclass=MetaTask):
         for key in self.batch_keys:
             self.cursor[key] = 0
 
-        for key in self.batch_keys:
-            self.data[key] = self.data[key][:limit]
+        if limit is not None:
+            for key in self.batch_keys:
+                self.data[key] = self.data[key][:limit]
 
         for key in self.batch_keys:
             self.data_size = max(len(self.data[key]), self.data_size)
@@ -269,7 +270,7 @@ class AbstractDatasetHelper:
 
         :param dataset: target dataset
         """
-        pass
+        raise NotImplementedError
 
     @staticmethod
     def next_batch_task(batch):
@@ -280,10 +281,10 @@ class AbstractDatasetHelper:
         :param batch: mini batch
         :return: batch
         """
-        return batch
+        raise NotImplementedError
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         """load dataset and return dataset and input_shapes of data
 
         * return value of input_shapes must contain every input_shape of data

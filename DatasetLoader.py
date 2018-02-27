@@ -39,7 +39,8 @@ class DatasetLoader:
             if dataset_name not in self.datasets:
                 self.import_dataset_and_helper(dataset_name=dataset_name)
             data_loader, data_helper = self.datasets[dataset_name]
-            dataset, input_shapes = data_helper.load_dataset(limit=limit)
+            path = os.path.join(DATA_PATH, data_loader.__name__)
+            dataset, input_shapes = data_helper.load_dataset(path=path, limit=limit)
         except KeyError:
             raise KeyError("dataset_name %s not found" % dataset_name)
 

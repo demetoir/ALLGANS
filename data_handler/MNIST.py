@@ -68,9 +68,9 @@ class MNISTHelper(AbstractDatasetHelper):
         return x, label
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         mnist_data = MNIST(preprocess=MNISTHelper.preprocess)
-        mnist_data.load(MNIST_PATH, limit=limit)
+        mnist_data.load(path, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 1],
             INPUT_SHAPE_KEY_LABEL: [10],
