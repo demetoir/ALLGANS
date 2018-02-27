@@ -152,6 +152,18 @@ class AbstractDataset(metaclass=MetaTask):
                     self.log("extract %s at %s" % (info.download_file_name, path))
                     extract_file(download_file, path)
 
+    def add_data(self, key, data):
+        self.batch_keys += [key]
+        self.data[key] = data
+        self.cursor[key] = 0
+
+    def get_data(self, keys):
+        ret = [self.data[key] for key in keys]
+        if len(ret) == 1:
+            return ret[0]
+        else:
+            return ret
+
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset
 
@@ -255,7 +267,7 @@ class AbstractDataset(metaclass=MetaTask):
             batches += [self.__next_batch(batch_size, key, lookup)]
 
         if self.batch_after_task is not None:
-            batches = self.batch_after_task(batches)
+            batches = self.batch_after_task(batches, batch_keys)
 
         if len(batches) == 1:
             batches = batches[0]
@@ -273,7 +285,7 @@ class AbstractDatasetHelper:
         raise NotImplementedError
 
     @staticmethod
-    def next_batch_task(batch):
+    def next_batch_task(batch, batch_keys):
         """pre process for every iteration for mini batch
 
         * must return some mini batch
