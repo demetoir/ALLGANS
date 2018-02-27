@@ -1,8 +1,8 @@
-from visualizer.AbstractPrintLog import AbstractPrintLog
 from dict_keys.dataset_batch_keys import *
+from visualizer.AbstractVisualizer import AbstractVisualizer
 
 
-class log_D_AE_error(AbstractPrintLog):
+class log_D_AE_error(AbstractVisualizer):
     """visualizer error of discriminator AE in BEGAN"""
 
     def task(self, sess=None, iter_num=None, model=None, dataset=None):

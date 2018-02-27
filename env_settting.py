@@ -11,6 +11,9 @@ MODEL_MODULE_PATH = os.path.join(ROOT_PATH, 'model')
 # visualizer
 VISUALIZER_MODULE_PATH = os.path.join(ROOT_PATH, 'visualizer')
 
+# dataset handler
+DATA_HANDLER_PATH = os.path.join(ROOT_PATH, 'data_handler')
+
 # dataset
 DATA_PATH = os.path.join(ROOT_PATH, 'data')
 LLD_PATH = os.path.join(DATA_PATH, 'LLD_favicons_clean')
@@ -19,6 +22,7 @@ CIFAR10_PATH = os.path.join(DATA_PATH, 'cifar-10-batches-py')
 CIFAR100_PATH = os.path.join(DATA_PATH, "cifar-100-python")
 FASHION_MNIST_PATH = os.path.join(DATA_PATH, "fashionmnist")
 CELEBA_PATH = os.path.join(DATA_PATH, 'img_align_celeba')
+EXAMPLE_DATASET_PATH = os.path.join(DATA_PATH, 'example_dataset')
 
 # instance
 INSTANCE_PATH = os.path.join(ROOT_PATH, 'instance')

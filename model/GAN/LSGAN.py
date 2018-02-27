@@ -1,4 +1,4 @@
-from util.LayerModel import LayerModel
+from util.Stacker import Stacker
 from util.tensor_ops import *
 from model.AbstractGANModel import AbstractGANModel
 from util.summary_func import *
@@ -18,7 +18,7 @@ class LSGAN(AbstractGANModel):
 
     def generator(self, z, reuse=False, name='generator'):
         with tf.variable_scope(name, reuse=reuse):
-            layer = LayerModel(z)
+            layer = Stacker(z)
 
             layer.add_layer(linear, 4 * 4 * 512)
             layer.add_layer(tf.reshape, [self.batch_size, 4, 4, 512])
@@ -40,7 +40,7 @@ class LSGAN(AbstractGANModel):
 
     def discriminator(self, x, reuse=None, name='discriminator'):
         with tf.variable_scope(name, reuse=reuse):
-            layer = LayerModel(x)
+            layer = Stacker(x)
             layer.add_layer(conv2d, 64, CONV_FILTER_5522)
             layer.add_layer(bn)
             layer.add_layer(lrelu)

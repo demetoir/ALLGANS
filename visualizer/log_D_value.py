@@ -1,8 +1,8 @@
-from visualizer.AbstractPrintLog import AbstractPrintLog
 from dict_keys.dataset_batch_keys import *
+from visualizer.AbstractVisualizer import AbstractVisualizer
 
 
-class log_D_value(AbstractPrintLog):
+class log_D_value(AbstractVisualizer):
     """visualize log for GAN's Discriminator value"""
 
     def task(self, sess=None, iter_num=None, model=None, dataset=None):

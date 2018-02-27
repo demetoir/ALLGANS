@@ -1,6 +1,5 @@
 from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
-import os
 import numpy as np
 
 
@@ -13,8 +12,7 @@ class image_tile(AbstractVisualizer):
         sample_imgs = np.concatenate((sample_imgs0, sample_imgs1))
         sample_imgs = np_img_float32_to_uint8(sample_imgs)
 
-        img_path = os.path.join(self.visualizer_path, '{}.png'.format(str(iter_num).zfill(5)))
+        file_name = '{}.png'.format(str(iter_num).zfill(8))
         tile = np_img_to_tile(sample_imgs, column_size=8)
-        pil_img = np_img_to_PIL_img(tile)
-        with open(img_path, 'wb') as fp:
-            pil_img.save(fp)
+        self.save_np_img(tile, file_name)
+

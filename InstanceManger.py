@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 import traceback
+import multiprocessing
 
 META_DATA_FILE_NAME = 'instance.meta'
 INSTANCE_FOLDER = 'instance'
@@ -185,7 +186,7 @@ class InstanceManager:
         self.log('load instance id : %s' % instance_id)
 
     @_log_exception
-    def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False):
+    def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False, with_tensorboard=True):
         """training loaded instance with dataset for epoch and loaded visualizers will execute
 
         * if you want to use visualizer call load_visualizer function first
@@ -206,29 +207,34 @@ class InstanceManager:
         :param dataset: dataset for train
         :param check_point_interval: interval for check point to save train tensor variables
         :param is_restore: option for restoring from check point
+        :param with_tensorboard: option for open child process for tensorboard to monitor summary
         """
-        saver = tf.train.Saver()
-        save_path = os.path.join(self.instance.instance_path, 'check_point')
-        check_point_path = os.path.join(save_path, 'instance.ckpt')
-        if not os.path.exists(save_path):
-            os.mkdir(save_path)
-            self.log('make save dir')
+
+        if with_tensorboard:
+            self.open_tensorboard()
 
         with tf.Session() as sess:
-            sess.run(tf.global_variables_initializer())
-            self.log('init global variables')
+            saver = tf.train.Saver()
+            save_path = os.path.join(self.instance.instance_path, 'check_point')
+            check_point_path = os.path.join(save_path, 'instance.ckpt')
+            if not os.path.exists(save_path):
+                os.mkdir(save_path)
+                self.log('make save dir')
 
-            summary_writer = tf.summary.FileWriter(self.instance.instance_summary_folder_path, sess.graph)
+            self.log('init global variables')
+            sess.run(tf.global_variables_initializer())
+
             self.log('init summary_writer')
+            summary_writer = tf.summary.FileWriter(self.instance.instance_summary_folder_path, sess.graph)
 
             if is_restore:
-                saver.restore(sess, check_point_path)
                 self.log('restore check point')
+                saver.restore(sess, check_point_path)
 
             batch_size = self.instance.batch_size
             iter_per_epoch = int(dataset.data_size / batch_size)
-            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d' % (
-                epoch, epoch * iter_per_epoch, iter_per_epoch))
+            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d'
+                     % (epoch, epoch * iter_per_epoch, iter_per_epoch))
 
             iter_num, loss_val_D, loss_val_G = 0, 0, 0
             for epoch_ in range(epoch):
@@ -247,6 +253,9 @@ class InstanceManager:
 
         tf.reset_default_graph()
         self.log('reset default graph')
+
+        if with_tensorboard:
+            self.close_tensorboard()
 
     @_log_exception
     def sampling_instance(self, dataset=None, is_restore=False):

@@ -1,9 +1,10 @@
-from data_handler.AbstractDataset import AbstractDataset
+from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
 from env_settting import CIFAR10_PATH
 from util.numpy_utils import np_imgs_NCWH_to_NHWC, np_index_to_onehot
 from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 from glob import glob
+from data_handler.AbstractDataset import DownloadInfo
 import numpy as np
 import os
 import pickle
@@ -20,17 +21,27 @@ class CIFAR10(AbstractDataset):
 
     def __init__(self, preprocess=None, batch_after_task=None):
         super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [BATCH_KEY_TRAIN_X, BATCH_KEY_TRAIN_LABEL, BATCH_KEY_TEST_X, BATCH_KEY_TEST_LABEL]
-        self._SOURCE_URL = 'https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz'
-        self._SOURCE_FILE = 'cifar-10-python.tar.gz'
-        self._data_files = [
-            "data_batch_1",
-            "data_batch_2",
-            "data_batch_3",
-            "data_batch_4",
-            "data_batch_5",
-            "test_batch",
-            "batches.meta"
+        self.batch_keys = [
+            BATCH_KEY_TRAIN_X,
+            BATCH_KEY_TRAIN_LABEL,
+            BATCH_KEY_TEST_X,
+            BATCH_KEY_TEST_LABEL]
+
+        self.download_infos = [
+            DownloadInfo(
+                url='https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
+                is_zipped=True,
+                download_file_name='cifar-10-python.tar.gz',
+                extracted_file_names=[
+                    "data_batch_1",
+                    "data_batch_2",
+                    "data_batch_3",
+                    "data_batch_4",
+                    "data_batch_5",
+                    "test_batch",
+                    "batches.meta"
+                ]
+            )
         ]
 
     def load(self, path, limit=None):
@@ -64,7 +75,7 @@ class CIFAR10(AbstractDataset):
         raise NotImplementedError
 
 
-class CIFAR10Helper:
+class CIFAR10Helper(AbstractDatasetHelper):
     @staticmethod
     def next_batch_task(batch):
         x = batch[0]

@@ -1,0 +1,21 @@
+# ref https://www.lesstif.com/pages/viewpage.action?pageId=20776404
+# Auto detect text files and perform LF normalization
+*        text=auto
+
+*.py     text diff=python eol=crlf
+
+*.csproj text merge=union
+*.sln    text merge=union eol=crlf
+
+*.docx   diff=astextplain
+*.DOCX   diff=astextplain
+
+*.png binary
+*.PNG binary
+*.jpg binary
+
+# absolute paths are ok, as are globs
+/**/postinst* text eol-lf
+
+# paths that don't start with / are treated relative to the .gitattributes folder
+relative/path/*.txt text eol-lf

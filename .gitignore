@@ -31,3 +31,7 @@ instance/
 
 # main log
 log
+
+
+# pycharm setting
+.idea/

@@ -1,10 +1,9 @@
-from visualizer.AbstractPrintLog import AbstractPrintLog
+from dict_keys.dataset_batch_keys import *
+from visualizer.AbstractVisualizer import AbstractVisualizer
 import numpy as np
 
-from dict_keys.dataset_batch_keys import *
 
-
-class log_confusion_matrix(AbstractPrintLog):
+class log_confusion_matrix(AbstractVisualizer):
     """visualize confusion matrix by print log"""
 
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
