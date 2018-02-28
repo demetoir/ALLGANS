@@ -1,6 +1,9 @@
 from data_handler.AbstractDataset import *
+from dict_keys.dataset_batch_keys import *
+from dict_keys.input_shape_keys import *
+from util.numpy_utils import *
+import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
 
 
 # from env_settting import TITANIC_PATH
@@ -78,7 +81,6 @@ class titanic(AbstractDataset):
     ]
 
     TEST_PASSENGERID = 'TEST_PASSENGERID'
-    TEST_SURVIVED = 'TEST_SURVIVED'
     TEST_PCLASS = 'TEST_PCLASS'
     TEST_NAME = 'TEST_NAME'
     TEST_SEX = 'TEST_SEX'
@@ -136,8 +138,9 @@ class titanic(AbstractDataset):
             sep=',',
             header=None,
             error_bad_lines=False,
-            names=self.TRAIN_CSV_COLUMNs
+            names=self.TRAIN_CSV_COLUMNs,
         )
+        train_data = train_data.fillna("None")
         for col, key in zip(self.TRAIN_CSV_COLUMNs, self.TRAIN_BATCH_KEYS):
             self.data[key] = np.array(train_data[col])[1:]
 
@@ -147,12 +150,35 @@ class titanic(AbstractDataset):
             sep=',',
             header=None,
             error_bad_lines=False,
-            names=self.TEST_CSV_COLUMNs
+            names=self.TEST_CSV_COLUMNs,
         )
+        test_data = test_data.fillna("None")
         for col, key in zip(self.TEST_CSV_COLUMNs, self.TEST_BATCH_KEYS):
             self.data[key] = np.array(test_data[col])[1:]
 
     def save(self):
+        pass
+
+
+def np_labels_to_index(np_arr, labels):
+    np_arr = np.asarray(np_arr)
+    for idx, label in enumerate(labels):
+        np_arr[np_arr == label] = np.array([idx], dtype=np.int32)
+    return np_arr.astype(dtype=np.int32)
+
+
+class update_dict_value:
+    def __init__(self, dataset, key):
+        self.dataset = dataset
+        self.key = key
+        self.data = dataset.data[key]
+
+    def __enter__(self):
+        return self.data
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.dataset.data[self.key] = self.data
+        print(id(self.data))
         pass
 
 
@@ -161,42 +187,121 @@ class titanicHelper(AbstractDatasetHelper):
     def load_dataset(path, limit=None):
         dataset = titanic(
             preprocess=titanicHelper.preprocess,
-            batch_after_task=titanicHelper.next_batch_task
         )
         dataset.load(path=path, limit=limit)
-        input_shapes = {
-            titanic.TRAIN_PASSENGERID: [1],
-            titanic.TRAIN_SURVIVED: [1],
-            titanic.TRAIN_PCLASS: [1],
-            titanic.TRAIN_NAME: [1],
-            titanic.TRAIN_SEX: [1],
-            titanic.TRAIN_AGE: [1],
-            titanic.TRAIN_SIBSP: [1],
-            titanic.TRAIN_PARCH: [1],
-            titanic.TRAIN_TICKET: [1],
-            titanic.TRAIN_FARE: [1],
-            titanic.TRAIN_CABIN: [1],
-            titanic.TRAIN_EMBARKED: [1],
 
-            titanic.TEST_PASSENGERID: [1],
-            titanic.TEST_PCLASS: [1],
-            titanic.TEST_NAME: [1],
-            titanic.TEST_SEX: [1],
-            titanic.TEST_AGE: [1],
-            titanic.TEST_SIBSP: [1],
-            titanic.TEST_PARCH: [1],
-            titanic.TEST_TICKET: [1],
-            titanic.TEST_FARE: [1],
-            titanic.TEST_CABIN: [1],
-            titanic.TEST_EMBARKED: [1],
-        }
+        input_shapes = {}
+        print(dataset.batch_keys)
+        for key in dataset.batch_keys:
+            input_shapes[key] = list(dataset.data[key].shape[1:])
+            print(key, input_shapes[key])
 
         return dataset, input_shapes
 
     @staticmethod
-    def next_batch_task(batch):
-        return super().next_batch_task(batch)
+    def next_batch_task(batch, batch_keys):
+        return batch
 
     @staticmethod
     def preprocess(dataset):
-        pass
+        # train data
+
+        data = dataset.data[titanic.TRAIN_SURVIVED]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_SURVIVED] = data
+
+        data = dataset.data[titanic.TRAIN_SEX]
+        labels = ["male", "female"]
+        data = np_labels_to_index(data, labels)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_SEX] = data
+
+        data = dataset.data[titanic.TRAIN_EMBARKED]
+        labels = ["C", "S", "Q", "None"]
+        data = np_labels_to_index(data, labels)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_EMBARKED] = data
+
+        data = dataset.data[titanic.TRAIN_PCLASS]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_PCLASS] = data
+
+        data = dataset.data[titanic.TRAIN_SIBSP]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_SIBSP] = data
+
+        data = dataset.data[titanic.TRAIN_PARCH]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TRAIN_PARCH] = data
+
+        # with update_dict_value(dataset, titanic.TRAIN_AGE) as data:
+        #
+        #     print(data)
+
+        # test data
+
+        data = dataset.data[titanic.TEST_SEX]
+        labels = ["male", "female"]
+        data = np_labels_to_index(data, labels)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TEST_SEX] = data
+
+        data = dataset.data[titanic.TEST_EMBARKED]
+        labels = ["C", "S", "Q", "None"]
+        data = np_labels_to_index(data, labels)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TEST_EMBARKED] = data
+
+        data = dataset.data[titanic.TEST_PCLASS]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TEST_PCLASS] = data
+
+        data = dataset.data[titanic.TEST_SIBSP]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TEST_SIBSP] = data
+
+        data = dataset.data[titanic.TEST_PARCH]
+        data = data.astype(np.int)
+        data = np_index_to_onehot(data)
+        dataset.data[titanic.TEST_PARCH] = data
+
+        # with update_dict_value(dataset, titanic.TRAIN_FARE) as data:
+        #     data = data.astype(np.float)
+        #     # bin_ = [0, 4, 6, 8, 10, 20, 100, 1000]
+        #     # plt.hist(data, bins=bin_)
+        #
+        #     plt.show()
+
+        # add train_x
+        data = dataset.get_data([
+            titanic.TRAIN_SEX,
+            titanic.TRAIN_EMBARKED,
+            titanic.TRAIN_PCLASS,
+            titanic.TRAIN_SIBSP,
+            titanic.TRAIN_PARCH
+        ])
+        data = np.concatenate(data, axis=1)
+        dataset.add_data(ISK_TRAIN_X)
+
+        # add test_x
+        data = dataset.get_data([
+            titanic.TEST_SEX,
+            titanic.TEST_EMBARKED,
+            titanic.TEST_PCLASS,
+            titanic.TEST_SIBSP,
+            titanic.TEST_PARCH
+        ])
+        data = np.concatenate(data, axis=1)
+        dataset.add_data(ISK_TEST_X, data)
+
+        # add train_label
+        data = dataset.get_data([
+            titanic.TRAIN_SURVIVED
+        ])
+        dataset.add_data(ISK_TRAIN_LABEL, data)
