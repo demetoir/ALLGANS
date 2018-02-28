@@ -11,7 +11,6 @@ import os
 import subprocess
 import sys
 import traceback
-import multiprocessing
 
 META_DATA_FILE_NAME = 'instance.meta'
 INSTANCE_FOLDER = 'instance'
@@ -68,7 +67,7 @@ class InstanceManager:
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()
         self.instance = None
-        self.visualizers = []
+        self.visualizers = {}
         self.subprocess = {}
 
     def __del__(self):
@@ -213,6 +212,10 @@ class InstanceManager:
         if with_tensorboard:
             self.open_tensorboard()
 
+        self.log("current loaded visualizers")
+        for key in self.visualizers:
+            self.log(key)
+
         with tf.Session() as sess:
             saver = tf.train.Saver()
             save_path = os.path.join(self.instance.instance_path, 'check_point')
@@ -249,6 +252,8 @@ class InstanceManager:
                     if iter_num % check_point_interval == 0:
                         saver.save(sess, check_point_path)
                 # self.log("epoch %s end" % (epoch_ + 1))
+
+            saver.save(sess, check_point_path)
         self.log('train end')
 
         tf.reset_default_graph()
@@ -275,6 +280,10 @@ class InstanceManager:
         self.log('start sampling_model')
         saver = tf.train.Saver()
 
+        self.log("current loaded visualizers")
+        for key in self.visualizers:
+            self.log(key)
+
         save_path = os.path.join(self.instance.instance_path, 'check_point')
         check_point_path = os.path.join(save_path, 'instance.ckpt')
         if not os.path.exists(save_path):
@@ -292,7 +301,7 @@ class InstanceManager:
         tf.reset_default_graph()
         self.log('reset default graph')
 
-    def load_visualizer(self, visualizer, execute_interval):
+    def load_visualizer(self, visualizer, execute_interval, key=None):
         """load visualizer for training and sampling result of instance
 
         TODO change docstring
@@ -307,8 +316,17 @@ class InstanceManager:
         if not os.path.exists(visualizer_path):
             os.mkdir(visualizer_path)
 
-        self.visualizers += [visualizer(visualizer_path, execute_interval=execute_interval)]
-        self.log('visualizer %s loaded' % visualizer.__name__)
+        if key is None:
+            key = visualizer.__name__
+
+        self.visualizers[key] = visualizer(visualizer_path, execute_interval=execute_interval)
+        self.log('visualizer %s loaded key=%s' % (visualizer.__name__, key))
+        return key
+
+    def unload_visualizer(self, key):
+        if key not in self.visualizers:
+            raise KeyError("fail to unload visualizer, key '%s' not found" % key)
+        self.visualizers.pop(key, None)
 
     def __visualizer_task(self, sess, iter_num=None, dataset=None):
         """execute loaded visualizers
@@ -319,7 +337,7 @@ class InstanceManager:
         :param iter_num: current iteration number
         :param dataset: feed for visualizers
         """
-        for visualizer in self.visualizers:
+        for visualizer in self.visualizers.values():
             if iter_num is None or iter_num % visualizer.execute_interval == 0:
                 try:
                     visualizer.task(sess, iter_num, self.instance, dataset)
