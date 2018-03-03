@@ -70,7 +70,7 @@ class DownloadInfo:
         return self.url, self.is_zipped, self.download_file_name, self.extracted_file_names
 
 
-class AbstractDataset(metaclass=MetaTask):
+class BaseDataset(metaclass=MetaTask):
     """
     TODO
     """
@@ -89,15 +89,22 @@ class AbstractDataset(metaclass=MetaTask):
         self.logger = Logger(self.__class__.__name__, stdout_only=True)
         self.log = self.logger.get_log()
         self.data = {}
-        self.cursor = {}
+
+        self.data_bucket = {}
+        self.train_data = {}
+        self.test_data = {}
+        self.validation_data = {}
+        self.cursor = 0
+
         self.data_size = 0
 
     def __del__(self):
-        del self.data
-        del self.cursor
+        del self.download_infos
+        del self.batch_keys
         del self.logger
         del self.log
-        del self.batch_keys
+        del self.data
+        del self.cursor
 
     def __repr__(self):
         return self.__class__.__name__
@@ -146,10 +153,6 @@ class AbstractDataset(metaclass=MetaTask):
                     self.log("extract %s at %s" % (info.download_file_name, path))
                     extract_file(download_file, path)
 
-    def init_cursor(self):
-        for key in self.batch_keys:
-            self.cursor[key] = 0
-
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset
 
@@ -160,7 +163,6 @@ class AbstractDataset(metaclass=MetaTask):
         :type limit: int
         :param limit: limit size of dataset
         """
-        self.init_cursor()
 
         if limit is not None:
             for key in self.batch_keys:
@@ -180,14 +182,14 @@ class AbstractDataset(metaclass=MetaTask):
             self.input_shapes[key] = list(self.data[key].shape[1:])
             print(key, self.input_shapes[key])
 
-    def load(self, path, limit=None, split_train=None):
+    def load(self, path, limit=None):
         """
         TODO
         :param path:
         :param limit:
         :return:
         """
-        pass
+        raise NotImplementedError
 
     def save(self):
         raise NotImplementedError
@@ -198,9 +200,8 @@ class AbstractDataset(metaclass=MetaTask):
         else:
             self.data[batch_key] = np.concatenate((self.data[batch_key], data))
 
-    def __next_batch(self, batch_size, key, lookup=False):
-        data = self.data[key]
-        cursor = self.cursor[key]
+    def iter_batch(self, data, batch_size):
+        cursor = self.cursor
         data_size = len(data)
 
         # if batch size exceeds the size of data set
@@ -223,42 +224,24 @@ class AbstractDataset(metaclass=MetaTask):
         if batch_to_append:
             batch = np.concatenate((batch_to_append, batch))
 
-        if not lookup:
-            self.cursor[key] = end
-
         return batch
 
-    def next_batch(self, batch_size, batch_keys=None, lookup=False):
-        """return iter mini batch
+    def next_batch(self, batch_size, batch_keys=None, look_up=False, from_bucket=None):
+        data = self.data_bucket[from_bucket]
 
-        ex)
-        dataset.next_batch(3, ["train_x", "train_label"]) =
-            [[train_x1, train_x2, train_x3], [train_label1, train_label2, train_label3]]
-
-        dataset.next_batch(3, ["train_x", "train_label"], lookup=True) =
-            [[train_x4, train_x5, train_x6], [train_label4, train_label5, train_label6]]
-
-        dataset.next_batch(3, ["train_x", "train_label"]) =
-            [[train_x4, train_x5, train_x6], [train_label4, train_label5, train_label6]]
-
-        :param batch_size: size of mini batch
-        :param batch_keys: (iterable type) select keys,
-            if  batch_keys length is 1 than just return mini batch
-            else return list of mini batch
-        :param lookup: lookup == True cursor will not update
-        :return: (numpy array type) list of mini batch, order is same with batch_keys
-        """
         if batch_keys is None:
             batch_keys = self.batch_keys
 
         batches = []
         for key in batch_keys:
-            batches += [self.__next_batch(batch_size, key, lookup)]
+            batches += [self.iter_batch(data[key], batch_size)]
+
+        if not look_up:
+            self.cursor = (self.cursor + batch_size) % self.data_size
 
         batches = self.after_next_batch(batches, batch_keys)
-        if len(batches) == 1:
-            batches = batches[0]
-        return batches
+
+        return batches[0] if len(batches) == 1 else batches
 
     def preprocess(self):
         """preprocess for loaded data
