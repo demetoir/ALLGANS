@@ -1,5 +1,5 @@
 from data_handler.AbstractDataset import AbstractDataset
-from data_handler.BaseDataset import BaseDataset
+from data_handler.BaseDataset import BaseDataset, DatasetCollection
 from env_settting import *
 from util.Logger import Logger
 from util.misc_util import *
@@ -47,7 +47,7 @@ class DatasetLoader:
         except KeyError:
             raise KeyError("dataset_name %s not found" % dataset_name)
 
-        return dataset, dataset.input_shapes
+        return dataset
 
     def import_dataset_class(self, dataset_name):
         """ import dataset class by dataset name
@@ -74,9 +74,7 @@ class DatasetLoader:
         for key in module_.__dict__:
             value = module_.__dict__[key]
             try:
-                if issubclass(value, AbstractDataset):
-                    dataset = value
-                elif issubclass(value, BaseDataset):
+                if issubclass(value, DatasetCollection):
                     dataset = value
             except TypeError:
                 pass

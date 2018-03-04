@@ -19,7 +19,9 @@ from data_handler.titanic import *
 
 
 def main():
-    dataset, input_shapes = DatasetLoader().load_dataset("titanic")
+    dataset = DatasetLoader().load_dataset("titanic")
+    input_shapes = dataset.input_shapes
+    exit()
 
     visualizers = [(log_classifier_loss, 100)]
     model = ModelClassLoader.load_model_class("TitanicModel")

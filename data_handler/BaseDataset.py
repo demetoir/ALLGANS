@@ -4,6 +4,7 @@ import traceback
 import sys
 import numpy as np
 import os
+from sklearn.model_selection import train_test_split
 
 
 def _check_attr_is_None(attr):
@@ -85,37 +86,31 @@ class BaseDataset(metaclass=MetaTask):
 
         """
         self.download_infos = []
-        self.batch_keys = None
+        self.batch_keys = []
         self.logger = Logger(self.__class__.__name__, stdout_only=True)
         self.log = self.logger.get_log()
         self.data = {}
-
-        self.data_bucket = {}
-        self.train_data = {}
-        self.test_data = {}
-        self.validation_data = {}
         self.cursor = 0
-
         self.data_size = 0
+        self.input_shapes = None
 
     def __del__(self):
-        del self.download_infos
-        del self.batch_keys
         del self.logger
         del self.log
-        del self.data
-        del self.cursor
 
     def __repr__(self):
         return self.__class__.__name__
 
     def add_data(self, key, data):
-        self.batch_keys += [key]
         self.data[key] = data
-        self.cursor[key] = 0
+        self.cursor = 0
+        self.data_size = len(data)
 
     def get_data(self, key):
         return self.data[key]
+
+    def get_datas(self, keys):
+        return [self.data[key] for key in keys]
 
     def if_need_download(self, path):
         """check dataset is valid and if dataset is not valid download dataset
@@ -129,29 +124,35 @@ class BaseDataset(metaclass=MetaTask):
             pass
 
         for info in self.download_infos:
-            is_Invalid = False
-            files = glob(os.path.join(path, '**'), recursive=True)
-            names = list(map(lambda file: os.path.split(file)[1], files))
+            if self.is_invalid(path, info):
+                self.download_data(path, info)
 
-            if info.is_zipped:
-                file_list = info.extracted_file_names
-                for data_file in file_list:
-                    if data_file not in names:
-                        is_Invalid = True
-            else:
-                if info.download_file_name not in names:
-                    is_Invalid = True
+    def is_invalid(self, path, download_info):
+        validation = None
+        files = glob(os.path.join(path, '**'), recursive=True)
+        names = list(map(lambda file: os.path.split(file)[1], files))
 
-            if is_Invalid:
-                head, _ = os.path.split(path)
-                download_file = os.path.join(path, info.download_file_name)
+        if download_info.is_zipped:
+            file_list = download_info.extracted_file_names
+            for data_file in file_list:
+                if data_file not in names:
+                    validation = True
+        else:
+            if download_info.download_file_name not in names:
+                validation = True
 
-                self.log('download %s at %s ' % (info.download_file_name, download_file))
-                download_from_url(info.url, download_file)
+        return validation
 
-                if info.is_zipped:
-                    self.log("extract %s at %s" % (info.download_file_name, path))
-                    extract_file(download_file, path)
+    def download_data(self, path, download_info):
+        head, _ = os.path.split(path)
+        download_file = os.path.join(path, download_info.download_file_name)
+
+        self.log('download %s at %s ' % (download_info.download_file_name, download_file))
+        download_from_url(download_info.url, download_file)
+
+        if download_info.is_zipped:
+            self.log("extract %s at %s" % (download_info.download_file_name, path))
+            extract_file(download_file, path)
 
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset
@@ -168,9 +169,10 @@ class BaseDataset(metaclass=MetaTask):
             for key in self.batch_keys:
                 self.data[key] = self.data[key][:limit]
 
-        for key in self.batch_keys:
+        for key in self.data:
             self.data_size = max(len(self.data[key]), self.data_size)
             self.log("batch data '%s' %d item(s) loaded" % (key, len(self.data[key])))
+
         self.log('%s fully loaded' % self.__str__())
 
         self.log('%s preprocess end' % self.__str__())
@@ -178,7 +180,7 @@ class BaseDataset(metaclass=MetaTask):
 
         self.log("generate input_shapes")
         self.input_shapes = {}
-        for key in self.batch_keys:
+        for key in self.data:
             self.input_shapes[key] = list(self.data[key].shape[1:])
             print(key, self.input_shapes[key])
 
@@ -247,7 +249,7 @@ class BaseDataset(metaclass=MetaTask):
         """preprocess for loaded data
 
         """
-        pass
+        raise NotImplementedError
 
     def after_next_batch(self, batches, batch_keys=None):
         """pre process for every iteration for mini batch
@@ -259,3 +261,57 @@ class BaseDataset(metaclass=MetaTask):
         :return: batch
         """
         return batches
+
+    def split(self, ratio, shuffle=False):
+        random_state = np.random.randint(0, 1234567890) if shuffle is True else None
+
+        a_set = BaseDataset()
+        b_set = BaseDataset()
+        a_set.input_shapes = self.input_shapes
+        b_set.input_shapes = self.input_shapes
+
+        a_ratio = ratio[0] / sum(ratio)
+        b_ratio = ratio[1] / sum(ratio)
+        for key in self.data:
+            data = self.data[key]
+            a_data, b_data = train_test_split(
+                data,
+                train_size=a_ratio,
+                test_size=b_ratio,
+                random_state=random_state
+            )
+            a_set.add_data(key, a_data)
+            b_set.add_data(key, b_data)
+
+        return a_set, b_set
+
+    def merge(self, a_set, b_set):
+        new_set = BaseDataset()
+        if a_set.keys() is not b_set.keys():
+            raise KeyError("dataset can not merge, key does not match")
+
+        for key in a_set:
+            new_set.add_data(key, a_set.data[key] + b_set.data[key])
+
+        return new_set
+
+
+class DatasetCollection:
+    def __init__(self):
+        self.train_set = None
+        self.test_set = None
+        self.validation_set = None
+
+    def load(self, path, **kwargs):
+        if self.train_set is not None:
+            self.train_set.load(path, **kwargs)
+
+        if self.test_set is not None:
+            self.test_set.load(path, **kwargs)
+
+        if self.validation_set is not None:
+            self.validation_set.load(path, **kwargs)
+
+    @property
+    def input_shapes(self):
+        raise NotImplementedError
