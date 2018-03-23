@@ -5,6 +5,7 @@ import sys
 import numpy as np
 import os
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 
 def _check_attr_is_None(attr):
@@ -182,7 +183,7 @@ class BaseDataset(metaclass=MetaTask):
         self.input_shapes = {}
         for key in self.data:
             self.input_shapes[key] = list(self.data[key].shape[1:])
-            print(key, self.input_shapes[key])
+            self.log(key, self.input_shapes[key])
 
     def load(self, path, limit=None):
         """
@@ -228,15 +229,14 @@ class BaseDataset(metaclass=MetaTask):
 
         return batch
 
-    def next_batch(self, batch_size, batch_keys=None, look_up=False, from_bucket=None):
-        data = self.data_bucket[from_bucket]
+    def next_batch(self, batch_size, batch_keys=None, look_up=False):
 
         if batch_keys is None:
             batch_keys = self.batch_keys
 
         batches = []
         for key in batch_keys:
-            batches += [self.iter_batch(data[key], batch_size)]
+            batches += [self.iter_batch(self.data[key], batch_size)]
 
         if not look_up:
             self.cursor = (self.cursor + batch_size) % self.data_size
@@ -263,25 +263,16 @@ class BaseDataset(metaclass=MetaTask):
         return batches
 
     def split(self, ratio, shuffle=False):
-        random_state = np.random.randint(0, 1234567890) if shuffle is True else None
-
         a_set = BaseDataset()
         b_set = BaseDataset()
         a_set.input_shapes = self.input_shapes
         b_set.input_shapes = self.input_shapes
 
         a_ratio = ratio[0] / sum(ratio)
-        b_ratio = ratio[1] / sum(ratio)
+        index = int(self.data_size * a_ratio)
         for key in self.data:
-            data = self.data[key]
-            a_data, b_data = train_test_split(
-                data,
-                train_size=a_ratio,
-                test_size=b_ratio,
-                random_state=random_state
-            )
-            a_set.add_data(key, a_data)
-            b_set.add_data(key, b_data)
+            a_set.add_data(key, self.data[key][:index])
+            b_set.add_data(key, self.data[key][index:])
 
         return a_set, b_set
 
@@ -294,6 +285,12 @@ class BaseDataset(metaclass=MetaTask):
             new_set.add_data(key, a_set.data[key] + b_set.data[key])
 
         return new_set
+
+    def shuffle(self):
+        random_state = np.random.randint(1, 12345678)
+
+        for key in self.batch_keys:
+            self.data[key] = shuffle(self.data[key], random_state=random_state)
 
 
 class DatasetCollection:

@@ -235,11 +235,11 @@ class InstanceManager:
                 saver.restore(sess, check_point_path)
 
             batch_size = self.instance.batch_size
-            iter_per_epoch = int(dataset.data_size / batch_size)
-            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d'
-                     % (epoch, epoch * iter_per_epoch, iter_per_epoch))
+            iter_per_epoch = int(dataset.train_set.data_size / batch_size)
+            self.log('train set size: %d , total Epoch: %d, total iter: %d, iter per epoch: %d'
+                     % (dataset.train_set.data_size, epoch, epoch * iter_per_epoch, iter_per_epoch))
 
-            iter_num, loss_val_D, loss_val_G = 0, 0, 0
+            iter_num = 0
             for epoch_ in range(epoch):
                 for _ in range(iter_per_epoch):
                     iter_num += 1
@@ -256,14 +256,11 @@ class InstanceManager:
             saver.save(sess, check_point_path)
         self.log('train end')
 
-        tf.reset_default_graph()
-        self.log('reset default graph')
-
         if with_tensorboard:
             self.close_tensorboard()
 
     @_log_exception
-    def sampling_instance(self, dataset=None, is_restore=False):
+    def sampling_instance(self, dataset=None, is_restore=True):
         """sampling result from trained instance by running loaded visualizers
 
         * if you want to use visualizer call load_visualizer function first
@@ -297,9 +294,6 @@ class InstanceManager:
 
             self.__visualizer_task(sess, dataset=dataset)
         self.log('sampling end')
-
-        tf.reset_default_graph()
-        self.log('reset default graph')
 
     def load_visualizer(self, visualizer, execute_interval, key=None):
         """load visualizer for training and sampling result of instance

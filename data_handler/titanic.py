@@ -1,15 +1,18 @@
 from data_handler.AbstractDataset import *
+from dict_keys.dataset_batch_keys import *
 from dict_keys.input_shape_keys import *
 from util.numpy_utils import *
 import pandas as pd
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
 
 
-def np_labels_to_index(np_arr, labels):
+def np_str_labels_to_index(np_arr, labels):
     np_arr = np.asarray(np_arr)
+    new_arr = np.zeros_like(np_arr)
     for idx, label in enumerate(labels):
-        np_arr[np_arr == label] = np.array([idx], dtype=np.int32)
-    return np_arr.astype(dtype=np.int32)
+        new_arr = np.where(np_arr == label, idx, new_arr)
+
+    return new_arr.astype(dtype=np.int)
 
 
 FOLDER_NAME = "tatanic"
@@ -25,6 +28,67 @@ TICKET = 'Ticket'
 FARE = 'Fare'
 CABIN = 'Cabin'
 EMBARKED = 'Embarked'
+
+
+def x_preprocess(self):
+    data = self.data[SEX]
+    self.data["Sex_male"] = np.where(data == "male", 1, 0).reshape([-1, 1])
+    self.data["Sex_female"] = np.where(data == "female", 1, 0).reshape([-1, 1])
+
+    data = self.data[EMBARKED]
+    self.data["Embarked_C"] = np.where(data == "C", 1, 0).reshape([-1, 1])
+    self.data["Embarked_S"] = np.where(data == "S", 1, 0).reshape([-1, 1])
+    self.data["Embarked_Q"] = np.where(data == "Q", 1, 0).reshape([-1, 1])
+    self.data["Embarked_nan"] = np.where(data == "nan", 1, 0).reshape([-1, 1])
+
+    data = self.data[PCLASS]
+    data = data.astype(np.int)
+    data = np_index_to_onehot(data)
+    self.data[PCLASS] = data
+
+    data = self.data[SIBSP]
+    data = data.astype(np.int)
+    data = np_index_to_onehot(data)
+    self.data[SIBSP] = data
+
+    data = self.data[PARCH]
+    data = data.astype(np.int)
+    data = np_index_to_onehot(data)
+    self.data[PARCH] = data
+
+    data = self.data[AGE]
+
+    a = np.zeros(list(data.shape) + [2])
+    for i in range(len(data)):
+        if data[i] == "nan":
+            a[i] = [0, 1]
+        else:
+            a[i] = [float(data[i]) / 100, 0]
+    self.data[AGE] = a
+
+    data = self.data[FARE]
+    a = np.zeros(list(data.shape) + [2])
+    for i in range(len(data)):
+        if data[i] == "nan":
+            a[i] = [0, 1]
+        else:
+            a[i] = [float(data[i]) / 600, 0]
+    self.data[FARE] = a
+
+    data = self.get_datas([
+        "Sex_male",
+        "Sex_female",
+        "Embarked_C",
+        "Embarked_S",
+        "Embarked_Q",
+        "Embarked_nan",
+        PCLASS,
+        SIBSP,
+        PARCH,
+        AGE,
+        FARE,
+    ])
+    return np.concatenate(data, axis=1)
 
 
 class titanic_train(BaseDataset):
@@ -69,7 +133,7 @@ class titanic_train(BaseDataset):
             error_bad_lines=False,
             names=self.CSV_COLUMNS,
         )
-        pd_data = pd_data.fillna("None")
+        pd_data = pd_data.fillna("nan")
         for col, key in zip(self.CSV_COLUMNS, self.BATCH_KEYS):
             self.data[key] = np.array(pd_data[col])[1:]
 
@@ -77,54 +141,19 @@ class titanic_train(BaseDataset):
         pass
 
     def preprocess(self):
+        data = x_preprocess(self)
+        self.add_data(BK_X, data)
+
+        # add train_label
         data = self.data[SURVIVED]
         data = data.astype(np.int)
         data = np_index_to_onehot(data)
         self.data[SURVIVED] = data
 
-        data = self.data[SEX]
-        labels = ["male", "female"]
-        data = np_labels_to_index(data, labels)
-        data = np_index_to_onehot(data)
-        self.data[SEX] = data
-
-        data = self.data[EMBARKED]
-        labels = ["C", "S", "Q", "None"]
-        data = np_labels_to_index(data, labels)
-        data = np_index_to_onehot(data)
-        self.data[EMBARKED] = data
-
-        data = self.data[PCLASS]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[PCLASS] = data
-
-        data = self.data[SIBSP]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[SIBSP] = data
-
-        data = self.data[PARCH]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[PARCH] = data
-
-        # add train_x
-        data = self.get_datas([
-            SEX,
-            EMBARKED,
-            PCLASS,
-            SIBSP,
-            PARCH
-        ])
-        data = np.concatenate(data, axis=1)
-        self.add_data(ISK_TRAIN_X, data)
-
-        # add train_label
         data = self.get_datas([
             SURVIVED
         ])
-        self.add_data(ISK_TRAIN_LABEL, data[0])
+        self.add_data(BK_LABEL, data[0])
 
 
 class titanic_test(BaseDataset):
@@ -167,52 +196,16 @@ class titanic_test(BaseDataset):
             error_bad_lines=False,
             names=self.CSV_COLUMNS,
         )
-        pd_data = pd_data.fillna("None")
+        pd_data = pd_data.fillna('nan')
         for col, key in zip(self.CSV_COLUMNS, self.BATCH_KEYS):
             self.data[key] = np.array(pd_data[col])[1:]
-
-        pass
 
     def save(self):
         pass
 
     def preprocess(self):
-        data = self.data[SEX]
-        labels = ["male", "female"]
-        data = np_labels_to_index(data, labels)
-        data = np_index_to_onehot(data)
-        self.data[SEX] = data
-
-        data = self.data[EMBARKED]
-        labels = ["C", "S", "Q", "None"]
-        data = np_labels_to_index(data, labels)
-        data = np_index_to_onehot(data)
-        self.data[EMBARKED] = data
-
-        data = self.data[PCLASS]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[PCLASS] = data
-
-        data = self.data[SIBSP]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[SIBSP] = data
-
-        data = self.data[PARCH]
-        data = data.astype(np.int)
-        data = np_index_to_onehot(data)
-        self.data[PARCH] = data
-
-        data = self.get_datas([
-            SEX,
-            EMBARKED,
-            PCLASS,
-            SIBSP,
-            PARCH
-        ])
-        data = np.concatenate(data, axis=1)
-        self.add_data(ISK_TEST_X, data)
+        data = x_preprocess(self)
+        self.add_data(BK_X, data)
 
 
 class titanic(DatasetCollection):
@@ -225,9 +218,7 @@ class titanic(DatasetCollection):
 
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
-        ratio = (6, 4)
+        self.train_set.shuffle()
+        ratio = (8, 2)
         self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
-
-    @property
-    def input_shapes(self):
-        return self.train_set.input_shapes
+        print("split train set to train and validation set ratio=%s" % str(ratio))

@@ -39,6 +39,10 @@ def sigmoid(x, name='sigmoid'):
     """sigmoid activation function layer"""
     return tf.sigmoid(x, name=name)
 
+def tanh(x, name='tanh'):
+    """tanh activation function layer"""
+    return tf.tanh(x, name=name)
+
 
 def lrelu(x, leak=0.2, name="lrelu"):
     """leak relu activate function layer"""

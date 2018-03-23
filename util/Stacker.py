@@ -57,6 +57,9 @@ class Stacker:
         """add sigmoid layer"""
         return self.add_layer(sigmoid)
 
+    def tanh(self):
+        return self.add_layer(tanh)
+
     def lrelu(self):
         """add leaky relu layer"""
         return self.add_layer(lrelu)
