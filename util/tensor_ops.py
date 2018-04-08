@@ -39,6 +39,7 @@ def sigmoid(x, name='sigmoid'):
     """sigmoid activation function layer"""
     return tf.sigmoid(x, name=name)
 
+
 def tanh(x, name='tanh'):
     """tanh activation function layer"""
     return tf.tanh(x, name=name)
@@ -86,7 +87,7 @@ def linear(input_, output_size, name="linear", stddev=0.02, bias_start=0.0, with
 
     with tf.variable_scope(name):
         weight = tf.get_variable("weight", [shape[1], output_size], tf.float32,
-                                 tf.random_normal_initializer(stddev=stddev))
+                                 initializer=tf.contrib.layers.xavier_initializer())
         bias = tf.get_variable("bias", [output_size],
                                initializer=tf.constant_initializer(bias_start))
         if with_w:
@@ -300,3 +301,7 @@ def softmax(input_, name='softmax'):
     """softmax layer"""
     return tf.nn.softmax(input_, name=name)
 
+
+def dropout(input_, rate, nam="dropout"):
+    """dropout"""
+    return tf.nn.dropout(input_, rate)

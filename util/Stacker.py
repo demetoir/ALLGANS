@@ -111,3 +111,7 @@ class Stacker:
     def softmax(self):
         """add softmax layer"""
         return self.add_layer(softmax)
+
+    def dropout(self, rate):
+        """add dropout layer"""
+        return self.add_layer(dropout, rate)
