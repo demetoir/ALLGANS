@@ -336,7 +336,9 @@ class InstanceManager:
                 try:
                     visualizer.task(sess, iter_num, self.instance, dataset)
                 except Exception as err:
-                    self.log('at visualizer %s \n %s' % (visualizer, err))
+                    exc_type, exc_value, exc_traceback = sys.exc_info()
+                    self.log('at visualizer %s \n %s \n %s' % (
+                            visualizer, str(err), "".join(traceback.format_tb(exc_traceback))))
 
     def open_subprocess(self, args_, subprocess_key=None):
         """open subprocess with args and return pid

@@ -209,6 +209,7 @@ class titanic_test(BaseDataset):
 
 
 class titanic(DatasetCollection):
+    LABEL_SIZE = 2
 
     def __init__(self):
         super().__init__()

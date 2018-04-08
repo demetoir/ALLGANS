@@ -5,6 +5,7 @@ from visualizer.image_tile import image_tile
 from visualizer.log_GAN_loss import log_GAN_loss
 from visualizer.image_tile_data import image_tile_data
 from visualizer.log_classifier_loss import log_classifier_loss
+from visualizer.log_confusion_matrix import log_confusion_matrix
 from visualizer.log_titanic_loss import log_titanic_loss
 from ModelClassLoader import ModelClassLoader
 from sklearn import tree
@@ -63,12 +64,12 @@ def main():
     metadata_path = manager.build_instance(model)
     manager.load_instance(metadata_path, input_shapes)
 
-    visualizers = [(log_titanic_loss, 25)]
+    visualizers = [(log_titanic_loss, 25), (log_confusion_matrix, 500)]
     for visualizer, interval in visualizers:
         manager.load_visualizer(visualizer, interval)
 
     manager.train_instance(
-        epoch=200,
+        epoch=4000,
         dataset=dataset,
         check_point_interval=5000,
         with_tensorboard=False)
