@@ -12,7 +12,7 @@ class FailLoadModelError(BaseException):
 class AbstractModel:
     """Abstract class of model for tensorflow graph
 
-    TODO
+    TODO add docstring
 
     """
     VERSION = 1.0

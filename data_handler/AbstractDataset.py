@@ -72,7 +72,7 @@ class DownloadInfo:
 
 class AbstractDataset(metaclass=MetaTask):
     """
-    TODO
+    TODO add docstring
     """
 
     def __init__(self):
@@ -182,7 +182,7 @@ class AbstractDataset(metaclass=MetaTask):
 
     def load(self, path, limit=None, split_train=None):
         """
-        TODO
+        TODO add docstring
         :param path:
         :param limit:
         :return:

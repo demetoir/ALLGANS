@@ -7,12 +7,12 @@ from util.misc_util import *
 
 class DatasetLoader:
     """
-    Todo
+    TODO add docstring
     """
 
     def __init__(self, root_path=ROOT_PATH):
         """create DatasetManager
-        todo
+        TODO add docstring
         """
         self.root_path = root_path
         self.logger = Logger(self.__class__.__name__, self.root_path)
