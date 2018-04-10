@@ -17,22 +17,33 @@ INSTANCE_FOLDER = 'instance'
 VISUAL_RESULT_FOLDER = 'visual_results'
 
 
-def _log_exception(func):
+def deco_handle_exception(func):
     """decorator for catch exception and log
     """
 
     def wrapper(*args, **kwargs):
+        self = args[0]
+        log_func = self.log
         try:
             return func(*args, **kwargs)
         except KeyboardInterrupt:
-            self = args[0]
-            self.log("KeyboardInterrupt detected abort process")
-        except Exception:
-            self = args[0]
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
+            log_func("KeyboardInterrupt detected abort process")
+        except Exception as e:
+            log_error_trace(log_func, e)
 
     return wrapper
+
+
+def log_error_trace(log_func, e, head=""):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    msg = '%s\n %s : %s \n%s' % (
+        head,
+        e.__class__.__name__,
+        e,
+        "".join(traceback.format_tb(exc_traceback))
+    )
+    log_func(msg)
 
 
 class InstanceManager:
@@ -147,7 +158,7 @@ class InstanceManager:
         metadata[MODEL_METADATA_KEY_INSTANCE_SOURCE_PATH] = instance_source_path
         metadata[MODEL_METADATA_KEY_INSTANCE_SUMMARY_FOLDER_PATH] = instance_summary_folder_path
         metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME] = model.__name__
-        metadata[MODEL_METADATA_KEY_README] = self.gen_readme()
+        metadata[MODEL_METADATA_KEY_README] = None
         metadata[MODEL_METADATA_KEY_METADATA_PATH] = os.path.join(instance_path, 'instance.meta')
         dump_json(metadata, metadata[MODEL_METADATA_KEY_METADATA_PATH])
 
@@ -184,7 +195,7 @@ class InstanceManager:
         instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
         self.log('load instance id : %s' % instance_id)
 
-    @_log_exception
+    @deco_handle_exception
     def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False, with_tensorboard=True):
         """training loaded instance with dataset for epoch and loaded visualizers will execute
 
@@ -259,7 +270,7 @@ class InstanceManager:
         if with_tensorboard:
             self.close_tensorboard()
 
-    @_log_exception
+    @deco_handle_exception
     def sampling_instance(self, dataset=None, is_restore=True):
         """sampling result from trained instance by running loaded visualizers
 
@@ -298,13 +309,11 @@ class InstanceManager:
     def load_visualizer(self, visualizer, execute_interval, key=None):
         """load visualizer for training and sampling result of instance
 
-        TODO change docstring
-        todo load single visualizer
-
         :type visualizer: AbstractVisualizer
         :param visualizer: list of tuple,
         :type execute_interval: int
         :param execute_interval: interval to execute visualizer per iteration
+        :param key: key of visualizer dict
         """
         visualizer_path = self.instance.instance_visual_result_folder_path
         if not os.path.exists(visualizer_path):
@@ -336,9 +345,7 @@ class InstanceManager:
                 try:
                     visualizer.task(sess, iter_num, self.instance, dataset)
                 except Exception as err:
-                    exc_type, exc_value, exc_traceback = sys.exc_info()
-                    self.log('at visualizer %s \n %s \n %s' % (
-                            visualizer, str(err), "".join(traceback.format_tb(exc_traceback))))
+                    log_error_trace(self.log, err, head='while execute %s' % visualizer)
 
     def open_subprocess(self, args_, subprocess_key=None):
         """open subprocess with args and return pid
@@ -398,7 +405,3 @@ class InstanceManager:
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
 
-    @staticmethod
-    def gen_readme():
-        # TODO implement
-        return {}
