@@ -1,6 +1,5 @@
 from data_handler.AbstractDataset import *
 from dict_keys.dataset_batch_keys import *
-from dict_keys.input_shape_keys import *
 from util.numpy_utils import *
 import pandas as pd
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
