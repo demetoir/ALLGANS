@@ -23,24 +23,16 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('classifier'):
             layer = Stacker(x)
 
-            layer.linear(128)
-            layer.bn()
-            layer.lrelu()
+            layer.linear_block(128, lrelu)
             layer.dropout(dropout_rate)
 
-            layer.linear(128)
-            layer.bn()
-            layer.lrelu()
+            layer.linear_block(128, relu)
             layer.dropout(dropout_rate)
 
-            layer.linear(64)
-            layer.bn()
-            layer.lrelu()
+            layer.linear_block(64, lrelu)
             layer.dropout(dropout_rate)
 
-            layer.linear(32)
-            layer.bn()
-            layer.lrelu()
+            layer.linear_block(32, lrelu)
             layer.dropout(dropout_rate)
 
             layer.linear(2)
@@ -72,9 +64,9 @@ class TitanicModel(AbstractModel):
             def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
                 return lambda_ * tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list]))
 
-            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.01)
+            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.001)
             self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2)
-            self.loss = self.loss + self.l1_norm_penalty
+            self.loss = self.loss
             self.loss_mean = tf.reduce_mean(self.loss)
             self.l1_norm_penalty_mean = tf.reduce_mean(self.l1_norm_penalty)
             self.l2_norm_penalty_mean = tf.reduce_mean(self.l2_norm_penalty)
@@ -89,9 +81,14 @@ class TitanicModel(AbstractModel):
             self.batch_size,
             batch_keys=[BK_X, BK_LABEL]
         )
-        sess.run([self.train], feed_dict={self.X: batch_xs, self.label: batch_labels, self.dropout_rate: self.DROPOUT_RATE})
-
-        sess.run([self.op_inc_global_step])
+        sess.run(
+            [self.train, self.op_inc_global_step],
+            feed_dict={
+                self.X: batch_xs,
+                self.label: batch_labels,
+                self.dropout_rate: self.DROPOUT_RATE
+            }
+        )
 
     def run_model(self, sess=None, ops=None, feed_dict=None):
         feed_dict[self.dropout_rate] = 1
@@ -107,6 +104,12 @@ class TitanicModel(AbstractModel):
             self.batch_size,
             batch_keys=[BK_X, BK_LABEL]
         )
-        summary, global_step = sess.run([self.op_merge_summary, self.global_step],
-                                        feed_dict={self.X: batch_xs, self.label: batch_labels, self.dropout_rate: 0.6})
+        summary, global_step = sess.run(
+            [self.op_merge_summary, self.global_step],
+            feed_dict={
+                self.X: batch_xs,
+                self.label: batch_labels,
+                self.dropout_rate: 0.6
+            }
+        )
         summary_writer.add_summary(summary, global_step)
