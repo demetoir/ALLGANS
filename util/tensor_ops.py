@@ -246,7 +246,15 @@ def conv_block(input_, output_channel, filter_, activate, name='conv_block'):
     """
     with tf.variable_scope(name):
         input_ = conv2d(input_, output_channel, filter_, name='conv')
-        input_ = bn(input_, name='bn')
+        input_ = bn(input_)
+        input_ = activate(input_)
+    return input_
+
+
+def linear_block(input_, output_size, activate, name="linear_block"):
+    with tf.variable_scope(name):
+        input_ = linear(input_, output_size)
+        input_ = bn(input_)
         input_ = activate(input_)
     return input_
 

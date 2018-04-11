@@ -76,6 +76,9 @@ class Stacker:
         """add linear layer"""
         return self.add_layer(linear, output_size)
 
+    def linear_block(self, output_size, activate):
+        return self.add_layer(linear_block, output_size, activate)
+
     def conv2d_transpose(self, output_shape, filter_):
         """add 2d transposed convolution layer"""
         return self.add_layer(conv2d_transpose, output_shape, filter_)
