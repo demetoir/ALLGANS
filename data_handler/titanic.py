@@ -52,7 +52,7 @@ def x_preprocess(self):
 
     data = self.data[PARCH]
     data = data.astype(np.int)
-    data = np_index_to_onehot(data)
+    data = np_index_to_onehot(data, n=10)
     self.data[PARCH] = data
 
     data = self.data[AGE]
