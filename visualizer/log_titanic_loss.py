@@ -31,8 +31,22 @@ class log_titanic_loss(AbstractVisualizer):
             model.batch_size,
             batch_keys=[BK_X, BK_LABEL]
         )
-        loss, global_step = sess.run(
+        train_loss, global_step = sess.run(
             [model.loss_mean, model.global_step],
+            feed_dict={
+                model.X: batch_xs,
+                model.label: batch_labels,
+                model.dropout_rate: 1
+            }
+        )
+
+        dataset.validation_set.reset_cursor()
+        batch_xs, batch_labels = dataset.validation_set.next_batch(
+            model.batch_size,
+            batch_keys=[BK_X, BK_LABEL]
+        )
+        valid_loss = sess.run(
+            model.loss_mean,
             feed_dict={
                 model.X: batch_xs,
                 model.label: batch_labels,
@@ -51,7 +65,8 @@ class log_titanic_loss(AbstractVisualizer):
 
         self.log(
             'global_step : %04d ' % global_step,
-            'loss: {:.4} '.format(loss),
-            'train acc: {:.4} '.format(train_acc),
-            'valid acc: {:.4} '.format(valid_acc),
+            'train loss: {:2.4f} '.format(train_loss),
+            'valid loss: {:2.4f} '.format(valid_loss),
+            'train acc: {:2.4f} '.format(train_acc),
+            'valid acc: {:2.4f} '.format(valid_acc),
         )
