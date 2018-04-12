@@ -23,16 +23,16 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('classifier'):
             layer = Stacker(x)
 
-            layer.linear_block(128, lrelu)
-            layer.dropout(dropout_rate)
-
-            layer.linear_block(128, relu)
-            layer.dropout(dropout_rate)
-
             layer.linear_block(64, lrelu)
             layer.dropout(dropout_rate)
 
+            layer.linear_block(64, relu)
+            layer.dropout(dropout_rate)
+
             layer.linear_block(32, lrelu)
+            layer.dropout(dropout_rate)
+
+            layer.linear_block(16, lrelu)
             layer.dropout(dropout_rate)
 
             layer.linear(2)
@@ -51,8 +51,8 @@ class TitanicModel(AbstractModel):
 
         self.predict_index = tf.cast(tf.argmax(self.h, 1, name="predicted_label"), tf.float32)
         self.label_index = onehot_to_index(self.label)
-        self.batch_acc = tf.reduce_mean(tf.cast(tf.equal(self.predict_index, self.label_index), tf.float64),
-                                        name="batch_acc")
+        self.batch_acc = tf.cast(tf.equal(self.predict_index, self.label_index), tf.float64, name="batch_acc")
+        self.batch_acc_mean = tf.reduce_mean(self.batch_acc, name="batch_acc_mean")
 
     def load_loss_function(self):
         with tf.variable_scope('loss'):
@@ -60,7 +60,7 @@ class TitanicModel(AbstractModel):
 
             self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.001)
             self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2)
-            self.loss = self.loss
+            self.loss = self.loss + self.l1_norm_penalty
             self.loss_mean = tf.reduce_mean(self.loss)
             self.l1_norm_penalty_mean = tf.reduce_mean(self.l1_norm_penalty)
             self.l2_norm_penalty_mean = tf.reduce_mean(self.l2_norm_penalty)
