@@ -37,11 +37,11 @@ def deco_handle_exception(func):
 def log_error_trace(log_func, e, head=""):
     exc_type, exc_value, exc_traceback = sys.exc_info()
 
-    msg = '%s\n %s : %s \n%s' % (
+    msg = '%s\n %s %s : %s \n' % (
         head,
+        "".join(traceback.format_tb(exc_traceback)),
         e.__class__.__name__,
         e,
-        "".join(traceback.format_tb(exc_traceback))
     )
     log_func(msg)
 
@@ -404,4 +404,3 @@ class InstanceManager:
     def close_tensorboard(self):
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
-
