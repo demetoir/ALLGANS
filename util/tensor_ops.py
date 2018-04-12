@@ -313,3 +313,11 @@ def softmax(input_, name='softmax'):
 def dropout(input_, rate, nam="dropout"):
     """dropout"""
     return tf.nn.dropout(input_, rate)
+
+
+def L1_norm(var_list, lambda_=1.0, name="L1_norm"):
+    return lambda_ * tf.reduce_sum([tf.reduce_sum(tf.abs(var)) for var in var_list])
+
+
+def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
+    return lambda_ * tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list]))

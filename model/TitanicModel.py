@@ -58,12 +58,6 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('loss'):
             self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.label, logits=self.logit)
 
-            def L1_norm(var_list, lambda_=1.0, name="L1_norm"):
-                return lambda_ * tf.reduce_sum([tf.reduce_sum(tf.abs(var)) for var in var_list])
-
-            def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
-                return lambda_ * tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list]))
-
             self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.001)
             self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2)
             self.loss = self.loss
