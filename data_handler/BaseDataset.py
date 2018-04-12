@@ -289,7 +289,7 @@ class BaseDataset(metaclass=MetaTask):
     def shuffle(self):
         random_state = np.random.randint(1, 12345678)
 
-        for key in self.batch_keys:
+        for key in self.data:
             self.data[key] = shuffle(self.data[key], random_state=random_state)
 
     def reset_cursor(self):
