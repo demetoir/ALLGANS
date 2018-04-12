@@ -337,6 +337,10 @@ class InstanceManager:
             raise KeyError("fail to unload visualizer, key '%s' not found" % key)
         self.visualizers.pop(key, None)
 
+    def unload_all_visualizer(self):
+        for key in self.visualizers:
+            self.visualizers.pop(key, None)
+
     def __visualizer_task(self, sess, iter_num=None, dataset=None):
         """execute loaded visualizers
 
