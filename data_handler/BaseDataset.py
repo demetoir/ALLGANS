@@ -292,6 +292,9 @@ class BaseDataset(metaclass=MetaTask):
         for key in self.batch_keys:
             self.data[key] = shuffle(self.data[key], random_state=random_state)
 
+    def reset_cursor(self):
+        self.cursor = 0
+
 
 class DatasetCollection:
     def __init__(self):
