@@ -303,7 +303,13 @@ class InstanceManager:
                 saver.restore(sess, check_point_path)
                 self.log('restore check point')
 
-            self.__visualizer_task(sess, dataset=dataset)
+            iter_num = 0
+            for visualizer in self.visualizers.values():
+                try:
+                    visualizer.task(sess=sess, iter_num=iter_num, model=self.instance, dataset=dataset)
+                except Exception as err:
+                    log_error_trace(self.log, err, head='while execute %s' % visualizer)
+
         self.log('sampling end')
 
     def load_visualizer(self, visualizer, execute_interval, key=None):
