@@ -30,40 +30,45 @@ EMBARKED = 'Embarked'
 
 
 def x_preprocess(self):
+    x_dict = {}
+
     data = self.data[SEX]
-    self.data["Sex_male"] = np.where(data == "male", 1, 0).reshape([-1, 1])
-    self.data["Sex_female"] = np.where(data == "female", 1, 0).reshape([-1, 1])
+    x_dict["Sex_male"] = np.where(data == "male", 1, 0).reshape([-1, 1])
+    x_dict["Sex_female"] = np.where(data == "female", 1, 0).reshape([-1, 1])
 
     data = self.data[EMBARKED]
-    self.data["Embarked_C"] = np.where(data == "C", 1, 0).reshape([-1, 1])
-    self.data["Embarked_S"] = np.where(data == "S", 1, 0).reshape([-1, 1])
-    self.data["Embarked_Q"] = np.where(data == "Q", 1, 0).reshape([-1, 1])
-    self.data["Embarked_nan"] = np.where(data == "nan", 1, 0).reshape([-1, 1])
+    x_dict["Embarked_C"] = np.where(data == "C", 1, 0).reshape([-1, 1])
+    x_dict["Embarked_S"] = np.where(data == "S", 1, 0).reshape([-1, 1])
+    x_dict["Embarked_Q"] = np.where(data == "Q", 1, 0).reshape([-1, 1])
+    x_dict["Embarked_nan"] = np.where(data == "nan", 1, 0).reshape([-1, 1])
 
     data = self.data[PCLASS]
     data = data.astype(np.int)
     data = np_index_to_onehot(data)
-    self.data[PCLASS] = data
+    x_dict["pclass_onehot"] = data
 
     data = self.data[SIBSP]
     data = data.astype(np.int)
     data = np_index_to_onehot(data)
-    self.data[SIBSP] = data
+    x_dict["sibsp_onehot"] = data
 
     data = self.data[PARCH]
     data = data.astype(np.int)
     data = np_index_to_onehot(data, n=10)
-    self.data[PARCH] = data
+    x_dict["parch_onehot"] = data
+
+    sibsp = self.data[SIBSP].astype(np.int)
+    parch = self.data[PARCH].astype(np.int)
+    x_dict["family_size_onehot"] = np_index_to_onehot(sibsp + parch + 1, n=20)
 
     data = self.data[AGE]
-
     a = np.zeros(list(data.shape) + [2])
     for i in range(len(data)):
         if data[i] == "nan":
             a[i] = [0, 1]
         else:
             a[i] = [float(data[i]) / 100, 0]
-    self.data[AGE] = a
+    x_dict["age_scaled"] = a
 
     data = self.data[FARE]
     a = np.zeros(list(data.shape) + [2])
@@ -72,22 +77,9 @@ def x_preprocess(self):
             a[i] = [0, 1]
         else:
             a[i] = [float(data[i]) / 600, 0]
-    self.data[FARE] = a
+    x_dict["fare_scaled_"] = a
 
-    data = self.get_datas([
-        "Sex_male",
-        "Sex_female",
-        "Embarked_C",
-        "Embarked_S",
-        "Embarked_Q",
-        "Embarked_nan",
-        PCLASS,
-        SIBSP,
-        PARCH,
-        AGE,
-        FARE,
-    ])
-    return np.concatenate(data, axis=1)
+    return np.concatenate(list(x_dict.values()), axis=1)
 
 
 class titanic_train(BaseDataset):
@@ -219,6 +211,6 @@ class titanic(DatasetCollection):
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
         self.train_set.shuffle()
-        ratio = (8, 2)
+        ratio = (7, 3)
         self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
         print("split train set to train and validation set ratio=%s" % str(ratio))
