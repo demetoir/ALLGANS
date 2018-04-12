@@ -24,6 +24,7 @@ class csv_titanic_result(AbstractVisualizer):
             )
             predict_list += [predict]
         predict = np.concatenate(predict_list, axis=0)[:dataset.test_set.data_size]
+        predict = predict.astype(np.int32)
 
         df = pd.DataFrame()
         df["PassengerId"] = range(892, 1309 + 1)
@@ -32,4 +33,4 @@ class csv_titanic_result(AbstractVisualizer):
         path = os.path.join(self.visualizer_path, "result.csv")
         df.to_csv(path_or_buf=path, index=False, index_label=False)
 
-        self.log("total sample %s\n build result.csv file\n%s" % (dataset.test_set.data_size, path))
+        self.log("total sample %s, build result.csv file\n%s" % (dataset.test_set.data_size, path))
