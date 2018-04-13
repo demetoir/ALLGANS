@@ -14,7 +14,7 @@ manager.load_instance(model_metadata_path, input_shapes_from_dataset)
 # feed visualizer_class
 from VisualizerClassLoader import VisualizerClassLoader
 
-visualizer = VisualizerClassLoader.load_class("visualizer_name")
+visualizer = VisualizerClassLoader.load("visualizer_name")
 manager.load_visualizer(visualizer, execute_interval=10)
 
 # train model
