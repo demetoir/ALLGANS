@@ -7,6 +7,7 @@ from visualizer.image_tile_data import image_tile_data
 from visualizer.log_classifier_loss import log_classifier_loss
 from visualizer.log_confusion_matrix import log_confusion_matrix
 from visualizer.log_titanic_loss import log_titanic_loss
+from visualizer.csv_titanic_result import csv_titanic_result
 from ModelClassLoader import ModelClassLoader
 from sklearn import tree
 
