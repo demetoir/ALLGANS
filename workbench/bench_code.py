@@ -12,66 +12,45 @@ from ModelClassLoader import ModelClassLoader
 # model = ModelClassLoader.load_model_class("GAN")
 
 from data_handler.titanic import *
-from sklearn import tree
+
+from workbench.sklearn_toolkit import *
 
 
-class DecisionTreeClassifier:
-    """
-    sklearn base DecisionTreeClassifier
-    """
+def fit_and_test(model, dataset, *args, **kwargs):
+    instance = model(*args, **kwargs)
+    print(instance)
 
-    def __init__(self, *args, **kwargs):
-        self.d_tree = tree.DecisionTreeClassifier(*args, **kwargs)
-
-    def fit(self, xs, labels):
-        self.d_tree.fit(xs, labels)
-
-    def predicts(self, xs):
-        return self.d_tree.predict(xs)
-
-    def acc(self, xs, labels):
-        return self.d_tree.score(xs, labels)
-
-    def probs(self, xs, ):
-        """
-        if multi label than output shape == (class, sample, prob)
-        need to transpose shape to (sample, class, prob)
-
-        :param xs:
-        :return:
-        """
-        probs = np.array(self.d_tree.predict_proba(xs))
-        probs = np.transpose(probs, axes=(1, 0, 2))
-        return probs
-
-
-def sklearn_DecisionTreeClassifier(dataset, max_depth):
-    dtree = DecisionTreeClassifier(max_depth=max_depth)
-    print(id(dtree))
     batch_xs, batch_labels = dataset.train_set.next_batch(
         dataset.train_set.data_size,
-        batch_keys=[BK_X, BK_LABEL]
+        batch_keys=[BK_X, BK_LABEL],
     )
 
-    dtree.fit(batch_xs, batch_labels)
+    instance.fit(batch_xs, batch_labels, Ys_type="onehot")
 
-    acc = dtree.acc(batch_xs, batch_labels)
+    acc = instance.acc(batch_xs, batch_labels, Ys_type="onehot")
     print("train acc:", acc)
 
     batch_xs, batch_labels = dataset.validation_set.next_batch(
         dataset.validation_set.data_size,
         batch_keys=[BK_X, BK_LABEL]
     )
-    acc = dtree.acc(batch_xs, batch_labels)
+    acc = instance.acc(batch_xs, batch_labels, Ys_type="onehot")
     print("valid acc:", acc)
+
+    print("probs")
+    probs = instance.prob(batch_xs[:3], transpose_shape=False)
+    print(probs)
+
+    print()
 
 
 def main():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
-    for i in range(1, 10):
-        dataset.train_set.shuffle()
-        sklearn_DecisionTreeClassifier(dataset, max_depth=i)
+
+    # sklearn_DecisionTreeClassifier(dataset, 5)
+    for clf in classifiers:
+        fit_and_test(clf, dataset)
 
     # model = ModelClassLoader.load_model_class("TitanicModel")
     #
