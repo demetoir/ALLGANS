@@ -208,7 +208,7 @@ class BaseDataset(metaclass=MetaTask):
         data_size = len(data)
 
         # if batch size exceeds the size of data set
-        over_data = batch_size // data_size
+        over_data = batch_size // (data_size + 1)
         if over_data > 0:
             whole_data = np.concatenate((data[cursor:], data[:cursor]))
             batch_to_append = np.repeat(whole_data, over_data, axis=0)
