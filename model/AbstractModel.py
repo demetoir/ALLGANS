@@ -143,7 +143,7 @@ class AbstractModel:
         if not implemented
         """
         with tf.variable_scope('misc_ops'):
-            self.global_step = tf.get_variable("global_step", shape=[1], initializer=tf.zeros_initializer)
+            self.global_step = tf.get_variable("global_step", shape=1, initializer=tf.zeros_initializer)
             with tf.variable_scope('op_inc_global_step'):
                 self.op_inc_global_step = self.global_step.assign(self.global_step + 1)
 
