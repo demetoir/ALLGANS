@@ -131,3 +131,7 @@ def np_index_to_onehot(x, n=None, dtype=float):
     x = np.asarray(x)
     n = np.max(x) + 1 if n is None else n
     return np.eye(n, dtype=dtype)[x]
+
+
+def np_onehot_to_index(x, axis=1):
+    return np.argmax(x, axis=axis)
