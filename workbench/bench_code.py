@@ -1,3 +1,5 @@
+from pprint import pprint
+
 from InstanceManger import InstanceManager
 from workbench.InstanceManagerHelper import InstanceManagerHelper
 from DatasetLoader import DatasetLoader
@@ -16,32 +18,102 @@ from data_handler.titanic import *
 from workbench.sklearn_toolkit import *
 
 
-def fit_and_test(model, dataset, *args, **kwargs):
-    instance = model(*args, **kwargs)
+def fit_and_test(model, dataset):
+    params = {
+        # 'alpha': 1.0,
+        # 'binarize': 0.0,
+        # 'class_prior': None,
+        # 'fit_prior': True,
+    }
+    instance = model(**params)
     print(instance)
+    print("params")
+    params = instance.get_params()
+    pprint(params)
 
     batch_xs, batch_labels = dataset.train_set.next_batch(
         dataset.train_set.data_size,
         batch_keys=[BK_X, BK_LABEL],
     )
-
     instance.fit(batch_xs, batch_labels, Ys_type="onehot")
 
-    acc = instance.acc(batch_xs, batch_labels, Ys_type="onehot")
+    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
     print("train acc:", acc)
 
     batch_xs, batch_labels = dataset.validation_set.next_batch(
         dataset.validation_set.data_size,
         batch_keys=[BK_X, BK_LABEL]
     )
-    acc = instance.acc(batch_xs, batch_labels, Ys_type="onehot")
+    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
     print("valid acc:", acc)
 
     print("probs")
-    probs = instance.prob(batch_xs[:3], transpose_shape=False)
+    probs = instance.proba(batch_xs[:10], transpose_shape=False)
     print(probs)
 
+    print("predict")
+    print(instance.predict(batch_xs[:10]))
+
     print()
+
+
+def param_search(instance, dataset):
+    param_grid = {
+        'alpha': [1.0, 2.0, 4.0],
+        'binarize': [0.0, 0.5, 1.0, 2.0],
+        'class_prior': [None],
+        'fit_prior': [True, False],
+    }
+
+    gs = ParamGridSearch(instance, param_grid)
+    batch_xs, batch_labels = dataset.train_set.next_batch(
+        dataset.train_set.data_size,
+        batch_keys=[BK_X, BK_LABEL],
+    )
+    gs.fit(batch_xs, batch_labels)
+
+    d = gs.cv_results_
+    # pprint(d)
+
+    print("best")
+    print(gs.best_score_)
+    print(gs.best_params_)
+
+    instance.set_params(**gs.best_params_)
+    batch_xs, batch_labels = dataset.train_set.next_batch(
+        dataset.train_set.data_size,
+        batch_keys=[BK_X, BK_LABEL],
+    )
+    instance.fit(batch_xs, batch_labels, Ys_type="onehot")
+
+    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
+    print("train acc:", acc)
+
+    batch_xs, batch_labels = dataset.validation_set.next_batch(
+        dataset.validation_set.data_size,
+        batch_keys=[BK_X, BK_LABEL]
+    )
+    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
+    print("valid acc:", acc)
+
+
+classifiers = [
+    SGD,
+    Gaussian_NB,
+    Bernoulli_NB,
+    Multinomial_NB,
+    DecisionTree,
+    RandomForest,
+    ExtraTrees,
+    AdaBoost,
+    GradientBoosting,
+    MLP,
+    QDA,
+    KNeighbors,
+    Linear_SVM,
+    RBF_SVM,
+    GaussianProcess,
+]
 
 
 def main():
