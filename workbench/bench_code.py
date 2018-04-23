@@ -19,12 +19,7 @@ from workbench.sklearn_toolkit import *
 
 
 def fit_and_test(model, dataset):
-    params = {
-        # 'alpha': 1.0,
-        # 'binarize': 0.0,
-        # 'class_prior': None,
-        # 'fit_prior': True,
-    }
+    params = {}
     instance = model(**params)
     print(instance)
     print("params")
@@ -98,6 +93,8 @@ def param_search(instance, dataset):
 
 
 classifiers = [
+    MLP,
+
     SGD,
     Gaussian_NB,
     Bernoulli_NB,
@@ -107,22 +104,27 @@ classifiers = [
     ExtraTrees,
     AdaBoost,
     GradientBoosting,
-    MLP,
     QDA,
     KNeighbors,
-    Linear_SVM,
+    Linear_SVC,
     RBF_SVM,
     GaussianProcess,
 ]
 
+import os
+
+
 
 def main():
-    dataset = DatasetLoader().load_dataset("titanic")
-    input_shapes = dataset.train_set.input_shapes
+    import xgboost as xgb
+    pprint(xgb)
 
-    # sklearn_DecisionTreeClassifier(dataset, 5)
-    for clf in classifiers:
-        fit_and_test(clf, dataset)
+
+    # dataset = DatasetLoader().load_dataset("titanic")
+    # input_shapes = dataset.train_set.input_shapes
+    #
+    # for clf in classifiers:
+    #     fit_and_test(clf, dataset)
 
     # model = ModelClassLoader.load_model_class("TitanicModel")
     #
@@ -130,6 +132,8 @@ def main():
     # metadata_path = manager.build_instance(model)
     # manager.load_instance(metadata_path, input_shapes)
     #
+    # log_titanic_loss = VisualizerClassLoader.load('log_titanic_loss')
+    # log_confusion_matrix = VisualizerClassLoader.load('log_confusion_matrix')
     # visualizers = [(log_titanic_loss, 25), (log_confusion_matrix, 500)]
     # for visualizer, interval in visualizers:
     #     manager.load_visualizer(visualizer, interval)
