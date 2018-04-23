@@ -1,6 +1,6 @@
 import numpy as np
 import sklearn
-# http://scikit-learn.org/stable/auto_examples/classification/plot_classifier_comparison.html#sphx-glr-auto-examples-classification-plot-classifier-comparison-py
+from sklearn.gaussian_process.kernels import RBF
 from util.numpy_utils import np_onehot_to_index, np_index_to_onehot
 
 YS_TYPE_INDEX = "index"
@@ -47,10 +47,12 @@ def print_dict(d):
         print("'%s' : %s," % (k, d[k]))
 
 
-class BaseSklearn:
+class BaseClass:
     def __str__(self):
         return self.__class__.__name__
 
+
+class BaseSklearn(BaseClass):
     def __init__(self, *args, **kwargs):
         pass
 
@@ -166,6 +168,41 @@ class BaseSklearnClassifier(BaseSklearn):
 class MLP(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
 
+    param = {
+        'hidden_layer_sizes': (100,),
+        'activation': ['identity', 'logistic', 'tanh', 'relu'],
+        'solver': ['lbfgs', 'sgd', 'adam'],
+        'max_iter': 200,
+        'learning_rate': ['constant', 'invscaling', 'adaptive'],
+        'learning_rate_init': 0.001,
+        'early_stopping': False,
+        'tol': 0.0001,
+
+        # adam solver option
+        'beta_1': 0.9,
+        'beta_2': 0.999,
+        'epsilon': 1e-08,
+
+        # sgd solver option
+        # between 0 and 1.
+        'momentum': 0.9,
+        'nesterovs_momentum': True,
+        'power_t': 0.5,
+
+        # L2 penalty
+        'alpha': 1,
+
+        # batch option
+        'batch_size': 'auto',
+        'shuffle': True,
+        'validation_fraction': 0.1,
+
+        # etc
+        'random_state': None,
+        'verbose': False,
+        'warm_start': False
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.neural_network import MLPClassifier as _MLP
@@ -176,6 +213,11 @@ class MLP(BaseSklearnClassifier):
 class Gaussian_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
 
+    param = {
+        # ex [0.3, 0.7]
+        'priors': None
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.naive_bayes import GaussianNB as _GaussianNB
@@ -185,6 +227,12 @@ class Gaussian_NB(BaseSklearnClassifier):
 
 class Bernoulli_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+    param = {
+        'alpha': 1.0,
+        'binarize': 0.0,
+        'class_prior': None,
+        'fit_prior': True
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -196,6 +244,12 @@ class Bernoulli_NB(BaseSklearnClassifier):
 class Multinomial_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
 
+    param = {
+        'alpha': 1.0,
+        'class_prior': None,
+        'fit_prior': True
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.naive_bayes import MultinomialNB as _MultinomialNB
@@ -205,6 +259,14 @@ class Multinomial_NB(BaseSklearnClassifier):
 
 class QDA(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+    param = {
+        # ? ..
+        'priors': None,
+        'reg_param': 0.0,
+        'store_covariance': False,
+        'store_covariances': None,
+        'tol': 0.0001
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -218,6 +280,29 @@ class DecisionTree(BaseSklearnClassifier):
     sklearn base DecisionTreeClassifier
     """
     model_Ys_type = YS_TYPE_ONEHOT
+    param = {
+        # tuning params
+        'max_depth': None,
+        'min_samples_leaf': 1,
+        'min_samples_split': 2,
+
+        # class weight options
+        'class_weight': None,
+        'min_weight_fraction_leaf': 0.0,
+
+        # etc
+        'presort': False,
+        'random_state': None,
+
+        # only use default option
+        'criterion': 'gini',
+        'splitter': 'best',
+        'max_leaf_nodes': None,
+        'max_features': None,
+        'min_impurity_decrease': 0.0,
+        'min_impurity_split': None,
+
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -228,6 +313,32 @@ class DecisionTree(BaseSklearnClassifier):
 
 class RandomForest(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
+    param = {
+        # tuning params
+        'n_estimators': 10,
+        'max_depth': None,
+        'min_samples_leaf': 1,
+        'min_samples_split': 2,
+
+        # class weight option
+        'class_weight': None,
+        'min_weight_fraction_leaf': 0.0,
+
+        # etc
+        'n_jobs': 1,
+        'oob_score': False,
+        'random_state': None,
+        'verbose': 0,
+        'warm_start': False,
+
+        # only use default option
+        'max_features': 'auto',
+        'criterion': 'gini',
+        'min_impurity_decrease': 0.0,
+        'min_impurity_split': None,
+        'max_leaf_nodes': None,
+        'bootstrap': True,
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -239,6 +350,34 @@ class RandomForest(BaseSklearnClassifier):
 class ExtraTrees(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
 
+    param = {
+        # tuning params
+        'n_estimators': 10,
+        'max_depth': None,
+        'min_samples_leaf': 1,
+        'min_samples_split': 2,
+
+        # class weight options
+        'class_weight': None,
+        'min_weight_fraction_leaf': 0.0,
+
+        # etc
+        'n_jobs': 1,
+        'oob_score': False,
+        'random_state': None,
+        'verbose': 0,
+        'warm_start': False,
+
+        # only use default
+        'bootstrap': False,
+        'criterion': 'gini',
+        'max_features': 'auto',
+        'max_leaf_nodes': None,
+        'min_impurity_decrease': 0.0,
+        'min_impurity_split': None,
+
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.ensemble import ExtraTreesClassifier as _ExtraTreesClassifier
@@ -248,6 +387,19 @@ class ExtraTrees(BaseSklearnClassifier):
 
 class AdaBoost(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+
+    param = {
+        'base_estimator': None,
+
+        # tuning param
+        'learning_rate': 1.0,
+        'n_estimators': 50,
+
+        # etc
+        'random_state': None,
+        'algorithm': ['SAMME.R', 'SAMME'],
+
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -259,6 +411,34 @@ class AdaBoost(BaseSklearnClassifier):
 class GradientBoosting(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
 
+    param = {
+        # tuning param
+        'learning_rate': 0.1,
+        'max_depth': 3,
+        'n_estimators': 100,
+        'min_samples_leaf': 1,
+        'min_samples_split': 2,
+
+        # todo wtf?
+        'init': None,
+        'loss': ['deviance', 'exponential'],
+        'subsample': 1.0,
+
+        # etc
+        'min_weight_fraction_leaf': 0.0,
+        'presort': 'auto',
+        'random_state': None,
+        'verbose': 0,
+        'warm_start': False,
+
+        # use only default
+        'criterion': 'friedman_mse',
+        'min_impurity_decrease': 0.0,
+        'min_impurity_split': None,
+        'max_features': None,
+        'max_leaf_nodes': None,
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.ensemble import GradientBoostingClassifier as _GradientBoostingClassifier
@@ -268,6 +448,21 @@ class GradientBoosting(BaseSklearnClassifier):
 
 class KNeighbors(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+    param = {
+        # tuning param
+        'n_neighbors': 5,
+
+        # use default ?
+        'weights': 'uniform',
+        'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute'],
+        'p': 2,
+        'leaf_size': 30,
+
+        # etc
+        'n_jobs': 1,
+        'metric': 'minkowski',
+        'metric_params': None,
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -276,15 +471,36 @@ class KNeighbors(BaseSklearnClassifier):
         del _KNeighborsClassifier
 
 
-class Linear_SVM(BaseSklearnClassifier):
+class Linear_SVC(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+    param = {
+        # tuning param
+        'C': 1.0,
+        'max_iter': 1000,
+
+        'class_weight': None,
+
+        'dual': True,
+
+        'multi_class': ['ovr', 'crammer_singer'],
+        'loss': ['squared_hinge', 'hinge'],
+        'penalty': ['l2', 'l1'],
+
+        # use default
+        'fit_intercept': True,
+        'intercept_scaling': 1,
+
+        # etc
+        'random_state': None,
+        'tol': 0.0001,
+        'verbose': 1e-4,
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
-        from sklearn.svm import SVC as _SVC
-        # TODO **params
-        self.model = _SVC(kernel="linear", C=0.025)
-        del _SVC
+        from sklearn.svm import LinearSVC as _LinearSVC
+        self.model = _LinearSVC(**params)
+        del _LinearSVC
 
     def proba(self, Xs, transpose_shape=True):
         print("""linear_SVM does not have attr "prob" """)
@@ -293,6 +509,21 @@ class Linear_SVM(BaseSklearnClassifier):
 
 class RBF_SVM(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+    # todo
+    param = {'C': 1,
+             'cache_size': 200,
+             'class_weight': None,
+             'coef0': 0.0,
+             'decision_function_shape': 'ovr',
+             'degree': 3,
+             'gamma': 2,
+             'kernel': 'rbf',
+             'max_iter': -1,
+             'probability': False,
+             'random_state': None,
+             'shrinking': True,
+             'tol': 0.001,
+             'verbose': False}
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -309,18 +540,64 @@ class RBF_SVM(BaseSklearnClassifier):
 class GaussianProcess(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
 
+    param = {
+        'copy_X_train': True,
+        'kernel': 1 ** 2 * RBF(length_scale=1),
+        'kernel__k1': 1 ** 2,
+        'kernel__k1__constant_value': 1.0,
+        'kernel__k1__constant_value_bounds': (1e-05, 100000.0),
+        'kernel__k2': RBF(length_scale=1),
+        'kernel__k2__length_scale': 1.0,
+        'kernel__k2__length_scale_bounds': (1e-05, 100000.0),
+        'max_iter_predict': 100,
+        'multi_class': 'one_vs_rest',
+        'n_jobs': 1,
+        'n_restarts_optimizer': 0,
+        'optimizer': 'fmin_l_bfgs_b',
+        'random_state': None,
+        'warm_start': False
+    }
+
     def __init__(self, **params):
         super().__init__(**params)
         from sklearn.gaussian_process import GaussianProcessClassifier as _GaussianProcessClassifier
-        from sklearn.gaussian_process.kernels import RBF as _RBF
         # TODO **params
-        self.model = _GaussianProcessClassifier(1.0 * _RBF(1.0))
-        del _RBF
+        self.model = _GaussianProcessClassifier(1.0 * RBF(1.0))
         del _GaussianProcessClassifier
 
 
 class SGD(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
+
+    # todo wtf?
+    # http://scikit-learn.org/stable/modules/generated/sklearn.linear_model.SGDClassifier.html#sklearn.linear_model.SGDClassifier
+    params = {
+        'tol': None,
+        'learning_rate': ['optimal', 'constant', 'invscaling'],
+
+        'alpha': 0.0001,
+
+        'average': False,
+        'class_weight': None,
+        'epsilon': 0.1,
+        'eta0': 0.0,
+        'fit_intercept': True,
+        'l1_ratio': 0.15,
+        'loss': 'hinge',
+        'max_iter': None,
+        'n_iter': None,
+
+        'penalty': ['none', 'l1', 'l2', 'elasticnet'],
+
+        'power_t': 0.5,
+
+        # etc
+        'n_jobs': 1,
+        'random_state': None,
+        'verbose': 0,
+        'warm_start': False,
+        'shuffle': True,
+    }
 
     def __init__(self, **params):
         super().__init__(**params)
@@ -333,3 +610,23 @@ class SGD(BaseSklearnClassifier):
         return None
         # return super().proba(Xs, transpose_shape)
 
+
+class SklearnClassifierPack(BaseClass):
+    SGD = SGD
+    Gaussian_NB = Gaussian_NB
+    Bernoulli_NB = Bernoulli_NB
+    Multinomial_NB = Multinomial_NB
+    DecisionTree = DecisionTree
+    RandomForest = RandomForest
+    ExtraTrees = ExtraTrees
+    AdaBoost = AdaBoost
+    GradientBoosting = GradientBoosting
+    MLP = MLP
+    QDA = QDA
+    KNeighbors = KNeighbors
+    Linear_SVC = Linear_SVC
+    RBF_SVM = RBF_SVM
+    GaussianProcess = GaussianProcess
+
+    def __init__(self):
+        pass
