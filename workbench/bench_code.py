@@ -1,10 +1,11 @@
-from pprint import pprint
-
 from InstanceManger import InstanceManager
 from workbench.InstanceManagerHelper import InstanceManagerHelper
 from DatasetLoader import DatasetLoader
 from VisualizerClassLoader import VisualizerClassLoader
 from ModelClassLoader import ModelClassLoader
+from workbench.sklearn_toolkit import *
+
+from pprint import pprint
 
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR10")
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR100")
@@ -15,16 +16,10 @@ from ModelClassLoader import ModelClassLoader
 
 from data_handler.titanic import *
 
-from workbench.sklearn_toolkit import *
-
 
 def fit_and_test(model, dataset):
-    params = {}
-    instance = model(**params)
+    instance = model()
     print(instance)
-    print("params")
-    params = instance.get_params()
-    pprint(params)
 
     batch_xs, batch_labels = dataset.train_set.next_batch(
         dataset.train_set.data_size,
@@ -48,84 +43,81 @@ def fit_and_test(model, dataset):
 
     print("predict")
     print(instance.predict(batch_xs[:10]))
-
     print()
 
 
 def param_search(instance, dataset):
-    param_grid = {
-        'alpha': [1.0, 2.0, 4.0],
-        'binarize': [0.0, 0.5, 1.0, 2.0],
-        'class_prior': [None],
-        'fit_prior': [True, False],
-    }
+    instance = instance()
+    pprint(instance)
 
-    gs = ParamGridSearch(instance, param_grid)
-    batch_xs, batch_labels = dataset.train_set.next_batch(
+    optimizer = ParamOptimizer(instance, instance.tuning_grid)
+    train_batch_xs, train_batch_labels = dataset.train_set.next_batch(
         dataset.train_set.data_size,
         batch_keys=[BK_X, BK_LABEL],
     )
-    gs.fit(batch_xs, batch_labels)
 
-    d = gs.cv_results_
-    # pprint(d)
-
-    print("best")
-    print(gs.best_score_)
-    print(gs.best_params_)
-
-    instance.set_params(**gs.best_params_)
-    batch_xs, batch_labels = dataset.train_set.next_batch(
-        dataset.train_set.data_size,
-        batch_keys=[BK_X, BK_LABEL],
-    )
-    instance.fit(batch_xs, batch_labels, Ys_type="onehot")
-
-    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
-    print("train acc:", acc)
-
-    batch_xs, batch_labels = dataset.validation_set.next_batch(
+    test_batch_xs, test_batch_labels = dataset.validation_set.next_batch(
         dataset.validation_set.data_size,
-        batch_keys=[BK_X, BK_LABEL]
+        batch_keys=[BK_X, BK_LABEL],
     )
-    acc = instance.score(batch_xs, batch_labels, Ys_type="onehot")
-    print("valid acc:", acc)
+    optimizer.optimize(train_batch_xs, test_batch_xs,
+                       train_batch_labels, test_batch_labels)
+
+
+def xgboost(dataset):
+    train_batch_xs, train_batch_labels = dataset.train_set.next_batch(
+        dataset.train_set.data_size,
+        batch_keys=[BK_X, BK_LABEL],
+    )
+
+    test_batch_xs, test_batch_labels = dataset.validation_set.next_batch(
+        dataset.validation_set.data_size,
+        batch_keys=[BK_X, BK_LABEL],
+    )
+
+    instance = XGBoost()
+    instance.fit(train_batch_xs, train_batch_labels)
+    train = instance.score(train_batch_xs, train_batch_labels)
+    test = instance.score(test_batch_xs, test_batch_labels)
+    print("train=%s\ntest=%s" % (train, test))
 
 
 classifiers = [
-    MLP,
-
-    SGD,
-    Gaussian_NB,
-    Bernoulli_NB,
-    Multinomial_NB,
-    DecisionTree,
-    RandomForest,
-    ExtraTrees,
-    AdaBoost,
-    GradientBoosting,
-    QDA,
-    KNeighbors,
-    Linear_SVC,
-    RBF_SVM,
-    GaussianProcess,
+    # MLP,
+    # SGD,
+    # Gaussian_NB,
+    # Bernoulli_NB,
+    # Multinomial_NB,
+    # DecisionTree,
+    # RandomForest,
+    # ExtraTrees,
+    # AdaBoost,
+    # GradientBoosting,
+    # QDA,
+    # KNeighbors,
+    # Linear_SVC,
+    # RBF_SVM,
+    # GaussianProcess,
+    XGBoost
 ]
-
-import os
-
 
 
 def main():
-    import xgboost as xgb
-    pprint(xgb)
+    import warnings
+    warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
+    dataset = DatasetLoader().load_dataset("titanic")
+    input_shapes = dataset.train_set.input_shapes
 
+    # xgboost(dataset)
 
-    # dataset = DatasetLoader().load_dataset("titanic")
-    # input_shapes = dataset.train_set.input_shapes
+    for clf in classifiers:
+        fit_and_test(clf, dataset)
     #
-    # for clf in classifiers:
-    #     fit_and_test(clf, dataset)
-
+    import time
+    start = time.time()
+    for clf in classifiers:
+        param_search(clf, dataset)
+    print(time.time() - start)
     # model = ModelClassLoader.load_model_class("TitanicModel")
     #
     # manager = InstanceManager()
