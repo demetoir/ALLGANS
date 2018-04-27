@@ -63,23 +63,7 @@ def param_search(instance, dataset):
     optimizer.optimize(train_batch_xs, test_batch_xs,
                        train_batch_labels, test_batch_labels)
 
-
-def xgboost(dataset):
-    train_batch_xs, train_batch_labels = dataset.train_set.next_batch(
-        dataset.train_set.data_size,
-        batch_keys=[BK_X, BK_LABEL],
-    )
-
-    test_batch_xs, test_batch_labels = dataset.validation_set.next_batch(
-        dataset.validation_set.data_size,
-        batch_keys=[BK_X, BK_LABEL],
-    )
-
-    instance = XGBoost()
-    instance.fit(train_batch_xs, train_batch_labels)
-    train = instance.score(train_batch_xs, train_batch_labels)
-    test = instance.score(test_batch_xs, test_batch_labels)
-    print("train=%s\ntest=%s" % (train, test))
+    optimizer.result_to_csv("./result.csv")
 
 
 classifiers = [
@@ -88,7 +72,7 @@ classifiers = [
     # Gaussian_NB,
     # Bernoulli_NB,
     # Multinomial_NB,
-    # DecisionTree,
+    DecisionTree,
     # RandomForest,
     # ExtraTrees,
     # AdaBoost,
@@ -98,7 +82,7 @@ classifiers = [
     # Linear_SVC,
     # RBF_SVM,
     # GaussianProcess,
-    XGBoost
+    # XGBoost
 ]
 
 
@@ -108,16 +92,14 @@ def main():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
 
-    # xgboost(dataset)
+    clfpack = ClassifierPack()
+
+    # for clf in clfpack.clf_pack:
+    #     fit_and_test(clf, dataset)
 
     for clf in classifiers:
-        fit_and_test(clf, dataset)
-    #
-    import time
-    start = time.time()
-    for clf in classifiers:
         param_search(clf, dataset)
-    print(time.time() - start)
+
     # model = ModelClassLoader.load_model_class("TitanicModel")
     #
     # manager = InstanceManager()
