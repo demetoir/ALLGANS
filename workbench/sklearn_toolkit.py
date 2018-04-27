@@ -1,3 +1,5 @@
+from pprint import pprint
+
 import numpy as np
 import sklearn
 from sklearn.gaussian_process.kernels import RBF
@@ -138,6 +140,7 @@ class ParamOptimizer(BaseSklearn):
             self.param_grid = param_grid
 
         self.optimizer = None
+        self.result = None
 
     @property
     def grid_lens(self):
@@ -197,9 +200,7 @@ class ParamOptimizer(BaseSklearn):
 
         param_grid_size = self.param_grid_size
         print("total %s's candidate estimator" % param_grid_size)
-        self.train_scores = []
-        self.test_scores = []
-        self.params = []
+        self.result = []
 
         class_ = self.estimator.__class__
         estimator = self.estimator
@@ -212,19 +213,38 @@ class ParamOptimizer(BaseSklearn):
             estimator.fit(train_Xs, train_Ys)
             train_score = estimator.score(train_Xs, train_Ys)
             test_score = estimator.score(test_Xs, test_Ys)
-            self.train_scores += [train_score]
-            self.test_scores += [test_score]
-            self.params += [param]
+            predict = estimator.predict(test_Xs)
+            auc_score = sklearn.metrics.roc_auc_score(test_Ys, predict)
+
+            result = {
+                "train_score": train_score,
+                "test_score": test_score,
+                "param": param,
+                "auc_score": auc_score,
+            }
+            self.result += [result]
+
             print(train_score)
             print(test_score)
+            print(auc_score)
 
-        comp = lambda a: (-a[0], -a[1])
-        self.result = sorted(zip(self.test_scores, self.train_scores, self.params), key=comp)
-        self.best_param = self.result[0][2]
+        comp = lambda a: (-a["test_score"], -a["train_score"], -a["auc_score"])
+
+        self.result = sorted(self.result, key=comp)
+        self.best_param = self.result[0]["param"]
 
         print("best 5")
-        for test, train, param in self.result[:5]:
-            print("test=%s\ntrain=%s\nparam=%s\n" % (test, train, param))
+        for d in self.result[:5]:
+            pprint(d)
+
+    def result_to_csv(self, path):
+        if self.result is None:
+            raise AttributeError("param optimizer does not have result")
+
+        import pandas as pd
+
+        df = pd.DataFrame(self.result)
+        df.to_csv(path)
 
 
 class BaseSklearnClassifier(BaseSklearn):
@@ -795,14 +815,12 @@ class SGD(BaseSklearnClassifier):
 class XGBoost(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
-        # 'max_depth': [i for i in range(3, 10)],
+        'max_depth': [i for i in range(3, 10)],
         'n_estimators': [128, 256, 512, 1024, 2048],
-        # 'min_child_weight': [1, 2, 3],
+        'min_child_weight': [1, 2, 3],
         'gamma': [i / 10.0 for i in range(0, 10, 3)],
-        #
-        # 'subsample': [i / 10.0 for i in range(1, 10, 3)],
-        # 'colsample_bytree': [i / 10.0 for i in range(1, 10, 3)],
-
+        'subsample': [i / 10.0 for i in range(1, 10, 3)],
+        'colsample_bytree': [i / 10.0 for i in range(1, 10, 3)],
         'learning_rate': [0.01, 0.1, 1],
     }
     tuning_params = {
@@ -839,20 +857,15 @@ class XGBoost(BaseSklearnClassifier):
     def __init__(self, **params):
         super().__init__(**params)
 
-        import xgboost as XGB
-        # kill xgboost msg
         # params.update({"tree_method": 'gpu_hist'})
-        params.update({"tree_method": 'hist'})
+        # params.update({"tree_method": 'hist'})
         # params.update({"tree_method": 'exact'})
-        # params.update({'updater':'grow_gpu'})
-
-        # params.update({"gpu_id": 0})
-        params.update({'nthread': 4})
-        # params.update({"max_bin":16})
         # params.update({"tree_method": 'gpu_exact'})
 
+        # params.update({'nthread': 1})
+        # params.update({"silent": 1})
+        import xgboost as XGB
         self.model = XGB.XGBClassifier(**params)
-        # print(params)
         del XGB
 
 
@@ -872,6 +885,7 @@ class ClassifierPack(BaseClass):
     Linear_SVC = Linear_SVC
     RBF_SVM = RBF_SVM
     GaussianProcess = GaussianProcess
+    XGBoost = XGBoost
     clf_pack = [
         MLP,
         SGD,
@@ -888,6 +902,7 @@ class ClassifierPack(BaseClass):
         Linear_SVC,
         RBF_SVM,
         GaussianProcess,
+        XGBoost,
     ]
 
     def __init__(self):
