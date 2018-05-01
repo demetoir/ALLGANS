@@ -60,6 +60,9 @@ class AbstractModel:
             self.log("load metadata")
             self.load_metadata(metadata)
 
+            self.log('load misc ops')
+            self.load_misc_ops()
+
             self.log("load input shapes")
             self.load_input_shapes(input_shapes)
 
@@ -74,9 +77,6 @@ class AbstractModel:
 
             self.log('load train ops')
             self.load_train_ops()
-
-            self.log('load misc ops')
-            self.load_misc_ops()
 
             self.log('load summary load')
             self.load_summary_ops()
