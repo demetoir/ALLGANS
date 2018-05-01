@@ -247,7 +247,7 @@ class InstanceManager:
 
             batch_size = self.instance.batch_size
             iter_per_epoch = int(dataset.train_set.data_size / batch_size)
-            self.log('train set size: %d , total Epoch: %d, total iter: %d, iter per epoch: %d'
+            self.log('train set size: %d, total Epoch: %d, total iter: %d, iter per epoch: %d'
                      % (dataset.train_set.data_size, epoch, epoch * iter_per_epoch, iter_per_epoch))
 
             iter_num = 0
