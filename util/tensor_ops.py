@@ -321,3 +321,12 @@ def L1_norm(var_list, lambda_=1.0, name="L1_norm"):
 
 def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
     return lambda_ * tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list]))
+
+
+def wall_decay(decay_rate, global_step, wall_step, name='decay'):
+    return tf.pow(decay_rate, global_step // wall_step, name=name)
+
+
+def average_top_k_loss(loss, k, name='average_top_k_loss'):
+    values, indices = tf.nn.top_k(loss, k=k, name=name)
+    return values
