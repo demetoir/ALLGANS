@@ -1,7 +1,6 @@
 from dict_keys.dataset_batch_keys import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
 import numpy as np
-import matplotlib.pyplot as plt
 
 
 class log_confusion_matrix(AbstractVisualizer):
@@ -31,11 +30,6 @@ class log_confusion_matrix(AbstractVisualizer):
                 if true_label != predict_label:
                     hs_list += [h]
                     # self.log("id: %s, h: %s, true label: %s" % (id_, h, true_label))
-        x, y = zip(*hs_list)
-        fig, axs = plt.subplots(1, 2, tight_layout=True)
-        axs[0].hist(x)
-        axs[1].hist(y)
-        # plt.show()
 
         # TODO better look
         msg = "confusion matrix total %d samples\n%s\n\n%s" \
