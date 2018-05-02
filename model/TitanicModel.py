@@ -14,6 +14,7 @@ class TitanicModel(AbstractModel):
         self.learning_rate = 0.0001
         self.beta1 = 0.5
         self.DROPOUT_RATE = 0.5
+        self.K_average_top_k_loss = 10
 
     def load_input_shapes(self, input_shapes):
         self.x_shape = input_shapes[BK_X]
@@ -23,17 +24,17 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('classifier'):
             layer = Stacker(x)
 
-            layer.linear_block(64, lrelu)
+            layer.linear_block(128, lrelu)
             layer.dropout(dropout_rate)
 
-            layer.linear_block(64, relu)
+            layer.linear_block(128, relu)
             layer.dropout(dropout_rate)
 
-            layer.linear_block(32, lrelu)
-            layer.dropout(dropout_rate)
-
-            layer.linear_block(16, lrelu)
-            layer.dropout(dropout_rate)
+            # layer.linear_block(32, lrelu)
+            # layer.dropout(dropout_rate)
+            #
+            # layer.linear_block(16, lrelu)
+            # layer.dropout(dropout_rate)
 
             layer.linear(2)
             logit = layer.last_layer
@@ -58,12 +59,17 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('loss'):
             self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.label, logits=self.logit)
 
-            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.001)
-            self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2)
+            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.0001, name='l1_norm_penalty', )
+            # self.l1_norm_penalty *= wall_decay(0.999, self.global_step, 100)
+            self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2, name='l2_norm_penalty')
+
             self.loss = self.loss + self.l1_norm_penalty
-            self.loss_mean = tf.reduce_mean(self.loss)
-            self.l1_norm_penalty_mean = tf.reduce_mean(self.l1_norm_penalty)
-            self.l2_norm_penalty_mean = tf.reduce_mean(self.l2_norm_penalty)
+            # average top k loss
+            self.loss = average_top_k_loss(self.loss, self.K_average_top_k_loss)
+
+            self.loss_mean = tf.reduce_mean(self.loss, name='loss_mean')
+            self.l1_norm_penalty_mean = tf.reduce_mean(self.l1_norm_penalty, name='l1_norm_penalty_mean')
+            self.l2_norm_penalty_mean = tf.reduce_mean(self.l2_norm_penalty, name='l2_norm_penalty_mean')
 
     def load_train_ops(self):
         with tf.variable_scope('train_ops'):
