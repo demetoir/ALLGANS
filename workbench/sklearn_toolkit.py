@@ -209,7 +209,6 @@ class ParamOptimizer(BaseSklearn):
 
             # estimator = class_(**param)
             estimator.set_params(**param)
-            # print(estimator.get_params())
             estimator.fit(train_Xs, train_Ys)
             train_score = estimator.score(train_Xs, train_Ys)
             test_score = estimator.score(test_Xs, test_Ys)
@@ -224,11 +223,12 @@ class ParamOptimizer(BaseSklearn):
             }
             self.result += [result]
 
-            print(train_score)
-            print(test_score)
-            print(auc_score)
+            # print("train_score ")
+            # print(train_score)
+            # print(test_score)
+            # print(auc_score)
 
-        comp = lambda a: (-a["test_score"], -a["train_score"], -a["auc_score"])
+        comp = lambda a: (-a["auc_score"], -a["test_score"], -a["train_score"],)
 
         self.result = sorted(self.result, key=comp)
         self.best_param = self.result[0]["param"]
