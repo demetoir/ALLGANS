@@ -243,7 +243,12 @@ class ParamOptimizer(BaseSklearn):
 
         import pandas as pd
 
-        df = pd.DataFrame(self.result)
+        result = self.result
+        for i in range(len(self.result)):
+            result[i].update(self.result[i]['param'])
+            result[i].pop('param')
+
+        df = pd.DataFrame(result)
         df.to_csv(path)
 
 
