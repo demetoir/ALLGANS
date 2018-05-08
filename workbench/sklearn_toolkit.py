@@ -259,9 +259,12 @@ class BaseSklearnClassifier(BaseSklearn):
     tuning_params = None
     tuning_grid = None
 
-    def __str__(self):
-        return super().__str__() + "\ntuning params\n" + \
+    def __repr__(self):
+        return self.__class__.__name__ + "\ntuning params\n" + \
                self.tuning_params.__str__()
+
+    def __str__(self):
+        return super().__str__()
 
     def __init__(self, **params):
         super().__init__(**params)
