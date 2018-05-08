@@ -820,13 +820,13 @@ class SGD(BaseSklearnClassifier):
 class XGBoost(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
-        'max_depth': [i for i in range(3, 10)],
-        'n_estimators': [128, 256, 512, 1024, 2048],
-        'min_child_weight': [1, 2, 3],
-        'gamma': [i / 10.0 for i in range(0, 10, 3)],
-        'subsample': [i / 10.0 for i in range(1, 10, 3)],
-        'colsample_bytree': [i / 10.0 for i in range(1, 10, 3)],
-        'learning_rate': [0.01, 0.1, 1],
+        'max_depth': [4, 6, 8],
+        # 'n_estimators': [128, 256],
+        # 'min_child_weight': [1, 2, 3],
+        'gamma': [i / 10.0 for i in range(2, 10 + 1, 2)],
+        'subsample': [i / 10.0 for i in range(2, 10 + 1, 2)],
+        'colsample_bytree': [i / 10.0 for i in range(2, 10 + 1, 2)],
+        # 'learning_rate': [0.01, 0.1, 1],
     }
     tuning_params = {
         'max_depth': 3,
@@ -837,7 +837,6 @@ class XGBoost(BaseSklearnClassifier):
         'subsample': 1,
         'colsample_bytree': 1,
         'learning_rate': 0.1,
-
     }
     param = {
         'silent': True,
