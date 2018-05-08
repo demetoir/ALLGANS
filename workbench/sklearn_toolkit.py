@@ -860,9 +860,11 @@ class XGBoost(BaseSklearnClassifier):
 
     def __init__(self, **params):
         super().__init__(**params)
-
+        import warnings
+        warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
         # params.update({"tree_method": 'gpu_hist'})
         # params.update({"tree_method": 'hist'})
+        params.update({"tree_method": 'auto'})
         # params.update({"tree_method": 'exact'})
         # params.update({"tree_method": 'gpu_exact'})
 
