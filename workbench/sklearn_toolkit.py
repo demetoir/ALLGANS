@@ -1,9 +1,11 @@
 from pprint import pprint
-
 import numpy as np
 import sklearn
 from sklearn.gaussian_process.kernels import RBF
+
+from util.Logger import Logger
 from util.numpy_utils import np_onehot_to_index, np_index_to_onehot
+import progressbar
 
 YS_TYPE_INDEX = "index"
 YS_TYPE_ONEHOT = "onehot"
@@ -142,6 +144,10 @@ class ParamOptimizer(BaseSklearn):
         self.optimizer = None
         self.result = None
 
+        self.logger = Logger(self.__class__.__name__, stdout_only=True)
+        self.log = self.logger.get_log()
+        self.best_param = None
+
     @property
     def grid_lens(self):
         grid_len = {}
@@ -199,15 +205,16 @@ class ParamOptimizer(BaseSklearn):
         test_Ys = reformat_Ys(test_Ys, self.estimator.model_Ys_type, Ys_type=Ys_type)
 
         param_grid_size = self.param_grid_size
-        print("total %s's candidate estimator" % param_grid_size)
+        self.log(("optimize [%s], total %s's candidate estimator" % (self.estimator, param_grid_size)))
         self.result = []
 
         class_ = self.estimator.__class__
         estimator = self.estimator
-        for idx, param in enumerate(self.gen_param()):
-            print("%s/%s fitting model" % (idx + 1, param_grid_size))
+        gen_param = self.gen_param()
+        for idx in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
+            param = next(gen_param)
 
-            # estimator = class_(**param)
+            estimator = class_(**param)
             estimator.set_params(**param)
             estimator.fit(train_Xs, train_Ys)
             train_score = estimator.score(train_Xs, train_Ys)
@@ -223,19 +230,14 @@ class ParamOptimizer(BaseSklearn):
             }
             self.result += [result]
 
-            # print("train_score ")
-            # print(train_score)
-            # print(test_score)
-            # print(auc_score)
-
         comp = lambda a: (-a["auc_score"], -a["test_score"], -a["train_score"],)
 
         self.result = sorted(self.result, key=comp)
         self.best_param = self.result[0]["param"]
 
-        print("best 5")
+        self.log("top 5 param")
         for d in self.result[:5]:
-            pprint(d)
+            self.log(str(d))
 
     def result_to_csv(self, path):
         if self.result is None:
