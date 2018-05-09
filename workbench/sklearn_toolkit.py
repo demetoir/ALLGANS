@@ -945,38 +945,40 @@ class LightGBM(BaseSklearnClassifier):
 
 
 class ClassifierPack(BaseClass):
-    class_pack = [
-        # skMLP,
-        # skSGD,
-        skGaussian_NB,
-        skBernoulli_NB,
-        skMultinomial_NB,
-        # skDecisionTree,
-        # skRandomForest,
-        # skExtraTrees,
-        # skAdaBoost,
-        # skGradientBoosting,
-        # skQDA,
-        # skKNeighbors,
-        # skLinear_SVC,
-        # skRBF_SVM,
-        # skGaussianProcess,
-        # XGBoost,
-        # LightGBM,
-    ]
+    class_pack = {
+        # "skMLP": skMLP,
+        # "skSGD": skSGD,
+        "skGaussian_NB": skGaussian_NB,
+        "skBernoulli_NB": skBernoulli_NB,
+        "skMultinomial_NB": skMultinomial_NB,
+        # "skDecisionTree": skDecisionTree,
+        # "skRandomForest": skRandomForest,
+        # "skExtraTrees": skExtraTrees,
+        # "skAdaBoost": skAdaBoost,
+        # "skGradientBoosting": skGradientBoosting,
+        # "skQDA": skQDA,
+        # "skKNeighbors": skKNeighbors,
+        # "skLinear_SVC": skLinear_SVC,
+        # "skRBF_SVM": skRBF_SVM,
+        # "skGaussianProcess": skGaussianProcess,
+        # "XGBoost": XGBoost,
+        # "LightGBM": LightGBM,
+    }
 
     def __init__(self):
-        self.pack = []
-        for cls in self.class_pack:
+        self.pack = {}
+        for key in self.class_pack:
+            cls = self.class_pack[key]
             obj = cls()
             setattr(self, cls.__name__, obj)
-            self.pack += [obj]
+            self.pack[key] = obj
 
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
     def param_search(self, train_xs, train_ys, test_xs, test_ys):
-        for cls in self.class_pack:
+        for key in self.class_pack:
+            cls = self.class_pack[key]
             obj = cls()
 
             optimizer = ParamOptimizer(obj, obj.tuning_grid)
@@ -1000,28 +1002,38 @@ class ClassifierPack(BaseClass):
 
     def predict(self, Xs):
         result = {}
-        for clf in self.pack:
+        for key in self.pack:
+            clf = self.pack[key]
             result[clf.__name__] = clf.predict(Xs)
         return result
 
     def fit(self, Xs, Ys, Ys_type=None):
-        for clf in self.pack:
+        for key in self.pack:
+            clf = self.pack[key]
             clf.fit(Xs, Ys, Ys_type=Ys_type)
 
     def score(self, Xs, Ys, Ys_type=None):
         result = {}
-        for clf in self.pack:
+        for key in self.pack:
+            clf = self.pack[key]
             result[clf.__name__] = clf.score(Xs, Ys, Ys_type=Ys_type)
         return result
 
     def proba(self, Xs, transpose_shape=True):
         result = {}
-        for clf in self.pack:
+        for key in self.pack:
+            clf = self.pack[key]
             result[clf.__name__] = clf.proba(Xs, transpose_shape=transpose_shape)
         return result
 
-    def load_params(self):
-        pass
+    def import_params(self, params_pack):
+        for key in self.pack:
+            clf = self.pack[key]
+            clf.set_params(**params_pack[key])
 
-    def save_params(self):
-        pass
+    def export_params(self):
+        params = {}
+        for key in self.pack:
+            clf = self.pack[key]
+            params[key] = clf.get_params()
+        return params
