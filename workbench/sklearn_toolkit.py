@@ -213,7 +213,7 @@ class ParamOptimizer(BaseSklearn):
 
         class_ = self.estimator.__class__
         gen_param = self.gen_param()
-        for idx in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
+        for _ in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
             param = next(gen_param)
 
             estimator = class_(**param)
@@ -232,9 +232,10 @@ class ParamOptimizer(BaseSklearn):
             }
             self.result += [result]
 
-        comp = lambda a: (-a["auc_score"], -a["test_score"], -a["train_score"],)
-
-        self.result = sorted(self.result, key=comp)
+        self.result = sorted(
+            self.result,
+            key=lambda a: (-a["auc_score"], -a["test_score"], -a["train_score"],)
+        )
         self.best_param = self.result[0]["param"]
         estimator = class_(**self.best_param)
         estimator.set_params(**self.best_param)
