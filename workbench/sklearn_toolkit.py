@@ -3,7 +3,7 @@ import numpy as np
 import sklearn
 from sklearn.gaussian_process.kernels import RBF
 
-from util.Logger import Logger
+from util.Logger import Logger, StdoutOnlyLogger
 from util.numpy_utils import np_onehot_to_index, np_index_to_onehot
 import progressbar
 
@@ -943,42 +943,83 @@ class LightGBM(BaseSklearnClassifier):
 
 
 class ClassifierPack(BaseClass):
-    SGD = SGD
-    Gaussian_NB = Gaussian_NB
-    Bernoulli_NB = Bernoulli_NB
-    Multinomial_NB = Multinomial_NB
-    DecisionTree = DecisionTree
-    RandomForest = RandomForest
-    ExtraTrees = ExtraTrees
-    AdaBoost = AdaBoost
-    GradientBoosting = GradientBoosting
-    MLP = MLP
-    QDA = QDA
-    KNeighbors = KNeighbors
-    Linear_SVC = Linear_SVC
-    RBF_SVM = RBF_SVM
-    GaussianProcess = GaussianProcess
-    XGBoost = XGBoost
-    LightGBM = LightGBM
-    clf_pack = [
-        MLP,
-        SGD,
-        Gaussian_NB,
-        Bernoulli_NB,
-        Multinomial_NB,
-        DecisionTree,
-        RandomForest,
-        ExtraTrees,
-        AdaBoost,
-        GradientBoosting,
-        QDA,
-        KNeighbors,
-        Linear_SVC,
-        RBF_SVM,
-        GaussianProcess,
-        XGBoost,
-        LightGBM,
+    class_pack = [
+        # skMLP,
+        # skSGD,
+        skGaussian_NB,
+        skBernoulli_NB,
+        skMultinomial_NB,
+        # skDecisionTree,
+        # skRandomForest,
+        # skExtraTrees,
+        # skAdaBoost,
+        # skGradientBoosting,
+        # skQDA,
+        # skKNeighbors,
+        # skLinear_SVC,
+        # skRBF_SVM,
+        # skGaussianProcess,
+        # XGBoost,
+        # LightGBM,
     ]
 
     def __init__(self):
+        self.pack = []
+        for cls in self.class_pack:
+            obj = cls()
+            setattr(self, cls.__name__, obj)
+            self.pack += [obj]
+
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
+        self.log = self.logger.get_log()
+
+    def param_search(self, train_xs, train_ys, test_xs, test_ys):
+        for cls in self.class_pack:
+            obj = cls()
+
+            optimizer = ParamOptimizer(obj, obj.tuning_grid)
+            optimizer.optimize(train_xs, test_xs, train_ys, test_ys)
+
+            path = os.path.join('.', 'param_search_result')
+            if not os.path.exists(path):
+                os.mkdir(path)
+            file_name = str(obj) + '.csv'
+
+            self.log("param search result csv saved at %s" % os.path.join(path, file_name))
+            optimizer.result_to_csv(os.path.join(path, file_name))
+
+            self.log("top 5 result")
+            for result in optimizer.top_k_result():
+                self.log(result)
+
+            setattr(self, cls.__name__, optimizer.best_estimator)
+
+        pprint(self.__dict__)
+
+    def predict(self, Xs):
+        result = {}
+        for clf in self.pack:
+            result[clf.__name__] = clf.predict(Xs)
+        return result
+
+    def fit(self, Xs, Ys, Ys_type=None):
+        for clf in self.pack:
+            clf.fit(Xs, Ys, Ys_type=Ys_type)
+
+    def score(self, Xs, Ys, Ys_type=None):
+        result = {}
+        for clf in self.pack:
+            result[clf.__name__] = clf.score(Xs, Ys, Ys_type=Ys_type)
+        return result
+
+    def proba(self, Xs, transpose_shape=True):
+        result = {}
+        for clf in self.pack:
+            result[clf.__name__] = clf.proba(Xs, transpose_shape=transpose_shape)
+        return result
+
+    def load_params(self):
+        pass
+
+    def save_params(self):
         pass
