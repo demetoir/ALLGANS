@@ -209,7 +209,6 @@ class ParamOptimizer(BaseSklearn):
         self.result = []
 
         class_ = self.estimator.__class__
-        estimator = self.estimator
         gen_param = self.gen_param()
         for idx in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
             param = next(gen_param)
@@ -234,10 +233,10 @@ class ParamOptimizer(BaseSklearn):
 
         self.result = sorted(self.result, key=comp)
         self.best_param = self.result[0]["param"]
-
-        self.log("top 5 param")
-        for d in self.result[:5]:
-            self.log(str(d))
+        # estimator = class_(**self.best_param)
+        # estimator.set_params(**self.best_param)
+        # estimator.fit(train_Xs, train_Ys)
+        # self.best_estimator = estimator
 
     def result_to_csv(self, path):
         if self.result is None:
@@ -252,6 +251,9 @@ class ParamOptimizer(BaseSklearn):
 
         df = pd.DataFrame(result)
         df.to_csv(path)
+
+    def top_k_result(self, k=5):
+        return self.result[:k]
 
 
 class BaseSklearnClassifier(BaseSklearn):
