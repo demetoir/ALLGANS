@@ -1,4 +1,6 @@
+import os
 from pprint import pprint
+
 import numpy as np
 import sklearn
 from sklearn.gaussian_process.kernels import RBF
@@ -877,9 +879,9 @@ class XGBoost(BaseSklearnClassifier):
 
         # params.update({'nthread': 1})
         # params.update({"silent": 1})
-        import xgboost as XGB
-        self.model = XGB.XGBClassifier(**params)
-        del XGB
+        import xgboost as xgb
+        self.model = xgb.XGBClassifier(**params)
+        del xgb
 
 
 class LightGBM(BaseSklearnClassifier):
