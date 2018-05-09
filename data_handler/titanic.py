@@ -1,5 +1,6 @@
 from data_handler.AbstractDataset import *
 from dict_keys.dataset_batch_keys import *
+from util.Logger import StdoutOnlyLogger
 from util.numpy_utils import *
 import pandas as pd
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
@@ -208,9 +209,12 @@ class titanic(DatasetCollection):
         self.test_set = titanic_test()
         self.validation_set = None
 
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
+        self.log = self.logger.get_log()
+
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
         self.train_set.shuffle()
         ratio = (7, 3)
         self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
-        print("split train set to train and validation set ratio=%s" % str(ratio))
+        self.log("split train set to train and validation set ratio=%s" % str(ratio))
