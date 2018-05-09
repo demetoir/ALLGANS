@@ -149,6 +149,7 @@ class ParamOptimizer(BaseSklearn):
         self.logger = Logger(self.__class__.__name__, stdout_only=True)
         self.log = self.logger.get_log()
         self.best_param = None
+        self.best_estimator = None
 
     @property
     def grid_lens(self):
@@ -235,10 +236,10 @@ class ParamOptimizer(BaseSklearn):
 
         self.result = sorted(self.result, key=comp)
         self.best_param = self.result[0]["param"]
-        # estimator = class_(**self.best_param)
-        # estimator.set_params(**self.best_param)
-        # estimator.fit(train_Xs, train_Ys)
-        # self.best_estimator = estimator
+        estimator = class_(**self.best_param)
+        estimator.set_params(**self.best_param)
+        estimator.fit(train_Xs, train_Ys)
+        self.best_estimator = estimator
 
     def result_to_csv(self, path):
         if self.result is None:
