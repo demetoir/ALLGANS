@@ -70,3 +70,17 @@ class Logger:
 
         func = getattr(self.logger, level)
         return deco(func)
+
+
+class StdoutOnlyLogger(Logger):
+    def __init__(self, name=None):
+        if name is None:
+            name = "None"
+        super().__init__(name, stdout_only=True, no_format=True)
+"""
+self.logger = Logger(self.__class__.__name__)
+self.log = self.logger.get_log()
+
+self.logger = StdoutOnlyLogger(self.__class__.__name__)
+self.log = self.logger.get_log()
+"""
