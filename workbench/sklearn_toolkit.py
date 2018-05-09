@@ -304,7 +304,7 @@ class BaseSklearnClassifier(BaseSklearn):
         return self.model.set_params(**params)
 
 
-class MLP(BaseSklearnClassifier):
+class skMLP(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
     tuning_grid = {
         'activation': ['identity', 'logistic', 'tanh', 'relu'],
@@ -355,7 +355,7 @@ class MLP(BaseSklearnClassifier):
         del _MLP
 
 
-class Gaussian_NB(BaseSklearnClassifier):
+class skGaussian_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {}
     tuning_params = {
@@ -369,7 +369,7 @@ class Gaussian_NB(BaseSklearnClassifier):
         del _GaussianNB
 
 
-class Bernoulli_NB(BaseSklearnClassifier):
+class skBernoulli_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
@@ -389,7 +389,7 @@ class Bernoulli_NB(BaseSklearnClassifier):
         del _BernoulliNB
 
 
-class Multinomial_NB(BaseSklearnClassifier):
+class skMultinomial_NB(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
@@ -407,7 +407,7 @@ class Multinomial_NB(BaseSklearnClassifier):
         del _MultinomialNB
 
 
-class QDA(BaseSklearnClassifier):
+class skQDA(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
 
@@ -432,7 +432,7 @@ class QDA(BaseSklearnClassifier):
         del _QDA
 
 
-class DecisionTree(BaseSklearnClassifier):
+class skDecisionTree(BaseSklearnClassifier):
     """
     sklearn base DecisionTreeClassifier
     """
@@ -471,7 +471,7 @@ class DecisionTree(BaseSklearnClassifier):
         del _DecisionTreeClassifier
 
 
-class RandomForest(BaseSklearnClassifier):
+class skRandomForest(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
@@ -513,7 +513,7 @@ class RandomForest(BaseSklearnClassifier):
         del _RandomForestClassifier
 
 
-class ExtraTrees(BaseSklearnClassifier):
+class skExtraTrees(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_ONEHOT
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
@@ -559,7 +559,7 @@ class ExtraTrees(BaseSklearnClassifier):
         del _ExtraTreesClassifier
 
 
-class AdaBoost(BaseSklearnClassifier):
+class skAdaBoost(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'learning_rate': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10],
@@ -585,7 +585,7 @@ class AdaBoost(BaseSklearnClassifier):
         del _AdaBoostClassifier
 
 
-class GradientBoosting(BaseSklearnClassifier):
+class skGradientBoosting(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'learning_rate': [0.001, 0.01, 0.1, 1],
@@ -630,7 +630,7 @@ class GradientBoosting(BaseSklearnClassifier):
         del _GradientBoostingClassifier
 
 
-class KNeighbors(BaseSklearnClassifier):
+class skKNeighbors(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'n_neighbors': [i for i in range(1, 32)],
@@ -657,7 +657,7 @@ class KNeighbors(BaseSklearnClassifier):
         del _KNeighborsClassifier
 
 
-class Linear_SVC(BaseSklearnClassifier):
+class skLinear_SVC(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10],
@@ -696,7 +696,7 @@ class Linear_SVC(BaseSklearnClassifier):
         return None
 
 
-class RBF_SVM(BaseSklearnClassifier):
+class skRBF_SVM(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     tuning_grid = {
         'C': [1 ** i for i in range(-5, 5)],
@@ -734,7 +734,7 @@ class RBF_SVM(BaseSklearnClassifier):
         return None
 
 
-class GaussianProcess(BaseSklearnClassifier):
+class skGaussianProcess(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
     # todo
     tuning_grid = {
@@ -770,7 +770,7 @@ class GaussianProcess(BaseSklearnClassifier):
         del _GaussianProcessClassifier
 
 
-class SGD(BaseSklearnClassifier):
+class skSGD(BaseSklearnClassifier):
     model_Ys_type = YS_TYPE_INDEX
 
     # todo wtf?
