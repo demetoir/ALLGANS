@@ -211,6 +211,7 @@ class titanic(DatasetCollection):
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
         self.train_set.shuffle()
+        self.test_set.shuffle()
         ratio = (7, 3)
         self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
         self.log("split train set to train and validation set ratio=%s" % str(ratio))
