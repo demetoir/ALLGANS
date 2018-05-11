@@ -182,7 +182,7 @@ class BaseDataset(metaclass=MetaTask):
         self.input_shapes = {}
         for key in self.data:
             self.input_shapes[key] = list(self.data[key].shape[1:])
-            self.log(key, self.input_shapes[key])
+            self.log("key=%s, shape=%s" % (key, self.input_shapes[key]))
 
     def load(self, path, limit=None):
         """
