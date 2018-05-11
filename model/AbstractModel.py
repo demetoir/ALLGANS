@@ -60,26 +60,31 @@ class AbstractModel:
             self.log("load metadata")
             self.load_metadata(metadata)
 
-            self.log('load misc ops')
-            self.load_misc_ops()
+            with tf.variable_scope("misc_ops"):
+                self.log('load misc ops')
+                self.load_misc_ops()
 
             self.log("load input shapes")
             self.load_input_shapes(input_shapes)
 
-            self.log('load hyper parameter')
-            self.load_hyper_parameter()
+            with tf.variable_scope("hyper_parameter"):
+                self.log('load hyper parameter')
+                self.load_hyper_parameter()
 
-            self.log('load tensor graph')
+            self.log('load main tensor graph')
             self.load_main_tensor_graph()
 
-            self.log('load loss')
-            self.load_loss_function()
+            with tf.variable_scope('loss'):
+                self.log('load loss')
+                self.load_loss_function()
 
-            self.log('load train ops')
-            self.load_train_ops()
+            with tf.variable_scope('train_ops'):
+                self.log('load train ops')
+                self.load_train_ops()
 
-            self.log('load summary load')
-            self.load_summary_ops()
+            with tf.variable_scope('summary_ops'):
+                self.log('load summary load')
+                self.load_summary_ops()
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.log("\n", "".join(traceback.format_tb(exc_traceback)))
