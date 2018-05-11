@@ -252,7 +252,7 @@ class InstanceManager:
 
             iter_num = 0
             for epoch_ in range(epoch):
-                dataset.suffle()
+                dataset.shuffle()
                 for _ in range(iter_per_epoch):
                     iter_num += 1
                     self.instance.train_model(sess=sess, iter_num=iter_num, dataset=dataset)
