@@ -1,6 +1,5 @@
 from data_handler.AbstractDataset import *
 from dict_keys.dataset_batch_keys import *
-from util.Logger import StdoutOnlyLogger
 from util.numpy_utils import *
 import pandas as pd
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
@@ -208,9 +207,6 @@ class titanic(DatasetCollection):
         self.train_set = titanic_train()
         self.test_set = titanic_test()
         self.validation_set = None
-
-        self.logger = StdoutOnlyLogger(self.__class__.__name__)
-        self.log = self.logger.get_log()
 
     def load(self, path, **kwargs):
         super().load(path, **kwargs)

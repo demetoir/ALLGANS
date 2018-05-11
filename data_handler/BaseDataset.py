@@ -1,10 +1,9 @@
-from util.Logger import Logger
+from util.Logger import Logger, StdoutOnlyLogger
 from util.misc_util import *
 import traceback
 import sys
 import numpy as np
 import os
-from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 
@@ -298,6 +297,9 @@ class BaseDataset(metaclass=MetaTask):
 
 class DatasetCollection:
     def __init__(self):
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
+        self.log = self.logger.get_log()
+
         self.train_set = None
         self.test_set = None
         self.validation_set = None
