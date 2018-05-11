@@ -947,23 +947,23 @@ class LightGBM(BaseSklearnClassifier):
 
 class ClassifierPack(BaseClass):
     class_pack = {
-        # "skMLP": skMLP,
-        # "skSGD": skSGD,
+        "skMLP": skMLP,
+        "skSGD": skSGD,
         "skGaussian_NB": skGaussian_NB,
         "skBernoulli_NB": skBernoulli_NB,
         "skMultinomial_NB": skMultinomial_NB,
-        # "skDecisionTree": skDecisionTree,
-        # "skRandomForest": skRandomForest,
-        # "skExtraTrees": skExtraTrees,
-        # "skAdaBoost": skAdaBoost,
-        # "skGradientBoosting": skGradientBoosting,
-        # "skQDA": skQDA,
-        # "skKNeighbors": skKNeighbors,
-        # "skLinear_SVC": skLinear_SVC,
-        # "skRBF_SVM": skRBF_SVM,
-        # "skGaussianProcess": skGaussianProcess,
-        # "XGBoost": XGBoost,
-        # "LightGBM": LightGBM,
+        "skDecisionTree": skDecisionTree,
+        "skRandomForest": skRandomForest,
+        "skExtraTrees": skExtraTrees,
+        "skAdaBoost": skAdaBoost,
+        "skGradientBoosting": skGradientBoosting,
+        "skQDA": skQDA,
+        "skKNeighbors": skKNeighbors,
+        "skLinear_SVC": skLinear_SVC,
+        "skRBF_SVM": skRBF_SVM,
+        "skGaussianProcess": skGaussianProcess,
+        "XGBoost": XGBoost,
+        "LightGBM": LightGBM,
     }
 
     def __init__(self):
