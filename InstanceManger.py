@@ -252,6 +252,7 @@ class InstanceManager:
 
             iter_num = 0
             for epoch_ in range(epoch):
+                dataset.suffle()
                 for _ in range(iter_per_epoch):
                     iter_num += 1
                     self.instance.train_model(sess=sess, iter_num=iter_num, dataset=dataset)
@@ -408,8 +409,8 @@ class InstanceManager:
         """open tensorboard for current instance"""
         python_path = sys.executable
         option = '--logdir=' + self.instance.instance_summary_folder_path
-        option += '--port 6006'
-        option += '--debugger_port 6064'
+        # option += ' --port 6006'
+        # option += ' --debugger_port 6064'
         args_ = [python_path, tensorboard_dir(), option]
         self.open_subprocess(args_=args_, subprocess_key="tensorboard")
 
