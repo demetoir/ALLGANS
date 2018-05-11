@@ -408,6 +408,8 @@ class InstanceManager:
         """open tensorboard for current instance"""
         python_path = sys.executable
         option = '--logdir=' + self.instance.instance_summary_folder_path
+        option += '--port 6006'
+        option += '--debugger_port 6064'
         args_ = [python_path, tensorboard_dir(), option]
         self.open_subprocess(args_=args_, subprocess_key="tensorboard")
 
