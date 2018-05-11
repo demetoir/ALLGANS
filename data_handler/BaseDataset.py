@@ -313,3 +313,11 @@ class DatasetCollection:
 
         if self.validation_set is not None:
             self.validation_set.load(path, **kwargs)
+
+    def shuffle(self):
+        if self.train_set is not None:
+            self.train_set.shuffle()
+        if self.test_set is not None:
+            self.train_set.shuffle()
+        if self.validation_set is not None:
+            self.validation_set.shuffle()
