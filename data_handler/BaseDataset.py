@@ -313,7 +313,3 @@ class DatasetCollection:
 
         if self.validation_set is not None:
             self.validation_set.load(path, **kwargs)
-
-    @property
-    def input_shapes(self):
-        raise NotImplementedError
