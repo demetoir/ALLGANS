@@ -1,5 +1,5 @@
 import os
-from pprint import pprint
+import pprint
 
 import numpy as np
 import sklearn
@@ -995,11 +995,11 @@ class ClassifierPack(BaseClass):
 
             self.log("top 5 result")
             for result in optimizer.top_k_result():
-                self.log(result)
+                self.log(pprint.pformat(result))
 
             setattr(self, cls.__name__, optimizer.best_estimator)
 
-        pprint(self.__dict__)
+        self.log(pprint.pformat(self.__dict__))
 
     def predict(self, Xs):
         result = {}
