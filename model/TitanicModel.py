@@ -59,9 +59,9 @@ class TitanicModel(AbstractModel):
         with tf.variable_scope('loss'):
             self.loss = tf.nn.softmax_cross_entropy_with_logits_v2(labels=self.label, logits=self.logit)
 
-            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.0001, name='l1_norm_penalty', )
+            self.l1_norm_penalty = L1_norm(self.vars, lambda_=0.0001)
             # self.l1_norm_penalty *= wall_decay(0.999, self.global_step, 100)
-            self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2, name='l2_norm_penalty')
+            self.l2_norm_penalty = L2_norm(self.vars, lambda_=0.2)
 
             self.loss = self.loss + self.l1_norm_penalty
             # average top k loss
