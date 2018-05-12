@@ -86,7 +86,7 @@ class BaseDataset(metaclass=MetaTask):
         """
         self.download_infos = []
         self.batch_keys = []
-        self.logger = Logger(self.__class__.__name__, stdout_only=True)
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
         self.data = {}
         self.cursor = 0
@@ -320,7 +320,8 @@ class BaseDataset(metaclass=MetaTask):
         return a_set, b_set
 
     def merge(self, a_set, b_set):
-        new_set = BaseDataset()
+        """merge to dataset"""
+        new_set = self.__class__()
         if a_set.keys() is not b_set.keys():
             raise KeyError("dataset can not merge, key does not match")
 
