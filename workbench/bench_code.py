@@ -161,22 +161,75 @@ def filter_book_mark(html):
         # print(a)
     # print(soup)
 
-    out= sorted(out)
+    out = sorted(out)
     return "\n".join(out)
     # return html
 
 
+def tf_model_train_tianic():
+    dataset = DatasetLoader().load_dataset("titanic")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("TitanicModel")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+
+    log_titanic_loss = VisualizerClassLoader.load('log_titanic_loss')
+    log_confusion_matrix = VisualizerClassLoader.load('log_confusion_matrix')
+    visualizers = [(log_titanic_loss, 25), (log_confusion_matrix, 500)]
+    for visualizer, interval in visualizers:
+        manager.load_visualizer(visualizer, interval)
+
+    manager.train_instance(
+        epoch=4000,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=False)
+    manager.sampling_instance(
+        dataset=dataset
+    )
+
+    del manager
+
+
+def tf_model_train_vae():
+    dataset = DatasetLoader().load_dataset("MNIST")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("AE")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+
+    log_AE = VisualizerClassLoader.load('log_AE')
+    image_AE = VisualizerClassLoader.load('image_AE')
+    visualizers = [(log_AE, 100), (image_AE, 100)]
+    for visualizer, interval in visualizers:
+        manager.load_visualizer(visualizer, interval)
+
+    manager.train_instance(
+        epoch=4000,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
+
+    # manager.sampling_instance(
+    #     dataset=dataset
+    # )
+
+    del manager
+
+
 def main():
     # open_chrome()
-    filter_book_mark()
+    # filter_book_mark()
 
     # dataset = DatasetLoader().load_dataset("titanic")
-    # input_shapes = dataset.train_set.input_shapes
+    #
     #
     # clfpack = ClassifierPack()
-    # # for clf in classifiers:
-    # #     fit_and_test(clf, dataset)
-    #
     # train_xs, train_labels = dataset.train_set.next_batch(
     #     dataset.train_set.data_size,
     #     batch_keys=[BK_X, BK_LABEL],
@@ -186,26 +239,7 @@ def main():
     #     batch_keys=[BK_X, BK_LABEL],
     # )
     # clfpack.param_search(train_xs, train_labels, test_xs, test_labels)
+    #
 
-    # model = ModelClassLoader.load_model_class("TitanicModel")
-    #
-    # manager = InstanceManager()
-    # metadata_path = manager.build_instance(model)
-    # manager.load_instance(metadata_path, input_shapes)
-    #
-    # log_titanic_loss = VisualizerClassLoader.load('log_titanic_loss')
-    # log_confusion_matrix = VisualizerClassLoader.load('log_confusion_matrix')
-    # visualizers = [(log_titanic_loss, 25), (log_confusion_matrix, 500)]
-    # for visualizer, interval in visualizers:
-    #     manager.load_visualizer(visualizer, interval)
-    #
-    # manager.train_instance(
-    #     epoch=4000,
-    #     dataset=dataset,
-    #     check_point_interval=5000,
-    #     with_tensorboard=False)
-    # manager.sampling_instance(
-    #     dataset=dataset
-    # )
-    #
-    # del manager
+    # tf_model_train_tianic()
+    tf_model_train_vae()
