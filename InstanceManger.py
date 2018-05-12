@@ -252,6 +252,7 @@ class InstanceManager:
 
             iter_num = 0
             for epoch_ in range(epoch):
+                # TODO need concurrency
                 dataset.shuffle()
                 for _ in range(iter_per_epoch):
                     iter_num += 1
