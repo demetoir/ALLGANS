@@ -83,7 +83,6 @@ class BaseDataset(metaclass=MetaTask):
         self.download_infos: (list) dataset download info
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
-
         """
         self.download_infos = []
         self.batch_keys = []
@@ -107,9 +106,22 @@ class BaseDataset(metaclass=MetaTask):
         self.data_size = len(data)
 
     def get_data(self, key):
+        """return data
+
+        :param key:
+        :type key: str
+
+        :return:
+        """
         return self.data[key]
 
     def get_datas(self, keys):
+        """return list of data
+
+        :param keys: list of keys
+        :type keys: list
+        :return: list
+        """
         return [self.data[key] for key in keys]
 
     def if_need_download(self, path):
@@ -144,6 +156,12 @@ class BaseDataset(metaclass=MetaTask):
         return validation
 
     def download_data(self, path, download_info):
+        """donwnload data if need
+
+        :param path:
+        :param download_info:
+        :return:
+        """
         head, _ = os.path.split(path)
         download_file = os.path.join(path, download_info.download_file_name)
 
@@ -185,15 +203,21 @@ class BaseDataset(metaclass=MetaTask):
             self.log("key=%s, shape=%s" % (key, self.input_shapes[key]))
 
     def load(self, path, limit=None):
-        """
-        TODO add docstring
+        """load dataset from file should implement
+
+        save data at self.data, expect dict type
+
         :param path:
         :param limit:
-        :return:
+        :return: None
         """
         raise NotImplementedError
 
     def save(self):
+        """
+
+        :return: None
+        """
         raise NotImplementedError
 
     def _append_data(self, batch_key, data):
@@ -229,6 +253,25 @@ class BaseDataset(metaclass=MetaTask):
         return batch
 
     def next_batch(self, batch_size, batch_keys=None, look_up=False):
+        """return iter mini batch
+
+        ex)
+        dataset.next_batch(3, ["train_x", "train_label"]) =
+            [[train_x1, train_x2, train_x3], [train_label1, train_label2, train_label3]]
+
+        dataset.next_batch(3, ["train_x", "train_label"], lookup=True) =
+            [[train_x4, train_x5, train_x6], [train_label4, train_label5, train_label6]]
+
+        dataset.next_batch(3, ["train_x", "train_label"]) =
+            [[train_x4, train_x5, train_x6], [train_label4, train_label5, train_label6]]
+
+        :param batch_size: size of mini batch
+        :param batch_keys: (iterable type) select keys,
+            if  batch_keys length is 1 than just return mini batch
+            else return list of mini batch
+        :param look_up: lookup == True cursor will not update
+        :return: (numpy array type) list of mini batch, order is same with batch_keys
+        """
 
         if batch_keys is None:
             batch_keys = self.batch_keys
@@ -285,13 +328,16 @@ class BaseDataset(metaclass=MetaTask):
 
         return new_set
 
-    def shuffle(self):
-        random_state = np.random.randint(1, 12345678)
+    def shuffle(self, random_state=None):
+        """shuffle dataset"""
+        if random_state is None:
+            random_state = np.random.randint(1, 12345678)
 
         for key in self.data:
             self.data[key] = shuffle(self.data[key], random_state=random_state)
 
     def reset_cursor(self):
+        """reset cursor"""
         self.cursor = 0
 
 
