@@ -136,10 +136,11 @@ class BaseDataset(metaclass=MetaTask):
             pass
 
         for info in self.download_infos:
-            if self.is_invalid(path, info):
+            if self._is_invalid(path, info):
                 self.download_data(path, info)
 
-    def is_invalid(self, path, download_info):
+    def _is_invalid(self, path, download_info):
+        """check dataset file validation"""
         validation = None
         files = glob(os.path.join(path, '**'), recursive=True)
         names = list(map(lambda file: os.path.split(file)[1], files))
@@ -226,7 +227,7 @@ class BaseDataset(metaclass=MetaTask):
         else:
             self.data[batch_key] = np.concatenate((self.data[batch_key], data))
 
-    def iter_batch(self, data, batch_size):
+    def _iter_batch(self, data, batch_size):
         cursor = self.cursor
         data_size = len(data)
 
@@ -278,7 +279,7 @@ class BaseDataset(metaclass=MetaTask):
 
         batches = []
         for key in batch_keys:
-            batches += [self.iter_batch(self.data[key], batch_size)]
+            batches += [self._iter_batch(self.data[key], batch_size)]
 
         if not look_up:
             self.cursor = (self.cursor + batch_size) % self.data_size
