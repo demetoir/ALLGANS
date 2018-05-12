@@ -310,17 +310,21 @@ def softmax(input_, name='softmax'):
     return tf.nn.softmax(input_, name=name)
 
 
-def dropout(input_, rate, nam="dropout"):
+def dropout(input_, rate, name="dropout"):
     """dropout"""
-    return tf.nn.dropout(input_, rate)
+    return tf.nn.dropout(input_, rate, name=name)
 
 
 def L1_norm(var_list, lambda_=1.0, name="L1_norm"):
-    return lambda_ * tf.reduce_sum([tf.reduce_sum(tf.abs(var)) for var in var_list])
+    return tf.multiply(lambda_,
+                       tf.reduce_sum([tf.reduce_sum(tf.abs(var)) for var in var_list]),
+                       name=name)
 
 
 def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
-    return lambda_ * tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list]))
+    return tf.multiply(lambda_,
+                       tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list])),
+                       name=name)
 
 
 def wall_decay(decay_rate, global_step, wall_step, name='decay'):
