@@ -86,13 +86,24 @@ def np_img_to_tile(np_imgs, column_size=10):
 
     :return: gird tiled numpy image(HWC shape)
     """
-    n, h, w, c = np_imgs.shape
+
+    def np_imgs_check_shape(shape):
+        if len(shape) == 3:
+            return 'NHW'
+        elif len(shape) == 4:
+            return 'NHWC'
+        else:
+            raise TypeError("shape %s is not np_img type" % str(shape))
+
+    if np_imgs_check_shape(np_imgs.shape) == 'NHW':
+        np_imgs = np_img_gray_to_rgb(np_imgs)
+
+    n, h, w,c = np_imgs.shape
     row_size = int(math.ceil(float(np_imgs.shape[0]) / float(column_size)))
     tile_width = w * column_size
     tile_height = h * row_size
 
     img_idx = 0
-    # HWC format
     tile = np.ones((tile_height, tile_width, 3), dtype=np.uint8)
     for y in range(0, tile_height, h):
         for x in range(0, tile_width, w):
@@ -100,6 +111,7 @@ def np_img_to_tile(np_imgs, column_size=10):
                 break
 
             tile[y:y + h, x:x + w, :] = np_imgs[img_idx]
+
             img_idx += 1
 
         if img_idx >= n:
