@@ -43,7 +43,7 @@ class AbstractModel:
         metadata = {}
         return metadata
 
-    def load_model(self, metadata, input_shapes):
+    def load_model(self, metadata=None, input_shapes=None):
         """load tensor graph of entire model
 
         load model instance and inject metadata and input_shapes
@@ -64,12 +64,12 @@ class AbstractModel:
                 self.log('load misc ops')
                 self.load_misc_ops()
 
-            self.log("load input shapes")
-            self.load_input_shapes(input_shapes)
-
             with tf.variable_scope("hyper_parameter"):
                 self.log('load hyper parameter')
                 self.load_hyper_parameter()
+
+            self.log("load input shapes")
+            self.load_input_shapes(input_shapes)
 
             self.log('load main tensor graph')
             self.load_main_tensor_graph()
@@ -92,12 +92,16 @@ class AbstractModel:
         else:
             self.log("load model complete")
 
-    def load_metadata(self, metadata):
+    def load_metadata(self, metadata=None):
         """load metadata
 
         :type metadata: dict
         :param metadata: metadata for model
         """
+        if metadata is None:
+            self.log('skip to load metadata')
+            return
+
         self.instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
         self.instance_path = metadata[MODEL_METADATA_KEY_INSTANCE_PATH]
         self.instance_visual_result_folder_path = metadata[MODEL_METADATA_KEY_INSTANCE_VISUAL_RESULT_FOLDER_PATH]
