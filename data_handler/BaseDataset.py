@@ -306,8 +306,9 @@ class BaseDataset(metaclass=MetaTask):
         return batches
 
     def split(self, ratio, shuffle=False):
-        a_set = BaseDataset()
-        b_set = BaseDataset()
+        """return split part of dataset"""
+        a_set = self.__class__()
+        b_set = self.__class__()
         a_set.input_shapes = self.input_shapes
         b_set.input_shapes = self.input_shapes
 
