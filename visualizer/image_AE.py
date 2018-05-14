@@ -20,7 +20,7 @@ class image_AE(AbstractVisualizer):
             look_up=True
         )
         batch_xs = np.reshape(batch_xs, [100, 28, 28])
-        batch_xs = np_img_float32_to_uint8(batch_xs )
+        batch_xs = np_img_float32_to_uint8(batch_xs)
         sample_imgs = np.concatenate((batch_xs, sample_imgs), axis=0)
 
         # sample_imgs = Xs_gen_image
