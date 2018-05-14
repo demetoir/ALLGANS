@@ -43,10 +43,13 @@ class Stacker:
         """
         scope_name = self.name + '_layer' + str(self.layer_count)
         with tf.variable_scope(scope_name, reuse=self.reuse):
-            self.last_layer = func(self.last_layer, *args, **kwargs)
+            if func == concat:
+                self.last_layer = func(*args, **kwargs)
+            else:
+                self.last_layer = func(self.last_layer, *args, **kwargs)
+
             self.layer_seq += [self.last_layer]
-            pass
-        self.layer_count += 1
+            self.layer_count += 1
         return self.last_layer
 
     def bn(self):
@@ -118,3 +121,9 @@ class Stacker:
     def dropout(self, rate):
         """add dropout layer"""
         return self.add_layer(dropout, rate)
+
+    def reshape(self, shape):
+        return self.add_layer(reshape, shape)
+
+    def concat(self, values, axis):
+        return self.add_layer(concat, values, axis)
