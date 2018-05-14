@@ -65,7 +65,7 @@ class WGAN(AbstractGANModel):
         return out, out_logit
 
     def load_main_tensor_graph(self):
-        self.X = tf.placeholder(tf.float32, [self.batch_size] + self.shape_data_x, name='X')
+        self.X = tf.placeholder(tf.float32, [self.batch_size] + self.X_shape, name='X')
         self.z = tf.placeholder(tf.float32, [self.batch_size, self.n_noise], name='z')
 
         self.G = self.generator(self.z)

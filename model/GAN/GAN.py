@@ -63,7 +63,7 @@ class GAN(AbstractGANModel):
         return out, out_logit
 
     def load_main_tensor_graph(self):
-        self.X = tf.placeholder(tf.float32, [self.batch_size] + self.shape_data_x)
+        self.X = tf.placeholder(tf.float32, [self.batch_size] + self.X_shape)
         self.z = tf.placeholder(tf.float32, [self.batch_size, self.n_noise])
 
         self.G = self.generator(self.z)
