@@ -334,3 +334,11 @@ def wall_decay(decay_rate, global_step, wall_step, name='decay'):
 def average_top_k_loss(loss, k, name='average_top_k_loss'):
     values, indices = tf.nn.top_k(loss, k=k, name=name)
     return values
+
+
+def reshape(input_, shape, name='reshape'):
+    return tf.reshape(input_, shape, name=name)
+
+
+def concat(values, axis, name="concat"):
+    return tf.concat(values, axis)
