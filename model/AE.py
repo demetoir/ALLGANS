@@ -66,7 +66,8 @@ class AE(AbstractModel):
             self.loss_mean = tf.reduce_mean(self.loss, name='loss_mean')
 
     def load_train_ops(self):
-        self.train = tf.train.AdamOptimizer(self.learning_rate, self.beta1).minimize(loss=self.loss, var_list=self.vars)
+        self.train_op = tf.train.AdamOptimizer(self.learning_rate, self.beta1).minimize(loss=self.loss,
+                                                                                        var_list=self.vars)
 
     def train_model(self, sess=None, iter_num=None, dataset=None):
         batch_xs = dataset.train_set.next_batch(
@@ -74,7 +75,7 @@ class AE(AbstractModel):
             batch_keys=[self.X_batch_key]
         )
         sess.run(
-            [self.train, self.op_inc_global_step],
+            [self.train_op, self.op_inc_global_step],
             feed_dict={
                 self.Xs: batch_xs,
             }
