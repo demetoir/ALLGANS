@@ -166,7 +166,7 @@ def filter_book_mark(html):
     # return html
 
 
-def tf_model_train_tianic():
+def tf_model_train_titanic():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
     model = ModelClassLoader.load_model_class("TitanicModel")
@@ -193,10 +193,35 @@ def tf_model_train_tianic():
     del manager
 
 
-def tf_model_train_vae():
+def tf_model_train_AE():
     dataset = DatasetLoader().load_dataset("MNIST")
     input_shapes = dataset.train_set.input_shapes
     model = ModelClassLoader.load_model_class("AE")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+
+    log_AE = VisualizerClassLoader.load('log_AE')
+    image_AE = VisualizerClassLoader.load('image_AE')
+    visualizers = [(log_AE, 100), (image_AE, 100)]
+    for visualizer, interval in visualizers:
+        manager.load_visualizer(visualizer, interval)
+
+    manager.train_instance(
+        epoch=40,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
+
+    del manager
+
+
+def tf_model_train_VAE():
+    dataset = DatasetLoader().load_dataset("MNIST")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("VAE")
 
     manager = InstanceManager()
     metadata_path = manager.build_instance(model)
@@ -215,9 +240,55 @@ def tf_model_train_vae():
         with_tensorboard=True
     )
 
-    # manager.sampling_instance(
-    #     dataset=dataset
-    # )
+    del manager
+
+
+def tf_model_train_C_GAN():
+    dataset = DatasetLoader().load_dataset("MNIST")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("C_GAN")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+
+    image_C_GAN = VisualizerClassLoader.load('image_C_GAN')
+    log_C_GAN_loss = VisualizerClassLoader.load('log_C_GAN_loss')
+    visualizers = [(image_C_GAN, 100), (log_C_GAN_loss, 20)]
+    for visualizer, interval in visualizers:
+        manager.load_visualizer(visualizer, interval)
+
+    manager.train_instance(
+        epoch=4000,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
+
+    del manager
+
+
+def tf_model_train_GAN():
+    dataset = DatasetLoader().load_dataset("MNIST")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("GAN")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+
+    image_tile = VisualizerClassLoader.load('image_tile')
+    log_GAN_loss = VisualizerClassLoader.load('log_GAN_loss')
+    visualizers = [(image_tile, 100), (log_GAN_loss, 20)]
+    for visualizer, interval in visualizers:
+        manager.load_visualizer(visualizer, interval)
+
+    manager.train_instance(
+        epoch=4000,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
 
     del manager
 
@@ -241,5 +312,9 @@ def main():
     # clfpack.param_search(train_xs, train_labels, test_xs, test_labels)
     #
 
-    # tf_model_train_tianic()
-    tf_model_train_vae()
+    # tf_model_train_titanic()
+    # tf_model_train("C_GAN")
+    # tf_model_train_C_GAN()
+    # tf_model_train_GAN()
+    # tf_model_train_AE()
+    tf_model_train_VAE()
