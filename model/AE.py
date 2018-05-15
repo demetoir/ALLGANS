@@ -11,6 +11,7 @@ class AE(AbstractModel):
     def load_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
         self.X_shape = input_shapes[self.X_batch_key]
+        self.Xs_shape = [self.batch_size] + self.X_shape
 
     def load_hyper_parameter(self):
         self.batch_size = 100
@@ -39,13 +40,22 @@ class AE(AbstractModel):
         return stack.last_layer
 
     def load_main_tensor_graph(self):
-        self.Xs = tf.placeholder(tf.float32, [self.batch_size] + self.X_shape, name='Xs')
-        self.Xs_image = tf.reshape(self.Xs, [self.batch_size] + [28, 28], name='Xs_image')
-        self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
+        self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
 
-        self.encode = self.encoder(self.Xs_flatten)
+        def is_vector(x):
+            if len(x) == 1:
+                return True
+            else:
+                return False
+
+        Xs = self.Xs
+        if not is_vector(self.X_shape):
+            self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
+            Xs = self.Xs_flatten
+
+        self.encode = self.encoder(Xs)
         self.Xs_gen = self.decoder(self.encode)
-        self.Xs_gen_image = tf.reshape(self.Xs_gen, [self.batch_size] + [28, 28], )
+        self.Xs_gen = reshape(self.Xs_gen, self.Xs_shape)
 
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
