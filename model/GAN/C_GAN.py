@@ -40,15 +40,16 @@ class C_GAN(AbstractGANModel):
 
     def generator(self, z, Y, reuse=False):
         with tf.variable_scope('generator', reuse=reuse):
-            layer = Stacker(tf.concat((z, Y), axis=1))
-            layer.add_layer(linear, 7 * 7 * 128)
+            layer = Stacker(concat((z, Y), axis=1))
+            layer.add_layer(linear, 7 * 7 * 64)
             layer.reshape([self.batch_size, 7, 7, 128])
-            layer.upscale_2x_block(256, CONV_FILTER_5522, relu)
-            layer.conv2d_transpose(self.Xs_shape, CONV_FILTER_5522)
-            layer.conv_block(self.input_c, CONV_FILTER_3311, sigmoid)
-            net = layer.last_layer
 
-        return net
+            layer.upscale_2x_block(256, CONV_FILTER_5522, relu)
+            layer.upscale_2x_block(128, CONV_FILTER_5522, relu)
+            layer.conv2d(self.input_c, CONV_FILTER_3311)
+            layer.sigmoid()
+
+        return layer.last_layer
 
     def discriminator(self, X, Y, reuse=False):
         with tf.variable_scope('discriminator', reuse=reuse):
@@ -58,9 +59,10 @@ class C_GAN(AbstractGANModel):
             layer.conv_block(128, CONV_FILTER_5522, lrelu)
             layer.conv_block(256, CONV_FILTER_5522, lrelu)
             layer.reshape([self.batch_size, -1])
-            out = layer.sigmoid()
+            layer.linear(1)
+            layer.sigmoid()
 
-        return out
+        return layer.last_layer
 
     def load_main_tensor_graph(self):
         self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
@@ -68,17 +70,16 @@ class C_GAN(AbstractGANModel):
         self.zs = tf.placeholder(tf.float32, self.zs_shape, name='zs')
 
         self.G = self.generator(self.zs, self.Ys)
+        self.Xs_gen = self.G
         self.D_real = self.discriminator(self.Xs, self.Ys)
-        self.D_gen = self.discriminator(self.G, self.Ys, reuse=True)
+        self.D_gen = self.discriminator(self.Xs_gen, self.Ys, reuse=True)
 
     def load_loss_function(self):
         self.loss_D_real = tf.reduce_mean(self.D_real, name='loss_D_real')
-
         self.loss_D_gen = tf.reduce_mean(self.D_gen, name='loss_D_gen')
 
-        self.loss_D = - tf.reduce_mean(tf.log(self.D_real)) - tf.reduce_mean(tf.log(1. - self.D_gen), name='loss_D')
-
-        self.loss_G = - tf.reduce_mean(tf.log(self.D_gen), name='loss_G')
+        self.loss_D = tf.reduce_mean(-tf.log(self.D_real) - tf.log(1. - self.D_gen), name='loss_D')
+        self.loss_G = tf.reduce_mean(-tf.log(self.D_gen), name='loss_G')
 
     def load_train_ops(self):
         self.vars_D = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
