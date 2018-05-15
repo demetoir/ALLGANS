@@ -16,22 +16,24 @@ class VAE(AbstractModel):
     def load_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
         self.X_shape = input_shapes[self.X_batch_key]
+        self.Xs_shape = [self.batch_size] + self.X_shape
 
     def load_hyper_parameter(self):
         self.batch_size = 100
         self.learning_rate = 0.001
         self.beta1 = 0.5
+        self.z_size = 32
 
     def encoder(self, Xs, name='encoder'):
         with tf.variable_scope(name):
             stack = Stacker(Xs)
             stack.linear_block(256, relu)
             stack.linear_block(128, relu)
-            stack.linear_block(128, relu)
+            stack.linear_block(self.z_size * 2, relu)
 
             h = stack.last_layer
-            mean = h[:, :64]
-            std = tf.nn.softplus(h[:, 64:])
+            mean = h[:, :self.z_size]
+            std = tf.nn.softplus(h[:, self.z_size:])
 
         return mean, std
 
@@ -40,28 +42,38 @@ class VAE(AbstractModel):
             stack = Stacker(Xs)
             stack.linear_block(128, relu)
             stack.linear_block(256, relu)
-            stack.linear_block(784, sigmoid)
+            stack.linear_block(self.X_flatten_size, sigmoid)
+            stack.reshape(self.Xs_shape)
 
         return stack.last_layer
 
     def load_main_tensor_graph(self):
-        self.Xs = tf.placeholder(tf.float32, [self.batch_size] + self.X_shape, name='Xs')
-        self.Xs_image = tf.reshape(self.Xs, [self.batch_size] + [28, 28], name='Xs_image')
-        self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
+        self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
 
-        self.mean, self.std = self.encoder(self.Xs_flatten)
+        def is_vector(x):
+            if len(x) == 1:
+                return True
+            else:
+                return False
+
+        Xs = self.Xs
+        if not is_vector(self.X_shape):
+            self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
+            Xs = self.Xs_flatten
+            self.X_flatten_size = Xs.shape[1]
+
+        self.mean, self.std = self.encoder(Xs)
         self.z = self.mean + self.std * tf.random_normal(self.mean.shape, 0, 1, dtype=tf.float32)
 
         self.Xs_gen = self.decoder(self.z)
-        self.Xs_gen_image = tf.reshape(self.Xs_gen, [self.batch_size] + [28, 28], )
 
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
 
     def load_loss_function(self):
         with tf.variable_scope('loss'):
-            X = self.Xs
-            X_out = self.Xs_gen
+            X = tf.reshape(self.Xs, [self.batch_size, -1])
+            X_out = tf.reshape(self.Xs_gen, [self.batch_size, -1])
             mean = self.mean
             std = self.std
 
