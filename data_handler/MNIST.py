@@ -5,7 +5,7 @@ import numpy as np
 
 Xs = 'Xs'
 Xs_img = 'Xs_img'
-labels = 'labels'
+Ys = 'Ys'
 TRAIN_SIZE = 60000
 TEST_SIZE = 10000
 LABEL_SIZE = 10
@@ -16,16 +16,16 @@ class MNIST_train(BaseDataset):
     LABEL_SIZE = LABEL_SIZE
     Xs = Xs
     Xs_img = Xs_img
-    labels = labels
+    Ys = Ys
     BATCH_KEYS = [
         Xs,
-        labels,
+        Ys,
         Xs_img
     ]
 
     def load(self, path, limit=None):
         mnist = input_data.read_data_sets(path, one_hot=True)
-        self.data[Xs], self.data[labels] = mnist.train.next_batch(self.SIZE)
+        self.data[Xs], self.data[Ys] = mnist.train.next_batch(self.SIZE)
 
     def save(self):
         pass
@@ -42,17 +42,17 @@ class MNIST_test(BaseDataset):
     LABEL_SIZE = LABEL_SIZE
     Xs = Xs
     Xs_img = Xs_img
-    labels = labels
+    Ys = Ys
     BATCH_KEYS = [
         Xs,
-        labels,
+        Ys,
         Xs_img
     ]
 
     def load(self, path, limit=None):
         mnist = input_data.read_data_sets(path, one_hot=True)
 
-        self.data[Xs], self.data[labels] = mnist.test.next_batch(self.SIZE)
+        self.data[Xs], self.data[Ys] = mnist.test.next_batch(self.SIZE)
 
     def save(self):
         pass
