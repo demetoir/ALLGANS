@@ -277,6 +277,9 @@ class BaseDataset(metaclass=MetaTask):
         if batch_keys is None:
             batch_keys = self.batch_keys
 
+        if type(batch_keys) is str:
+            batch_keys = [batch_keys]
+
         batches = []
         for key in batch_keys:
             batches += [self._iter_batch(self.data[key], batch_size)]
