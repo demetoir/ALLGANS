@@ -53,8 +53,8 @@ class AE(AbstractModel):
             self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
             Xs = self.Xs_flatten
 
-        self.encode = self.encoder(Xs)
-        self.Xs_gen = self.decoder(self.encode)
+        self.code = self.encoder(Xs)
+        self.Xs_gen = self.decoder(self.code)
         self.Xs_gen = reshape(self.Xs_gen, self.Xs_shape)
 
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
