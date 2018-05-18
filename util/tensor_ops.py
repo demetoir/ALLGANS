@@ -341,4 +341,9 @@ def reshape(input_, shape, name='reshape'):
 
 
 def concat(values, axis, name="concat"):
-    return tf.concat(values, axis)
+    return tf.concat(values, axis, name=name)
+
+
+def flatten(input_, name='flatten'):
+    shape = input_.shape
+    return tf.reshape(input_, [shape[0], -1], name=name)
