@@ -50,7 +50,7 @@ class AE(AbstractModel):
 
         Xs = self.Xs
         if not is_vector(self.X_shape):
-            self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
+            self.Xs_flatten = flatten(self.Xs)
             Xs = self.Xs_flatten
 
         self.code = self.encoder(Xs)
