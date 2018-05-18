@@ -27,6 +27,8 @@ TICKET = 'Ticket'
 FARE = 'Fare'
 CABIN = 'Cabin'
 EMBARKED = 'Embarked'
+Xs = 'Xs'
+Ys = 'Ys'
 
 
 def x_preprocess(self):
@@ -96,6 +98,8 @@ class titanic_train(BaseDataset):
         FARE,
         CABIN,
         EMBARKED,
+        Xs,
+        Ys
     ]
 
     CSV_COLUMNS = [
@@ -133,7 +137,7 @@ class titanic_train(BaseDataset):
 
     def preprocess(self):
         data = x_preprocess(self)
-        self.add_data(BK_X, data)
+        self.add_data(Xs, data)
 
         # add train_label
         data = self.data[SURVIVED]
@@ -144,7 +148,7 @@ class titanic_train(BaseDataset):
         data = self.get_datas([
             SURVIVED
         ])
-        self.add_data(BK_LABEL, data[0])
+        self.add_data(Ys, data[0])
 
 
 class titanic_test(BaseDataset):
@@ -196,7 +200,7 @@ class titanic_test(BaseDataset):
 
     def preprocess(self):
         data = x_preprocess(self)
-        self.add_data(BK_X, data)
+        self.add_data(Xs, data)
 
 
 class titanic(DatasetCollection):
