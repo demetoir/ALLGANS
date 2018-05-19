@@ -2,6 +2,7 @@ from model.AbstractModel import AbstractModel
 from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import *
+from functools import reduce
 
 
 class AE(AbstractModel):
@@ -12,6 +13,9 @@ class AE(AbstractModel):
         self.X_batch_key = 'Xs'
         self.X_shape = input_shapes[self.X_batch_key]
         self.Xs_shape = [self.batch_size] + self.X_shape
+        self.X_flatten_size = reduce(lambda x, y: x * y, self.X_shape)
+        self.z_shape = [self.z_size]
+        self.zs_shape = [self.batch_size] + self.z_shape
 
     def load_hyper_parameter(self):
         self.batch_size = 100
@@ -19,50 +23,45 @@ class AE(AbstractModel):
         self.beta1 = 0.5
         self.L1_norm_lambda = 0.001
         self.K_average_top_k_loss = 10
+        self.code_size = 32
+        self.z_size = 32
 
     def encoder(self, Xs, name='encoder'):
         with tf.variable_scope(name):
             stack = Stacker(Xs)
+            stack.flatten()
+            stack.linear_block(512, relu)
             stack.linear_block(256, relu)
             stack.linear_block(128, relu)
-            stack.linear_block(64, relu)
+            stack.linear_block(self.code_size, relu)
 
         return stack.last_layer
 
-    def decoder(self, Xs, name='decoder'):
-        with tf.variable_scope(name):
+    def decoder(self, Xs, reuse=False, name='decoder'):
+        with tf.variable_scope(name, reuse=reuse):
             stack = Stacker(Xs)
             stack.linear_block(128, relu)
             stack.linear_block(256, relu)
-            stack.linear_block(784, relu)
-            stack.linear_block(784, sigmoid)
+            stack.linear_block(512, relu)
+            stack.linear_block(self.X_flatten_size, sigmoid)
+            stack.reshape(self.Xs_shape)
 
         return stack.last_layer
 
     def load_main_tensor_graph(self):
         self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
+        self.zs = tf.placeholder(tf.float32, self.zs_shape, name='zs')
 
-        def is_vector(x):
-            if len(x) == 1:
-                return True
-            else:
-                return False
-
-        Xs = self.Xs
-        if not is_vector(self.X_shape):
-            self.Xs_flatten = flatten(self.Xs)
-            Xs = self.Xs_flatten
-
-        self.code = self.encoder(Xs)
-        self.Xs_gen = self.decoder(self.code)
-        self.Xs_gen = reshape(self.Xs_gen, self.Xs_shape)
+        self.code = self.encoder(self.Xs)
+        self.Xs_recon = self.decoder(self.code)
+        self.Xs_gen = self.decoder(self.zs, reuse=True)
 
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
 
     def load_loss_function(self):
         with tf.variable_scope('loss'):
-            self.loss = tf.squared_difference(self.Xs, self.Xs_gen, name='loss')
+            self.loss = tf.squared_difference(self.Xs, self.Xs_recon, name='loss')
             self.loss_mean = tf.reduce_mean(self.loss, name='loss_mean')
 
     def load_train_ops(self):
