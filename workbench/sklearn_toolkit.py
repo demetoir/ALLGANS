@@ -1038,3 +1038,60 @@ class ClassifierPack(BaseClass):
             clf = self.pack[key]
             params[key] = clf.get_params()
         return params
+
+
+class BaseTFWrapperSklearn(BaseSklearn):
+    def run(self, fetches, feed_dict):
+        pass
+
+    def save(self):
+        pass
+
+    def load(self):
+        pass
+
+
+class GAN(BaseTFWrapperSklearn):
+    def fit(self, Xs):
+        pass
+
+    def generate(self, zs):
+        pass
+
+
+class C_GAN(BaseTFWrapperSklearn):
+    def fit(self, Xs, Ys):
+        pass
+
+    def generate(self, zs, Ys):
+        pass
+
+
+class info_GAN(BaseTFWrapperSklearn):
+    def fit(self, Xs, Ys):
+        pass
+
+    def generate(self, zs, Ys):
+        pass
+
+
+class AE(BaseTFWrapperSklearn):
+    def fix(self, Xs):
+        pass
+
+    def encode(self, Xs):
+        pass
+
+    def decode(self, zs):
+        pass
+
+
+class VAE(BaseTFWrapperSklearn):
+    def fix(self, Xs):
+        pass
+
+    def encode(self, Xs):
+        pass
+
+    def decode(self, zs):
+        pass
