@@ -1,4 +1,4 @@
-from util.Logger import Logger, StdoutOnlyLogger
+from util.Logger import StdoutOnlyLogger
 from util.misc_util import *
 import traceback
 import sys
