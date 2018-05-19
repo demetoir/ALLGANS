@@ -55,9 +55,9 @@ class AAE(AbstractModel):
 
         return stack.last_layer
 
-    def discriminator_gauss(self, z, reuse=False, name='discriminator_gauss'):
+    def discriminator_gauss(self, zs, reuse=False, name='discriminator_gauss'):
         with tf.variable_scope(name, reuse=reuse):
-            layer = Stacker(z)
+            layer = Stacker(zs)
             layer.linear_block(256, relu)
             layer.linear_block(256, relu)
             layer.linear(1)
@@ -65,9 +65,9 @@ class AAE(AbstractModel):
 
         return layer.last_layer
 
-    def discriminator_cate(self, z, reuse=False, name='discriminator_cate'):
+    def discriminator_cate(self, zs, reuse=False, name='discriminator_cate'):
         with tf.variable_scope(name, reuse=reuse):
-            layer = Stacker(z)
+            layer = Stacker(zs)
             layer.linear_block(256, relu)
             layer.linear_block(256, relu)
             layer.linear(1)

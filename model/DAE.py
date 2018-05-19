@@ -42,9 +42,9 @@ class DAE(AbstractModel):
 
         return stack.last_layer
 
-    def decoder(self, Xs, reuse=False, name='decoder'):
+    def decoder(self, zs, reuse=False, name='decoder'):
         with tf.variable_scope(name, reuse=reuse):
-            stack = Stacker(Xs)
+            stack = Stacker(zs)
             stack.linear_block(128, relu)
             stack.linear_block(256, relu)
             stack.linear_block(512, relu)
