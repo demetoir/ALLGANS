@@ -335,6 +335,27 @@ def tf_model_train_DVAE():
     del manager
 
 
+def tf_model_train_CVAE():
+    dataset = DatasetLoader().load_dataset("MNIST")
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class("CVAE")
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model)
+    manager.load_instance(metadata_path, input_shapes)
+    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
+    manager.load_visualizer(VisualizerClassLoader.load('image_AE'), 100)
+    manager.load_visualizer(VisualizerClassLoader.load('image_CVAE_Ys'), 100)
+    manager.train_instance(
+        epoch=40,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
+
+    del manager
+
+
 def tf_model_train_MLPclf():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
@@ -383,6 +404,7 @@ def main():
     # tf_model_train_VAE()
     # tf_model_train_AAE()
     # tf_model_train_DAE()
-    tf_model_train_DVAE()
+    # tf_model_train_DVAE()
     #
     # tf_model_train_MLPclf()
+    tf_model_train_CVAE()
