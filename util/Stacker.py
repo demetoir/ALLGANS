@@ -127,3 +127,6 @@ class Stacker:
 
     def concat(self, values, axis):
         return self.add_layer(concat, values, axis)
+
+    def flatten(self):
+        return self.add_layer(flatten)
