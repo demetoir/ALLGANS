@@ -15,12 +15,12 @@ class image_AAE_Ys(AbstractVisualizer):
         Ys = np.array(10 * [i for i in range(10)])
         Ys = np_index_to_onehot(Ys)
 
-        Xs_gen, global_step = model.get_tf_values(
+        Xs_recon, global_step = model.get_tf_values(
             sess,
-            [model.Xs_gen, model.global_step],
+            [model.Xs_recon, model.global_step],
             Xs, Ys, model.get_z_noise(),
         )
-        Xs_gen_np_img = np_img_float32_to_uint8(Xs_gen)
+        Xs_recon_np_img = np_img_float32_to_uint8(Xs_recon)
 
         Xs_real = dataset.train_set.next_batch(
             model.batch_size,
@@ -28,7 +28,7 @@ class image_AAE_Ys(AbstractVisualizer):
             look_up=True
         )
         Xs_real_np_img = np_img_float32_to_uint8(Xs_real)
-        concat_np_img = np.concatenate((Xs_real_np_img, Xs_gen_np_img), axis=0)
+        concat_np_img = np.concatenate((Xs_real_np_img, Xs_recon_np_img), axis=0)
 
         # sample_imgs = Xs_gen
         file_name = '{}.png'.format(str(iter_num).zfill(8))
