@@ -99,3 +99,10 @@ class AE(AbstractModel):
                 self.Xs: batch_xs,
             }
         )
+
+    def get_tf_values(self, sess, fetches, Xs):
+        return sess.run(
+            fetches,
+            feed_dict={
+                self.Xs: Xs
+            })
