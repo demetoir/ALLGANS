@@ -60,9 +60,8 @@ class AE(AbstractModel):
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
 
     def load_loss_function(self):
-        with tf.variable_scope('loss'):
-            self.loss = tf.squared_difference(self.Xs, self.Xs_recon, name='loss')
-            self.loss_mean = tf.reduce_mean(self.loss, name='loss_mean')
+        self.loss = tf.squared_difference(self.Xs, self.Xs_recon, name='loss')
+        self.loss_mean = tf.reduce_mean(self.loss, name='loss_mean')
 
     def load_train_ops(self):
         self.train_op = tf.train.AdamOptimizer(self.learning_rate, self.beta1).minimize(loss=self.loss,
