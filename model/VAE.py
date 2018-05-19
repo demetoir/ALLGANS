@@ -1,12 +1,8 @@
+from functools import reduce
 from model.AbstractModel import AbstractModel
 from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import *
-
-
-def square_loss(a, b, name='square_loss'):
-    with tf.variable_scope(name):
-        return tf.pow((a - b), 2)
 
 
 class VAE(AbstractModel):
@@ -18,6 +14,11 @@ class VAE(AbstractModel):
         self.X_shape = input_shapes[self.X_batch_key]
         self.Xs_shape = [self.batch_size] + self.X_shape
 
+        self.X_flatten_size = reduce(lambda x, y: x * y, self.X_shape)
+
+        self.z_shape = [self.z_size]
+        self.zs_shape = [self.batch_size] + self.z_shape
+
     def load_hyper_parameter(self):
         self.batch_size = 100
         self.learning_rate = 0.001
@@ -27,6 +28,8 @@ class VAE(AbstractModel):
     def encoder(self, Xs, name='encoder'):
         with tf.variable_scope(name):
             stack = Stacker(Xs)
+            stack.flatten()
+            stack.linear_block(512, relu)
             stack.linear_block(256, relu)
             stack.linear_block(128, relu)
             stack.linear_block(self.z_size * 2, relu)
@@ -37,11 +40,12 @@ class VAE(AbstractModel):
 
         return mean, std
 
-    def decoder(self, Xs, name='decoder'):
-        with tf.variable_scope(name):
+    def decoder(self, Xs, reuse=False, name='decoder'):
+        with tf.variable_scope(name, reuse=reuse):
             stack = Stacker(Xs)
             stack.linear_block(128, relu)
             stack.linear_block(256, relu)
+            stack.linear_block(512, relu)
             stack.linear_block(self.X_flatten_size, sigmoid)
             stack.reshape(self.Xs_shape)
 
@@ -49,23 +53,13 @@ class VAE(AbstractModel):
 
     def load_main_tensor_graph(self):
         self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
+        self.zs = tf.placeholder(tf.float32, self.zs_shape, name='zs')
 
-        def is_vector(x):
-            if len(x) == 1:
-                return True
-            else:
-                return False
-
-        Xs = self.Xs
-        if not is_vector(self.X_shape):
-            self.Xs_flatten = tf.reshape(self.Xs, [self.batch_size, -1], name='Xs_flatten')
-            Xs = self.Xs_flatten
-            self.X_flatten_size = Xs.shape[1]
-
-        self.mean, self.std = self.encoder(Xs)
-        self.z = self.mean + self.std * tf.random_normal(self.mean.shape, 0, 1, dtype=tf.float32)
-
-        self.Xs_gen = self.decoder(self.z)
+        self.mean, self.std = self.encoder(self.Xs)
+        self.zs_gen = self.mean + self.std * tf.random_normal(self.mean.shape, 0, 1, dtype=tf.float32)
+        self.code = self.zs_gen
+        self.Xs_recon = self.decoder(self.zs_gen)
+        self.Xs_gen = self.decoder(self.zs, reuse=True)
 
         self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
