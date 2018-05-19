@@ -71,33 +71,32 @@ class VAE(AbstractModel):
         self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
 
     def load_loss_function(self):
-        with tf.variable_scope('loss'):
-            X = tf.reshape(self.Xs, [self.batch_size, -1])
-            X_out = tf.reshape(self.Xs_gen, [self.batch_size, -1])
-            mean = self.mean
-            std = self.std
+        X = tf.reshape(self.Xs, [self.batch_size, -1])
+        X_out = tf.reshape(self.Xs_recon, [self.batch_size, -1])
+        mean = self.mean
+        std = self.std
 
-            self.cross_entropy = tf.reduce_sum(X * tf.log(X_out) + (1 - X) * tf.log(1 - X_out), axis=1)
-            self.KL_Divergence = 0.5 * tf.reduce_sum(
-                1 - tf.log(tf.square(std) + 1e-8) + tf.square(mean) + tf.square(std), axis=1)
+        self.cross_entropy = tf.reduce_sum(X * tf.log(X_out) + (1 - X) * tf.log(1 - X_out), axis=1)
+        self.KL_Divergence = 0.5 * tf.reduce_sum(
+            1 - tf.log(tf.square(std) + 1e-8) + tf.square(mean) + tf.square(std), axis=1)
 
-            # in autoencoder's perspective loss can be divide to reconstruct error and regularization error
-            # self.recon_error = -1 * self.cross_entropy
-            # self.regularization_error = self.KL_Divergence
-            # self.loss = self.recon_error + self.regularization_error
+        # in autoencoder's perspective loss can be divide to reconstruct error and regularization error
+        # self.recon_error = -1 * self.cross_entropy
+        # self.regularization_error = self.KL_Divergence
+        # self.loss = self.recon_error + self.regularization_error
 
-            # only cross entropy loss also work
-            # self.loss = -1 * self.cross_entropy
+        # only cross entropy loss also work
+        # self.loss = -1 * self.cross_entropy
 
-            # using MSE than cross entropy loss also work but slow
-            # self.MSE= tf.reduce_sum(tf.squared_difference(X, X_out), axis=1)
-            # self.loss = self.MSE + self.KL_Divergence
+        # using MSE than cross entropy loss also work but slow
+        # self.MSE= tf.reduce_sum(tf.squared_difference(X, X_out), axis=1)
+        # self.loss = self.MSE + self.KL_Divergence
 
-            # this one also work
-            # self.loss = self.MSE
+        # this one also work
+        # self.loss = self.MSE
 
-            self.loss = -1 * self.cross_entropy + self.KL_Divergence
-            self.loss_mean = tf.reduce_mean(self.loss)
+        self.loss = -1 * self.cross_entropy + self.KL_Divergence
+        self.loss_mean = tf.reduce_mean(self.loss)
 
     def load_train_ops(self):
         self.train = tf.train.AdamOptimizer(self.learning_rate, self.beta1).minimize(loss=self.loss_mean,
