@@ -41,7 +41,7 @@ class C_GAN(AbstractGANModel):
     def generator(self, z, Y, reuse=False):
         with tf.variable_scope('generator', reuse=reuse):
             layer = Stacker(concat((z, Y), axis=1))
-            layer.add_layer(linear, 7 * 7 * 64)
+            layer.add_layer(linear, 7 * 7 * 128)
             layer.reshape([self.batch_size, 7, 7, 128])
 
             layer.upscale_2x_block(256, CONV_FILTER_5522, relu)
