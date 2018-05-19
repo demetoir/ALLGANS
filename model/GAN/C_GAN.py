@@ -11,7 +11,7 @@ class C_GAN(AbstractGANModel):
 
     def load_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
-        self.Y_batch_key = 'labels'
+        self.Y_batch_key = 'Ys'
         X_shape = input_shapes[self.X_batch_key]
         self.Y_shape = input_shapes[self.Y_batch_key]
         if len(X_shape) == 3:
