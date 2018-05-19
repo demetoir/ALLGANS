@@ -74,9 +74,9 @@ class Fashion_MNISTHelper(AbstractDatasetHelper):
         dataset.data[BATCH_KEY_TEST_X] = data
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         dataset = Fashion_MNIST(preprocess=Fashion_MNISTHelper.preprocess)
-        dataset.load(FASHION_MNIST_PATH, limit=limit)
+        dataset.load(path, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 1],
             INPUT_SHAPE_KEY_LABEL: [10],

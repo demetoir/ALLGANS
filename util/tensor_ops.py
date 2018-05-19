@@ -40,6 +40,11 @@ def sigmoid(x, name='sigmoid'):
     return tf.sigmoid(x, name=name)
 
 
+def tanh(x, name='tanh'):
+    """tanh activation function layer"""
+    return tf.tanh(x, name=name)
+
+
 def lrelu(x, leak=0.2, name="lrelu"):
     """leak relu activate function layer"""
     return tf.maximum(x, leak * x, name=name)
@@ -82,7 +87,7 @@ def linear(input_, output_size, name="linear", stddev=0.02, bias_start=0.0, with
 
     with tf.variable_scope(name):
         weight = tf.get_variable("weight", [shape[1], output_size], tf.float32,
-                                 tf.random_normal_initializer(stddev=stddev))
+                                 initializer=tf.contrib.layers.xavier_initializer())
         bias = tf.get_variable("bias", [output_size],
                                initializer=tf.constant_initializer(bias_start))
         if with_w:
@@ -241,7 +246,15 @@ def conv_block(input_, output_channel, filter_, activate, name='conv_block'):
     """
     with tf.variable_scope(name):
         input_ = conv2d(input_, output_channel, filter_, name='conv')
-        input_ = bn(input_, name='bn')
+        input_ = bn(input_)
+        input_ = activate(input_)
+    return input_
+
+
+def linear_block(input_, output_size, activate, name="linear_block"):
+    with tf.variable_scope(name):
+        input_ = linear(input_, output_size)
+        input_ = bn(input_)
         input_ = activate(input_)
     return input_
 
@@ -296,3 +309,41 @@ def softmax(input_, name='softmax'):
     """softmax layer"""
     return tf.nn.softmax(input_, name=name)
 
+
+def dropout(input_, rate, name="dropout"):
+    """dropout"""
+    return tf.nn.dropout(input_, rate, name=name)
+
+
+def L1_norm(var_list, lambda_=1.0, name="L1_norm"):
+    return tf.multiply(lambda_,
+                       tf.reduce_sum([tf.reduce_sum(tf.abs(var)) for var in var_list]),
+                       name=name)
+
+
+def L2_norm(var_list, lambda_=1.0, name="L2_norm"):
+    return tf.multiply(lambda_,
+                       tf.sqrt(tf.reduce_sum([tf.reduce_sum(tf.square(tf.abs(var))) for var in var_list])),
+                       name=name)
+
+
+def wall_decay(decay_rate, global_step, wall_step, name='decay'):
+    return tf.pow(decay_rate, global_step // wall_step, name=name)
+
+
+def average_top_k_loss(loss, k, name='average_top_k_loss'):
+    values, indices = tf.nn.top_k(loss, k=k, name=name)
+    return values
+
+
+def reshape(input_, shape, name='reshape'):
+    return tf.reshape(input_, shape, name=name)
+
+
+def concat(values, axis, name="concat"):
+    return tf.concat(values, axis, name=name)
+
+
+def flatten(input_, name='flatten'):
+    shape = input_.shape
+    return tf.reshape(input_, [shape[0], -1], name=name)

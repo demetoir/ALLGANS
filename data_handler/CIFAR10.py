@@ -11,8 +11,8 @@ import pickle
 
 
 class CIFAR10(AbstractDataset):
-    _PATTERN_TRAIN_FILE = "data_batch_*"
-    _PATTERN_TEST_FILE = "test_batch"
+    _PATTERN_TRAIN_FILE = "*/data_batch_*"
+    _PATTERN_TEST_FILE = "*/test_batch"
     _PKCL_KEY_TRAIN_DATA = b"data"
     _PKCL_KEY_TRAIN_LABEL = b"labels"
     _PKCL_KEY_TEST_DATA = b"data"
@@ -46,7 +46,7 @@ class CIFAR10(AbstractDataset):
 
     def load(self, path, limit=None):
         # load train data
-        files = glob(os.path.join(path, self._PATTERN_TRAIN_FILE))
+        files = glob(os.path.join(path, self._PATTERN_TRAIN_FILE), recursive=True)
         files.sort()
         for file in files:
             with open(file, 'rb') as fo:
@@ -59,7 +59,7 @@ class CIFAR10(AbstractDataset):
             self._append_data(BATCH_KEY_TRAIN_LABEL, label)
 
         # load test data
-        files = glob(os.path.join(path, self._PATTERN_TEST_FILE))
+        files = glob(os.path.join(path, self._PATTERN_TEST_FILE), recursive=True)
         files.sort()
         for file in files:
             with open(file, 'rb') as fo:
@@ -105,9 +105,9 @@ class CIFAR10Helper(AbstractDatasetHelper):
         dataset.data[BATCH_KEY_TEST_LABEL] = data
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         cifar10 = CIFAR10(preprocess=CIFAR10Helper.preprocess)
-        cifar10.load(CIFAR10_PATH, limit=limit)
+        cifar10.load(path, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 3],
             INPUT_SHAPE_KEY_LABEL: [10],

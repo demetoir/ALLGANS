@@ -12,7 +12,7 @@ class FailLoadModelError(BaseException):
 class AbstractModel:
     """Abstract class of model for tensorflow graph
 
-    TODO
+    TODO add docstring
 
     """
     VERSION = 1.0
@@ -43,7 +43,7 @@ class AbstractModel:
         metadata = {}
         return metadata
 
-    def load_model(self, metadata, input_shapes):
+    def load_model(self, metadata=None, input_shapes=None):
         """load tensor graph of entire model
 
         load model instance and inject metadata and input_shapes
@@ -60,26 +60,31 @@ class AbstractModel:
             self.log("load metadata")
             self.load_metadata(metadata)
 
+            with tf.variable_scope("misc_ops"):
+                self.log('load misc ops')
+                self.load_misc_ops()
+
+            with tf.variable_scope("hyper_parameter"):
+                self.log('load hyper parameter')
+                self.load_hyper_parameter()
+
             self.log("load input shapes")
             self.load_input_shapes(input_shapes)
 
-            self.log('load hyper parameter')
-            self.load_hyper_parameter()
-
-            self.log('load tensor graph')
+            self.log('load main tensor graph')
             self.load_main_tensor_graph()
 
-            self.log('load loss')
-            self.load_loss_function()
+            with tf.variable_scope('loss'):
+                self.log('load loss')
+                self.load_loss_function()
 
-            self.log('load train ops')
-            self.load_train_ops()
+            with tf.variable_scope('train_ops'):
+                self.log('load train ops')
+                self.load_train_ops()
 
-            self.log('load misc ops')
-            self.load_misc_ops()
-
-            self.log('load summary load')
-            self.load_summary_ops()
+            with tf.variable_scope('summary_ops'):
+                self.log('load summary load')
+                self.load_summary_ops()
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
             self.log("\n", "".join(traceback.format_tb(exc_traceback)))
@@ -87,12 +92,16 @@ class AbstractModel:
         else:
             self.log("load model complete")
 
-    def load_metadata(self, metadata):
+    def load_metadata(self, metadata=None):
         """load metadata
 
         :type metadata: dict
         :param metadata: metadata for model
         """
+        if metadata is None:
+            self.log('skip to load metadata')
+            return
+
         self.instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
         self.instance_path = metadata[MODEL_METADATA_KEY_INSTANCE_PATH]
         self.instance_visual_result_folder_path = metadata[MODEL_METADATA_KEY_INSTANCE_VISUAL_RESULT_FOLDER_PATH]
@@ -143,7 +152,7 @@ class AbstractModel:
         if not implemented
         """
         with tf.variable_scope('misc_ops'):
-            self.global_step = tf.get_variable("global_step", shape=[1], initializer=tf.zeros_initializer)
+            self.global_step = tf.get_variable("global_step", shape=1, initializer=tf.zeros_initializer)
             with tf.variable_scope('op_inc_global_step'):
                 self.op_inc_global_step = self.global_step.assign(self.global_step + 1)
 

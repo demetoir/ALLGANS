@@ -14,8 +14,9 @@ class Logger:
     """
     LOGGER_FORMAT = '%(asctime)s > %(message)s'
     PRINT_LOGGER_FORMAT = '%(asctime)s > %(message)s'
+    NO_FORMAT = ""
 
-    def __init__(self, name, path=None, file_name='log', level=logging.INFO, stdout_only=False):
+    def __init__(self, name, path=None, file_name='log', level=logging.INFO, stdout_only=False, no_format=False):
         """create logger
 
         :param name:name of logger
@@ -27,7 +28,12 @@ class Logger:
         """
         self.logger = logging.getLogger(name)
         self.logger.setLevel(level)
-        formatter = logging.Formatter(Logger.LOGGER_FORMAT)
+
+        if no_format:
+            format_ = self.NO_FORMAT
+        else:
+            format_ = self.LOGGER_FORMAT
+        formatter = logging.Formatter(format_)
 
         self.file_handler = None
         if not stdout_only:
@@ -54,6 +60,7 @@ class Logger:
         :param level: level of logging
         :return: log function
         """
+
         # catch *args and make to str
         def deco(target_function):
             def wrapper(*args):
@@ -63,3 +70,17 @@ class Logger:
 
         func = getattr(self.logger, level)
         return deco(func)
+
+
+class StdoutOnlyLogger(Logger):
+    def __init__(self, name=None):
+        if name is None:
+            name = "None"
+        super().__init__(name, stdout_only=True, no_format=True)
+"""
+self.logger = Logger(self.__class__.__name__)
+self.log = self.logger.get_log()
+
+self.logger = StdoutOnlyLogger(self.__class__.__name__)
+self.log = self.logger.get_log()
+"""

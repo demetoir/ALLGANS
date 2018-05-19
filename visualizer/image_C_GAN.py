@@ -1,9 +1,8 @@
 from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
-import numpy as np
 
 
-class image_tile(AbstractVisualizer):
+class image_C_GAN(AbstractVisualizer):
     """visualize a tile image from GAN's result images"""
 
     def task(self, sess=None, iter_num=None, model=None, dataset=None):

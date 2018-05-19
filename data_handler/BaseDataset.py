@@ -1,9 +1,10 @@
-from util.Logger import Logger
+from util.Logger import StdoutOnlyLogger
 from util.misc_util import *
 import traceback
 import sys
 import numpy as np
 import os
+from sklearn.utils import shuffle
 
 
 def _check_attr_is_None(attr):
@@ -70,7 +71,7 @@ class DownloadInfo:
         return self.url, self.is_zipped, self.download_file_name, self.extracted_file_names
 
 
-class AbstractDataset(metaclass=MetaTask):
+class BaseDataset(metaclass=MetaTask):
     """
     TODO add docstring
     """
@@ -82,33 +83,46 @@ class AbstractDataset(metaclass=MetaTask):
         self.download_infos: (list) dataset download info
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
-
         """
         self.download_infos = []
-        self.batch_keys = None
-        self.logger = Logger(self.__class__.__name__, stdout_only=True)
+        self.batch_keys = []
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
         self.data = {}
-        self.cursor = {}
+        self.cursor = 0
         self.data_size = 0
+        self.input_shapes = None
 
     def __del__(self):
-        del self.data
-        del self.cursor
         del self.logger
         del self.log
-        del self.batch_keys
 
     def __repr__(self):
         return self.__class__.__name__
 
     def add_data(self, key, data):
-        self.batch_keys += [key]
         self.data[key] = data
-        self.cursor[key] = 0
+        self.cursor = 0
+        self.data_size = len(data)
 
     def get_data(self, key):
+        """return data
+
+        :param key:
+        :type key: str
+
+        :return:
+        """
         return self.data[key]
+
+    def get_datas(self, keys):
+        """return list of data
+
+        :param keys: list of keys
+        :type keys: list
+        :return: list
+        """
+        return [self.data[key] for key in keys]
 
     def if_need_download(self, path):
         """check dataset is valid and if dataset is not valid download dataset
@@ -122,33 +136,42 @@ class AbstractDataset(metaclass=MetaTask):
             pass
 
         for info in self.download_infos:
-            is_Invalid = False
-            files = glob(os.path.join(path, '**'), recursive=True)
-            names = list(map(lambda file: os.path.split(file)[1], files))
+            if self._is_invalid(path, info):
+                self.download_data(path, info)
 
-            if info.is_zipped:
-                file_list = info.extracted_file_names
-                for data_file in file_list:
-                    if data_file not in names:
-                        is_Invalid = True
-            else:
-                if info.download_file_name not in names:
-                    is_Invalid = True
+    def _is_invalid(self, path, download_info):
+        """check dataset file validation"""
+        validation = None
+        files = glob(os.path.join(path, '**'), recursive=True)
+        names = list(map(lambda file: os.path.split(file)[1], files))
 
-            if is_Invalid:
-                head, _ = os.path.split(path)
-                download_file = os.path.join(path, info.download_file_name)
+        if download_info.is_zipped:
+            file_list = download_info.extracted_file_names
+            for data_file in file_list:
+                if data_file not in names:
+                    validation = True
+        else:
+            if download_info.download_file_name not in names:
+                validation = True
 
-                self.log('download %s at %s ' % (info.download_file_name, download_file))
-                download_from_url(info.url, download_file)
+        return validation
 
-                if info.is_zipped:
-                    self.log("extract %s at %s" % (info.download_file_name, path))
-                    extract_file(download_file, path)
+    def download_data(self, path, download_info):
+        """donwnload data if need
 
-    def init_cursor(self):
-        for key in self.batch_keys:
-            self.cursor[key] = 0
+        :param path:
+        :param download_info:
+        :return:
+        """
+        head, _ = os.path.split(path)
+        download_file = os.path.join(path, download_info.download_file_name)
+
+        self.log('download %s at %s ' % (download_info.download_file_name, download_file))
+        download_from_url(download_info.url, download_file)
+
+        if download_info.is_zipped:
+            self.log("extract %s at %s" % (download_info.download_file_name, path))
+            extract_file(download_file, path)
 
     def after_load(self, limit=None):
         """after task for dataset and do execute preprocess for dataset
@@ -160,15 +183,15 @@ class AbstractDataset(metaclass=MetaTask):
         :type limit: int
         :param limit: limit size of dataset
         """
-        self.init_cursor()
 
         if limit is not None:
             for key in self.batch_keys:
                 self.data[key] = self.data[key][:limit]
 
-        for key in self.batch_keys:
+        for key in self.data:
             self.data_size = max(len(self.data[key]), self.data_size)
             self.log("batch data '%s' %d item(s) loaded" % (key, len(self.data[key])))
+
         self.log('%s fully loaded' % self.__str__())
 
         self.log('%s preprocess end' % self.__str__())
@@ -176,20 +199,26 @@ class AbstractDataset(metaclass=MetaTask):
 
         self.log("generate input_shapes")
         self.input_shapes = {}
-        for key in self.batch_keys:
+        for key in self.data:
             self.input_shapes[key] = list(self.data[key].shape[1:])
-            print(key, self.input_shapes[key])
+            self.log("key=%s, shape=%s" % (key, self.input_shapes[key]))
 
-    def load(self, path, limit=None, split_train=None):
-        """
-        TODO add docstring
+    def load(self, path, limit=None):
+        """load dataset from file should implement
+
+        save data at self.data, expect dict type
+
         :param path:
         :param limit:
-        :return:
+        :return: None
         """
-        pass
+        raise NotImplementedError
 
     def save(self):
+        """
+
+        :return: None
+        """
         raise NotImplementedError
 
     def _append_data(self, batch_key, data):
@@ -198,13 +227,12 @@ class AbstractDataset(metaclass=MetaTask):
         else:
             self.data[batch_key] = np.concatenate((self.data[batch_key], data))
 
-    def __next_batch(self, batch_size, key, lookup=False):
-        data = self.data[key]
-        cursor = self.cursor[key]
+    def _iter_batch(self, data, batch_size):
+        cursor = self.cursor
         data_size = len(data)
 
         # if batch size exceeds the size of data set
-        over_data = batch_size // data_size
+        over_data = batch_size // (data_size + 1)
         if over_data > 0:
             whole_data = np.concatenate((data[cursor:], data[:cursor]))
             batch_to_append = np.repeat(whole_data, over_data, axis=0)
@@ -223,12 +251,9 @@ class AbstractDataset(metaclass=MetaTask):
         if batch_to_append:
             batch = np.concatenate((batch_to_append, batch))
 
-        if not lookup:
-            self.cursor[key] = end
-
         return batch
 
-    def next_batch(self, batch_size, batch_keys=None, lookup=False):
+    def next_batch(self, batch_size, batch_keys=None, look_up=False):
         """return iter mini batch
 
         ex)
@@ -245,26 +270,32 @@ class AbstractDataset(metaclass=MetaTask):
         :param batch_keys: (iterable type) select keys,
             if  batch_keys length is 1 than just return mini batch
             else return list of mini batch
-        :param lookup: lookup == True cursor will not update
+        :param look_up: lookup == True cursor will not update
         :return: (numpy array type) list of mini batch, order is same with batch_keys
         """
+
         if batch_keys is None:
             batch_keys = self.batch_keys
 
+        if type(batch_keys) is str:
+            batch_keys = [batch_keys]
+
         batches = []
         for key in batch_keys:
-            batches += [self.__next_batch(batch_size, key, lookup)]
+            batches += [self._iter_batch(self.data[key], batch_size)]
+
+        if not look_up:
+            self.cursor = (self.cursor + batch_size) % self.data_size
 
         batches = self.after_next_batch(batches, batch_keys)
-        if len(batches) == 1:
-            batches = batches[0]
-        return batches
+
+        return batches[0] if len(batches) == 1 else batches
 
     def preprocess(self):
         """preprocess for loaded data
 
         """
-        pass
+        raise NotImplementedError
 
     def after_next_batch(self, batches, batch_keys=None):
         """pre process for every iteration for mini batch
@@ -276,3 +307,69 @@ class AbstractDataset(metaclass=MetaTask):
         :return: batch
         """
         return batches
+
+    def split(self, ratio, shuffle=False):
+        """return split part of dataset"""
+        a_set = self.__class__()
+        b_set = self.__class__()
+        a_set.input_shapes = self.input_shapes
+        b_set.input_shapes = self.input_shapes
+
+        a_ratio = ratio[0] / sum(ratio)
+        index = int(self.data_size * a_ratio)
+        for key in self.data:
+            a_set.add_data(key, self.data[key][:index])
+            b_set.add_data(key, self.data[key][index:])
+
+        return a_set, b_set
+
+    def merge(self, a_set, b_set):
+        """merge to dataset"""
+        new_set = self.__class__()
+        if a_set.keys() is not b_set.keys():
+            raise KeyError("dataset can not merge, key does not match")
+
+        for key in a_set:
+            new_set.add_data(key, a_set.data[key] + b_set.data[key])
+
+        return new_set
+
+    def shuffle(self, random_state=None):
+        """shuffle dataset"""
+        if random_state is None:
+            random_state = np.random.randint(1, 12345678)
+
+        for key in self.data:
+            self.data[key] = shuffle(self.data[key], random_state=random_state)
+
+    def reset_cursor(self):
+        """reset cursor"""
+        self.cursor = 0
+
+
+class DatasetCollection:
+    def __init__(self):
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
+        self.log = self.logger.get_log()
+
+        self.train_set = None
+        self.test_set = None
+        self.validation_set = None
+
+    def load(self, path, **kwargs):
+        if self.train_set is not None:
+            self.train_set.load(path, **kwargs)
+
+        if self.test_set is not None:
+            self.test_set.load(path, **kwargs)
+
+        if self.validation_set is not None:
+            self.validation_set.load(path, **kwargs)
+
+    def shuffle(self):
+        if self.train_set is not None:
+            self.train_set.shuffle()
+        if self.test_set is not None:
+            self.train_set.shuffle()
+        if self.validation_set is not None:
+            self.validation_set.shuffle()

@@ -92,9 +92,9 @@ class LLDHelper(AbstractDatasetHelper):
         return x
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         lld_data = LLD(batch_after_task=LLDHelper.next_batch_task)
-        lld_data.load(LLD_PATH, limit=limit)
+        lld_data.load(path, limit=limit)
         input_shapes = {
             INPUT_SHAPE_KEY_DATA_X: [32, 32, 3],
         }

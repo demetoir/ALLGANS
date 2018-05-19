@@ -10,17 +10,17 @@ class AbstractGANModel(AbstractModel):
         super().__init__(logger_path)
 
     def load_input_shapes(self, input_shapes):
-        shape_data_x = input_shapes[INPUT_SHAPE_KEY_DATA_X]
-        if len(shape_data_x) == 3:
-            self.shape_data_x = shape_data_x
-            H, W, C = shape_data_x
+        X_shape = input_shapes[INPUT_SHAPE_KEY_DATA_X]
+        if len(X_shape) == 3:
+            self.X_shape = X_shape
+            H, W, C = X_shape
             self.input_size = W * H * C
             self.input_w = W
             self.input_h = H
             self.input_c = C
-        elif len(shape_data_x) == 2:
-            self.shape_data_x = shape_data_x + [1]
-            H, W = shape_data_x
+        elif len(X_shape) == 2:
+            self.X_shape = X_shape + [1]
+            H, W = X_shape
             self.input_size = W * H
             self.input_w = W
             self.input_h = H

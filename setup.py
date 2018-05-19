@@ -34,10 +34,10 @@ def folder_init(description='description', default_path=''):
 
 
 # init instance folder
-# folder_init('Setup Instance Directory', os.path.join(ROOT_PATH, 'instance'))
+folder_init('Setup Instance Directory', os.path.join(ROOT_PATH, 'instance'))
 
 # init data folder
-# folder_init('Setup Data Directory', os.path.join(ROOT_PATH, 'data'))
+folder_init('Setup Data Directory', os.path.join(ROOT_PATH, 'data'))
 
 install_requires_ = [
     # 'tensorflow==1.4.1',
@@ -52,18 +52,18 @@ install_requires_ = [
 ]
 
 # ref : https://github.com/stunstunstun/awesome-algorithms
-setup(name='ALLGANS',
-      version='0.1',
-      description='Unsupervised Learning Model Implementation Project Using Machine Learning Framework',
-      long_description=readme_description(),
-      url='https://github.com/demetoir/ALLGANS',
-      author='demetoir, WKBae, StarG',
-      author_email='wnsqlehlswk@naver.com, williambae1@gmail.com, psk7142@naver.com',
-      license='MIT',
-      packages=find_packages(),
-      install_requires=install_requires_,
-      classifiers=[
-          'Programming Language :: Python :: 3.6',
-      ],
-      zip_safe=False,
-      )
+# setup(name='ALLGANS',
+#       version='0.1',
+#       description='Unsupervised Learning Model Implementation Project Using Machine Learning Framework',
+#       long_description=readme_description(),
+#       url='https://github.com/demetoir/ALLGANS',
+#       author='demetoir, WKBae, StarG',
+#       author_email='wnsqlehlswk@naver.com, williambae1@gmail.com, psk7142@naver.com',
+#       license='MIT',
+#       packages=find_packages(),
+#       install_requires=install_requires_,
+#       classifiers=[
+#           'Programming Language :: Python :: 3.6',
+#       ],
+#       zip_safe=False,
+#       )

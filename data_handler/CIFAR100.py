@@ -88,7 +88,7 @@ class CIFAR100Helper(AbstractDatasetHelper):
         return x
 
     @staticmethod
-    def load_dataset(limit=None):
+    def load_dataset(path, limit=None):
         cifar100 = CIFAR100(preprocess=CIFAR100Helper.preprocess)
-        cifar100.load(CIFAR100_PATH, limit=limit)
+        cifar100.load(path, limit=limit)
         return cifar100, [32, 32, 3]

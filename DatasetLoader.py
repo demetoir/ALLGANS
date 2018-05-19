@@ -1,5 +1,5 @@
-from data_handler.AbstractDataset import AbstractDatasetHelper
 from data_handler.AbstractDataset import AbstractDataset
+from data_handler.BaseDataset import BaseDataset, DatasetCollection
 from env_settting import *
 from util.Logger import Logger
 from util.misc_util import *
@@ -7,17 +7,17 @@ from util.misc_util import *
 
 class DatasetLoader:
     """
-    Todo
+    TODO add docstring
     """
 
     def __init__(self, root_path=ROOT_PATH):
         """create DatasetManager
-        todo
+        TODO add docstring
         """
         self.root_path = root_path
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()
-        self.datasets = {}
+        self.dataset_class = {}
 
     def __repr__(self):
         return self.__class__.__name__
@@ -36,17 +36,21 @@ class DatasetLoader:
         invalid dataset_name
         """
         try:
-            if dataset_name not in self.datasets:
-                self.import_dataset_and_helper(dataset_name=dataset_name)
-            data_loader, data_helper = self.datasets[dataset_name]
-            dataset, input_shapes = data_helper.load_dataset(limit=limit)
+            if dataset_name not in self.dataset_class:
+                self.import_dataset_class(dataset_name=dataset_name)
+
+            dataset_class = self.dataset_class[dataset_name]
+            path = os.path.join(DATA_PATH, dataset_class.__name__)
+            dataset = dataset_class()
+            dataset.load(path=path, limit=limit)
+
         except KeyError:
             raise KeyError("dataset_name %s not found" % dataset_name)
 
-        return dataset, input_shapes
+        return dataset
 
-    def import_dataset_and_helper(self, dataset_name):
-        """ import dataset_and_helper
+    def import_dataset_class(self, dataset_name):
+        """ import dataset class by dataset name
 
         :type dataset_name: str
         :param dataset_name:
@@ -67,20 +71,15 @@ class DatasetLoader:
 
         module_ = import_module_from_module_path(dataset_path)
         dataset = None
-        helper = None
         for key in module_.__dict__:
             value = module_.__dict__[key]
             try:
-                if issubclass(value, AbstractDataset):
+                if issubclass(value, DatasetCollection):
                     dataset = value
-                if issubclass(value, AbstractDatasetHelper):
-                    helper = value
             except TypeError:
                 pass
 
         if dataset is None:
             raise ModuleNotFoundError("dataset class %s not found" % dataset_name)
-        if helper is None:
-            raise ModuleNotFoundError("dataset helper class %s not found" % dataset_name)
 
-        self.datasets[dataset_name] = (dataset, helper)
+        self.dataset_class[dataset_name] = dataset

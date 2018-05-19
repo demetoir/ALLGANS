@@ -11,29 +11,39 @@ import os
 import subprocess
 import sys
 import traceback
-import multiprocessing
 
 META_DATA_FILE_NAME = 'instance.meta'
 INSTANCE_FOLDER = 'instance'
 VISUAL_RESULT_FOLDER = 'visual_results'
 
 
-def _log_exception(func):
+def deco_handle_exception(func):
     """decorator for catch exception and log
     """
 
     def wrapper(*args, **kwargs):
+        self = args[0]
+        log_func = self.log
         try:
             return func(*args, **kwargs)
         except KeyboardInterrupt:
-            self = args[0]
-            self.log("KeyboardInterrupt detected abort process")
-        except Exception:
-            self = args[0]
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
+            log_func("KeyboardInterrupt detected abort process")
+        except Exception as e:
+            log_error_trace(log_func, e)
 
     return wrapper
+
+
+def log_error_trace(log_func, e, head=""):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    msg = '%s\n %s %s : %s \n' % (
+        head,
+        "".join(traceback.format_tb(exc_traceback)),
+        e.__class__.__name__,
+        e,
+    )
+    log_func(msg)
 
 
 class InstanceManager:
@@ -68,7 +78,7 @@ class InstanceManager:
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()
         self.instance = None
-        self.visualizers = []
+        self.visualizers = {}
         self.subprocess = {}
 
     def __del__(self):
@@ -148,7 +158,7 @@ class InstanceManager:
         metadata[MODEL_METADATA_KEY_INSTANCE_SOURCE_PATH] = instance_source_path
         metadata[MODEL_METADATA_KEY_INSTANCE_SUMMARY_FOLDER_PATH] = instance_summary_folder_path
         metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME] = model.__name__
-        metadata[MODEL_METADATA_KEY_README] = self.gen_readme()
+        metadata[MODEL_METADATA_KEY_README] = None
         metadata[MODEL_METADATA_KEY_METADATA_PATH] = os.path.join(instance_path, 'instance.meta')
         dump_json(metadata, metadata[MODEL_METADATA_KEY_METADATA_PATH])
 
@@ -185,7 +195,7 @@ class InstanceManager:
         instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
         self.log('load instance id : %s' % instance_id)
 
-    @_log_exception
+    @deco_handle_exception
     def train_instance(self, epoch, dataset=None, check_point_interval=None, is_restore=False, with_tensorboard=True):
         """training loaded instance with dataset for epoch and loaded visualizers will execute
 
@@ -213,6 +223,10 @@ class InstanceManager:
         if with_tensorboard:
             self.open_tensorboard()
 
+        self.log("current loaded visualizers")
+        for key in self.visualizers:
+            self.log(key)
+
         with tf.Session() as sess:
             saver = tf.train.Saver()
             save_path = os.path.join(self.instance.instance_path, 'check_point')
@@ -232,12 +246,14 @@ class InstanceManager:
                 saver.restore(sess, check_point_path)
 
             batch_size = self.instance.batch_size
-            iter_per_epoch = int(dataset.data_size / batch_size)
-            self.log('total Epoch: %d, total iter: %d, iter per epoch: %d'
-                     % (epoch, epoch * iter_per_epoch, iter_per_epoch))
+            iter_per_epoch = int(dataset.train_set.data_size / batch_size)
+            self.log('train set size: %d, total Epoch: %d, total iter: %d, iter per epoch: %d'
+                     % (dataset.train_set.data_size, epoch, epoch * iter_per_epoch, iter_per_epoch))
 
-            iter_num, loss_val_D, loss_val_G = 0, 0, 0
+            iter_num = 0
             for epoch_ in range(epoch):
+                # TODO need concurrency
+                dataset.shuffle()
                 for _ in range(iter_per_epoch):
                     iter_num += 1
                     self.instance.train_model(sess=sess, iter_num=iter_num, dataset=dataset)
@@ -248,17 +264,16 @@ class InstanceManager:
 
                     if iter_num % check_point_interval == 0:
                         saver.save(sess, check_point_path)
-                self.log("epoch %s end" % (epoch_ + 1))
-        self.log('train end')
+                # self.log("epoch %s end" % (epoch_ + 1))
 
-        tf.reset_default_graph()
-        self.log('reset default graph')
+            saver.save(sess, check_point_path)
+        self.log('train end')
 
         if with_tensorboard:
             self.close_tensorboard()
 
-    @_log_exception
-    def sampling_instance(self, dataset=None, is_restore=False):
+    @deco_handle_exception
+    def sampling_instance(self, dataset=None, is_restore=True):
         """sampling result from trained instance by running loaded visualizers
 
         * if you want to use visualizer call load_visualizer function first
@@ -275,6 +290,10 @@ class InstanceManager:
         self.log('start sampling_model')
         saver = tf.train.Saver()
 
+        self.log("current loaded visualizers")
+        for key in self.visualizers:
+            self.log(key)
+
         save_path = os.path.join(self.instance.instance_path, 'check_point')
         check_point_path = os.path.join(save_path, 'instance.ckpt')
         if not os.path.exists(save_path):
@@ -286,29 +305,43 @@ class InstanceManager:
                 saver.restore(sess, check_point_path)
                 self.log('restore check point')
 
-            self.__visualizer_task(sess, dataset=dataset)
+            iter_num = 0
+            for visualizer in self.visualizers.values():
+                try:
+                    visualizer.task(sess=sess, iter_num=iter_num, model=self.instance, dataset=dataset)
+                except Exception as err:
+                    log_error_trace(self.log, err, head='while execute %s' % visualizer)
+
         self.log('sampling end')
 
-        tf.reset_default_graph()
-        self.log('reset default graph')
-
-    def load_visualizer(self, visualizer, execute_interval):
+    def load_visualizer(self, visualizer, execute_interval, key=None):
         """load visualizer for training and sampling result of instance
-
-        TODO change docstring
-        todo load single visualizer
 
         :type visualizer: AbstractVisualizer
         :param visualizer: list of tuple,
         :type execute_interval: int
         :param execute_interval: interval to execute visualizer per iteration
+        :param key: key of visualizer dict
         """
         visualizer_path = self.instance.instance_visual_result_folder_path
         if not os.path.exists(visualizer_path):
             os.mkdir(visualizer_path)
 
-        self.visualizers += [visualizer(visualizer_path, execute_interval=execute_interval)]
-        self.log('visualizer %s loaded' % visualizer.__name__)
+        if key is None:
+            key = visualizer.__name__
+
+        self.visualizers[key] = visualizer(visualizer_path, execute_interval=execute_interval)
+        self.log('visualizer %s loaded key=%s' % (visualizer.__name__, key))
+        return key
+
+    def unload_visualizer(self, key):
+        if key not in self.visualizers:
+            raise KeyError("fail to unload visualizer, key '%s' not found" % key)
+        self.visualizers.pop(key, None)
+
+    def unload_all_visualizer(self):
+        for key in self.visualizers:
+            self.visualizers.pop(key, None)
 
     def __visualizer_task(self, sess, iter_num=None, dataset=None):
         """execute loaded visualizers
@@ -319,12 +352,12 @@ class InstanceManager:
         :param iter_num: current iteration number
         :param dataset: feed for visualizers
         """
-        for visualizer in self.visualizers:
+        for visualizer in self.visualizers.values():
             if iter_num is None or iter_num % visualizer.execute_interval == 0:
                 try:
                     visualizer.task(sess, iter_num, self.instance, dataset)
                 except Exception as err:
-                    self.log('at visualizer %s \n %s' % (visualizer, err))
+                    log_error_trace(self.log, err, head='while execute %s' % visualizer)
 
     def open_subprocess(self, args_, subprocess_key=None):
         """open subprocess with args and return pid
@@ -377,14 +410,11 @@ class InstanceManager:
         """open tensorboard for current instance"""
         python_path = sys.executable
         option = '--logdir=' + self.instance.instance_summary_folder_path
+        # option += ' --port 6006'
+        # option += ' --debugger_port 6064'
         args_ = [python_path, tensorboard_dir(), option]
         self.open_subprocess(args_=args_, subprocess_key="tensorboard")
 
     def close_tensorboard(self):
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
-
-    @staticmethod
-    def gen_readme():
-        # TODO implement
-        return {}

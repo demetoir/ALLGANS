@@ -43,10 +43,13 @@ class Stacker:
         """
         scope_name = self.name + '_layer' + str(self.layer_count)
         with tf.variable_scope(scope_name, reuse=self.reuse):
-            self.last_layer = func(self.last_layer, *args, **kwargs)
+            if func == concat:
+                self.last_layer = func(*args, **kwargs)
+            else:
+                self.last_layer = func(self.last_layer, *args, **kwargs)
+
             self.layer_seq += [self.last_layer]
-            pass
-        self.layer_count += 1
+            self.layer_count += 1
         return self.last_layer
 
     def bn(self):
@@ -56,6 +59,9 @@ class Stacker:
     def sigmoid(self):
         """add sigmoid layer"""
         return self.add_layer(sigmoid)
+
+    def tanh(self):
+        return self.add_layer(tanh)
 
     def lrelu(self):
         """add leaky relu layer"""
@@ -72,6 +78,9 @@ class Stacker:
     def linear(self, output_size):
         """add linear layer"""
         return self.add_layer(linear, output_size)
+
+    def linear_block(self, output_size, activate):
+        return self.add_layer(linear_block, output_size, activate)
 
     def conv2d_transpose(self, output_shape, filter_):
         """add 2d transposed convolution layer"""
@@ -108,3 +117,16 @@ class Stacker:
     def softmax(self):
         """add softmax layer"""
         return self.add_layer(softmax)
+
+    def dropout(self, rate):
+        """add dropout layer"""
+        return self.add_layer(dropout, rate)
+
+    def reshape(self, shape):
+        return self.add_layer(reshape, shape)
+
+    def concat(self, values, axis):
+        return self.add_layer(concat, values, axis)
+
+    def flatten(self):
+        return self.add_layer(flatten)
