@@ -57,6 +57,12 @@ class BaseClass:
     def __str__(self):
         return self.__class__.__name__
 
+    def get_params(self, deep=True):
+        pass
+
+    def set_params(self, **params):
+        pass
+
 
 class BaseSklearn(BaseClass):
     def __init__(self, *args, **kwargs):
@@ -72,12 +78,6 @@ class BaseSklearn(BaseClass):
         pass
 
     def proba(self, Xs, transpose_shape=True):
-        pass
-
-    def get_params(self, deep=True):
-        pass
-
-    def set_params(self, **params):
         pass
 
 
@@ -1040,8 +1040,8 @@ class ClassifierPack(BaseClass):
         return params
 
 
-class BaseTFWrapperSklearn(BaseSklearn):
-    def run(self, fetches, feed_dict):
+class BaseTFWrapperSklearn(BaseClass):
+    def get_tf_values(self, fetches, feed_dict):
         pass
 
     def save(self):
@@ -1076,22 +1076,53 @@ class info_GAN(BaseTFWrapperSklearn):
 
 
 class AE(BaseTFWrapperSklearn):
-    def fix(self, Xs):
+    def fit(self, Xs):
         pass
 
-    def encode(self, Xs):
+    def code(self, Xs):
         pass
 
-    def decode(self, zs):
+    def recon(self, zs):
         pass
 
 
 class VAE(BaseTFWrapperSklearn):
-    def fix(self, Xs):
+    def fit(self, Xs):
         pass
 
     def encode(self, Xs):
         pass
 
     def decode(self, zs):
+        pass
+
+
+class AAE(BaseTFWrapperSklearn):
+    def fit(self, Xs):
+        pass
+
+    def code(self, Xs):
+        pass
+
+    def recon(self, Xs, zs):
+        pass
+
+
+class AAEClassifier(BaseTFWrapperSklearn):
+    def fit(self, Xs):
+        pass
+
+    def code(self, Xs):
+        pass
+
+    def recon(self, Xs):
+        pass
+
+    def predict(self, Xs):
+        pass
+
+    def score(self, Xs, Ys):
+        pass
+
+    def proba(self, Xs):
         pass
