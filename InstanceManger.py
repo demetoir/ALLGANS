@@ -109,6 +109,8 @@ class InstanceManager:
         generate and save metadata for new instance
         return built instance's path
 
+        :param input_shapes:
+        :param param:
         :type model: class
         :param model: subclass of AbstractModel
 
@@ -180,9 +182,7 @@ class InstanceManager:
         * more information for input_shapes look dict_keys/input_shape_keys.py
 
         :type instance_path: str
-        :type input_shapes: dict
         :param instance_path: instance path to loading
-        :param input_shapes: input shapes for tensorflow placeholder
         """
         metadata = load_json(os.path.join(instance_path, 'instance.meta'))
         self.log('load metadata')
