@@ -43,7 +43,7 @@ class Classifier(AbstractModel):
     def __str__(self):
         return "Classifier"
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.batch_size = 64
         self.learning_rate = 0.0002
         self.beta1 = 0.5

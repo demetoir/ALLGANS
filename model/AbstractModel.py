@@ -34,17 +34,17 @@ class AbstractModel:
             self.logger = Logger(self.__class__.__name__, logger_path)
         self.log = self.logger.get_log()
 
-
-
-    def load_model(self, metadata=None, input_shapes=None):
+    def load_model(self, metadata=None, input_shapes=None, params=None):
         """load tensor graph of entire model
 
         load model instance and inject metadata and input_shapes
 
+        :param params:
         :type metadata: dict
         :type input_shapes: dict
         :param metadata: metadata for model
         :param input_shapes: input shapes for tensorflow placeholder
+        :param params:
 
         :raise FailLoadModelError
         if any Error raise while load model
@@ -58,9 +58,13 @@ class AbstractModel:
                 self.load_misc_ops()
 
             with tf.variable_scope("hyper_parameter"):
+                if params is None:
+                    params = self.params
                 self.log('load hyper parameter')
-                self.load_hyper_parameter()
+                self.load_hyper_parameter(params)
 
+            if input_shapes is None:
+                input_shapes = self.input_shapes
             self.log("load input shapes")
             self.load_input_shapes(input_shapes)
 
@@ -102,6 +106,8 @@ class AbstractModel:
         self.instance_class_name = metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME]
         self.readme = metadata[MODEL_METADATA_KEY_README]
         self.instance_summary_folder_path = metadata[MODEL_METADATA_KEY_INSTANCE_SUMMARY_FOLDER_PATH]
+        self.params = metadata[MODEL_METADATA_KEY_PARAMS]
+        self.input_shapes = metadata[MODEL_METADATA_KEY_INPUT_SHAPES]
 
     def load_input_shapes(self, input_shapes):
         """load input shapes for tensor placeholder
@@ -114,9 +120,10 @@ class AbstractModel:
         """
         raise NotImplementedError
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         """load hyper parameter for model
 
+        :param params:
         :raise NotImplementError
         if not implemented
         """

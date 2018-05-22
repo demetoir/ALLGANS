@@ -8,7 +8,7 @@ class MLPClassifier(AbstractModel):
     VERSION = 1.0
     AUTHOR = 'demetoir'
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.batch_size = 100
         self.learning_rate = 0.01
         self.beta1 = 0.5

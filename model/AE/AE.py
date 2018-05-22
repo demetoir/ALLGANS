@@ -17,7 +17,7 @@ class AE(AbstractModel):
         self.z_shape = [self.z_size]
         self.zs_shape = [self.batch_size] + self.z_shape
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.batch_size = 100
         self.learning_rate = 0.01
         self.beta1 = 0.5

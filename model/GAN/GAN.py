@@ -30,7 +30,7 @@ class GAN(AbstractGANModel):
         self.z_shape = [self.n_noise]
         self.zs_shape = [self.batch_size] + self.z_shape
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.n_noise = 256
         self.batch_size = 64
         self.learning_rate = 0.0002
