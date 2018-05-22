@@ -14,7 +14,7 @@ class DummyModel(AbstractModel):
     def load_train_ops(self):
         pass
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.batch_size = 1
 
         pass
