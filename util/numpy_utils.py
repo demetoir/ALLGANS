@@ -98,7 +98,7 @@ def np_img_to_tile(np_imgs, column_size=10):
     if np_imgs_check_shape(np_imgs.shape) == 'NHW':
         np_imgs = np_img_gray_to_rgb(np_imgs)
 
-    n, h, w,c = np_imgs.shape
+    n, h, w, c = np_imgs.shape
     row_size = int(math.ceil(float(np_imgs.shape[0]) / float(column_size)))
     tile_width = w * column_size
     tile_height = h * row_size
