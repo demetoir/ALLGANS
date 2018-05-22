@@ -34,14 +34,7 @@ class AbstractModel:
             self.logger = Logger(self.__class__.__name__, logger_path)
         self.log = self.logger.get_log()
 
-    @staticmethod
-    def build_metadata():
-        """build model metadata
 
-        :return: metadata
-        """
-        metadata = {}
-        return metadata
 
     def load_model(self, metadata=None, input_shapes=None):
         """load tensor graph of entire model
