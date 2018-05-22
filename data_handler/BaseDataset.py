@@ -4,7 +4,7 @@ import traceback
 import sys
 import numpy as np
 import os
-from sklearn.utils import shuffle
+import sklearn.utils
 
 
 def _check_attr_is_None(attr):
@@ -327,7 +327,7 @@ class BaseDataset(metaclass=MetaTask):
             random_state = np.random.randint(1, 12345678)
 
         for key in self.data:
-            self.data[key] = shuffle(self.data[key], random_state=random_state)
+            self.data[key] = sklearn.utils.shuffle(self.data[key], random_state=random_state)
 
     def reset_cursor(self):
         """reset cursor"""
