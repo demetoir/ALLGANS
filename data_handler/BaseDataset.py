@@ -20,12 +20,14 @@ def _check_attr_is_None(attr):
     return _check_attr_empty
 
 
-class MetaTask(type):
+class MetaDataset(type):
     """Metaclass for hook inherited class's function
     metaclass ref from 'https://code.i-harness.com/ko/q/11fc307'
     """
 
     def __init__(cls, name, bases, cls_dict):
+        type.__init__(cls, name, bases, cls_dict)
+
         # hook if_need_download, after_load for AbstractDataset.load
         new_load = None
         if 'load' in cls_dict:
@@ -71,7 +73,7 @@ class DownloadInfo:
         return self.url, self.is_zipped, self.download_file_name, self.extracted_file_names
 
 
-class BaseDataset(metaclass=MetaTask):
+class BaseDataset(metaclass=MetaDataset):
     """
     TODO add docstring
     """
