@@ -194,6 +194,9 @@ class BaseDataset(metaclass=MetaTask):
 
         self.log('%s fully loaded' % self.__str__())
 
+        self.log('%s preprocess end' % self.__str__())
+        self.preprocess()
+
         self.log("generate input_shapes")
         self.input_shapes = {}
         for key in self.data:
@@ -285,6 +288,12 @@ class BaseDataset(metaclass=MetaTask):
             self.cursor = (self.cursor + batch_size) % self.data_size
 
         return batches[0] if len(batches) == 1 else batches
+
+    def preprocess(self):
+        """preprocess for loaded data
+
+        """
+        raise NotImplementedError
 
     def split(self, ratio, shuffle=False):
         """return split part of dataset"""
