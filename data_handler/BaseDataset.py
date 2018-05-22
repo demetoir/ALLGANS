@@ -324,6 +324,19 @@ class BaseDataset(metaclass=MetaTask):
         """reset cursor"""
         self.cursor = 0
 
+    def full_batch(self, batch_keys):
+        if batch_keys is None:
+            batch_keys = self.batch_keys
+
+        if type(batch_keys) is str:
+            batch_keys = [batch_keys]
+
+        batches = []
+        for key in batch_keys:
+            batches += [self.data[key]]
+
+        return batches[0] if len(batches) == 1 else batches
+
 
 class DatasetCollection:
     def __init__(self):
