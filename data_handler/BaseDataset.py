@@ -308,6 +308,10 @@ class BaseDataset(metaclass=MetaTask):
             a_set.add_data(key, self.data[key][:index])
             b_set.add_data(key, self.data[key][index:])
 
+        if shuffle:
+            a_set.shuffle()
+            b_set.shuffle()
+
         return a_set, b_set
 
     def merge(self, a_set, b_set):
