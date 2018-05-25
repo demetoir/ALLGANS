@@ -369,10 +369,6 @@ class BaseModel:
         self.batch_size = None
         pass
 
-    @property
-    def train_op_seq(self):
-        return None
-
     def save(self):
         if not self.check_setup():
             self.setup_model()
