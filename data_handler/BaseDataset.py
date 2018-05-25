@@ -352,6 +352,13 @@ class BaseDataset(metaclass=MetaDataset):
 
         return batches[0] if len(batches) == 1 else batches
 
+    @property
+    def size(self):
+        size = 0
+        for key in self.data:
+            size = max(len(self.data[key]), size)
+        return size
+
 
 class DatasetCollection:
     def __init__(self):
