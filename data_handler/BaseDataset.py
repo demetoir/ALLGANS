@@ -228,7 +228,7 @@ class BaseDataset(metaclass=MetaDataset):
 
     def _append_data(self, batch_key, data):
         if batch_key not in self.data:
-            self.data[batch_key] = data
+            self.data[batch_key] = np.array(data)
         else:
             self.data[batch_key] = np.concatenate((self.data[batch_key], data))
 
