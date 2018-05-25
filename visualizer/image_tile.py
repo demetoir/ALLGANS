@@ -1,6 +1,5 @@
 from util.numpy_utils import *
 from visualizer.AbstractVisualizer import AbstractVisualizer
-import numpy as np
 
 
 class image_tile(AbstractVisualizer):

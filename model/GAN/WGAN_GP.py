@@ -132,20 +132,10 @@ class WGAN_GP(AbstractGANModel):
         sess.run([self.op_inc_global_step])
 
     def load_summary_ops(self):
-        summary_variable(self.loss_D_gen)
-        summary_variable(self.loss_D_real)
-        summary_variable(self.loss_D)
-        summary_variable(self.loss_G)
-
-        summary_image(self.G, max_outputs=10)
-        self.op_merge_summary = tf.summary.merge_all()
+        pass
 
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
-        noise = self.get_noise()
-        batch_xs = dataset.next_batch(self.batch_size, batch_keys=[BATCH_KEY_TRAIN_X])
-        summary, global_step = sess.run([self.op_merge_summary, self.global_step],
-                                        feed_dict={self.X: batch_xs, self.z: noise})
-        summary_writer.add_summary(summary, global_step)
+        pass
 
     def get_noise(self):
         return np.random.uniform(-1.0, 1.0, size=[self.batch_size, self.n_noise])

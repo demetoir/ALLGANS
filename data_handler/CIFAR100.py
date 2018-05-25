@@ -100,21 +100,3 @@ class CIFAR100(DatasetCollection):
         super().__init__(train_set, test_set, validation_set)
         self.train_set = CIFAR100_train()
         self.test_set = CIFAR100_test()
-#
-#
-# class CIFAR100Helper(AbstractDatasetHelper):
-#     @staticmethod
-#     def preprocess(dataset):
-#
-#     # convert image format from NCWH to NWHC
-#
-#     @staticmethod
-#     def next_batch_task(batch):
-#         x = batch[0]
-#         return x
-#
-#     @staticmethod
-#     def load_dataset(path, limit=None):
-#         cifar100 = CIFAR100(preprocess=CIFAR100Helper.preprocess)
-#         cifar100.load(path, limit=limit)
-#         return cifar100, [32, 32, 3]

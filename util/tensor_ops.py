@@ -1,4 +1,5 @@
 """operation util for tensorflow"""
+
 import tensorflow as tf
 
 """convolution filter option

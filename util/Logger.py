@@ -77,6 +77,8 @@ class StdoutOnlyLogger(Logger):
         if name is None:
             name = "None"
         super().__init__(name, stdout_only=True, no_format=True)
+
+
 """
 self.logger = Logger(self.__class__.__name__)
 self.log = self.logger.get_log()
