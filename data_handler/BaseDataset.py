@@ -78,6 +78,10 @@ class BaseDataset(metaclass=MetaDataset):
     TODO add docstring
     """
 
+    @property
+    def downloadInfos(self):
+        return []
+
     def __init__(self):
         """create dataset handler class
 
@@ -86,7 +90,6 @@ class BaseDataset(metaclass=MetaDataset):
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
         """
-        self.download_infos = []
         self.batch_keys = []
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
@@ -137,42 +140,42 @@ class BaseDataset(metaclass=MetaDataset):
         except FileExistsError:
             pass
 
-        for info in self.download_infos:
+        for info in self.downloadInfos:
             if self._is_invalid(path, info):
                 self.download_data(path, info)
 
-    def _is_invalid(self, path, download_info):
+    def _is_invalid(self, path, downloadInfos):
         """check dataset file validation"""
         validation = None
         files = glob(os.path.join(path, '**'), recursive=True)
         names = list(map(lambda file: os.path.split(file)[1], files))
 
-        if download_info.is_zipped:
-            file_list = download_info.extracted_file_names
+        if downloadInfos.is_zipped:
+            file_list = downloadInfos.extracted_file_names
             for data_file in file_list:
                 if data_file not in names:
                     validation = True
         else:
-            if download_info.download_file_name not in names:
+            if downloadInfos.download_file_name not in names:
                 validation = True
 
         return validation
 
-    def download_data(self, path, download_info):
+    def download_data(self, path, downloadInfos):
         """donwnload data if need
 
         :param path:
-        :param download_info:
+        :param downloadInfos:
         :return:
         """
         head, _ = os.path.split(path)
-        download_file = os.path.join(path, download_info.download_file_name)
+        download_file = os.path.join(path, downloadInfos.download_file_name)
 
-        self.log('download %s at %s ' % (download_info.download_file_name, download_file))
-        download_from_url(download_info.url, download_file)
+        self.log('download %s at %s ' % (downloadInfos.download_file_name, download_file))
+        download_from_url(downloadInfos.url, download_file)
 
-        if download_info.is_zipped:
-            self.log("extract %s at %s" % (download_info.download_file_name, path))
+        if downloadInfos.is_zipped:
+            self.log("extract %s at %s" % (downloadInfos.download_file_name, path))
             extract_file(download_file, path)
 
     def after_load(self, limit=None):
