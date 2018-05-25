@@ -1,10 +1,10 @@
-from model.BaseModel import BaseModel
+from model.BaseClassifierModel import BaseClassifierModel
 from util.Stacker import Stacker
 from util.tensor_ops import *
 import tensorflow as tf
 
 
-class MLPClassifier(BaseModel):
+class MLPClassifier(BaseClassifierModel):
     VERSION = 1.0
 
     @property
@@ -20,6 +20,34 @@ class MLPClassifier(BaseModel):
             'l1_norm_lambda',
             'l2_norm_lambda'
         ]
+
+    @property
+    def _Xs(self):
+        return self.Xs
+
+    @property
+    def _Ys(self):
+        return self.Ys
+
+    @property
+    def _predict_ops(self):
+        return self.predict_index
+
+    @property
+    def _score_ops(self):
+        return self.acc_mean
+
+    @property
+    def _proba_ops(self):
+        return self.h
+
+    @property
+    def _metric_ops(self):
+        return self.loss_mean
+
+    @property
+    def _train_ops(self):
+        return [self.train_op, self.op_inc_global_step]
 
     def hyper_parameter(self):
         self.batch_size = 100
@@ -85,73 +113,3 @@ class MLPClassifier(BaseModel):
     def build_train_ops(self):
         self.train_op = tf.train.AdamOptimizer(
             learning_rate=self.learning_rate).minimize(self.loss, var_list=self.vars)
-
-    @property
-    def train_op_seq(self):
-        return [self.train_op, self.op_inc_global_step]
-
-    def train_dataset(self, dataset, epoch=100, save_interval=None):
-        if self.sess is None:
-            self.open_session()
-
-        if not self.is_built:
-            self.build()
-
-        batch_size = self.batch_size
-        iter_num = 0
-        iter_per_epoch = dataset.size
-        self.log("epoch : {}, iter_per_epoch: {}".format(epoch, iter_per_epoch))
-        for e in range(epoch):
-            for i in range(iter_per_epoch):
-                Xs, Ys = dataset.next_batch(batch_size, batch_keys=[self.X_batch_key, self.Y_batch_key])
-                iter_num += 1
-                self.sess.run(self.train_op_seq, feed_dict={
-                    self.Xs: Xs,
-                    self.Ys: Ys
-                })
-
-            Xs, Ys = dataset.next_batch(batch_size, batch_keys=[self.X_batch_key, self.Y_batch_key])
-            loss = self.sess.run(self.loss_mean, feed_dict={
-                self.Xs: Xs,
-                self.Ys: Ys
-            })
-            self.log("e : {} loss : {}".format(e, loss))
-
-            if save_interval is not None and e % save_interval == 0:
-                self.save()
-
-    def train(self, Xs, Ys, epoch=100, save_interval=None):
-        if self.sess is None:
-            self.open_session()
-
-        if not self.is_built:
-            self.build()
-
-        dataset = tf.data.Dataset.from_tensor_slices((Xs, Ys)) \
-            .repeat().batch(self.batch_size)
-        iter = dataset.make_initializable_iterator()
-        Xs_iter, Ys_iter = iter.get_next()
-
-        self.sess.run(
-            iter.initializer,
-            feed_dict={
-                self.Xs: Xs,
-                self.Ys: Ys
-            }
-        )
-
-        batch_size = self.batch_size
-        iter_num = 0
-        iter_per_epoch = len(Xs)
-        for e in range(epoch):
-            for i in range(iter_per_epoch):
-                self.sess.run(self.train_op_seq, feed_dict={
-                    self.Xs: Xs_iter,
-                    self.Ys: Ys_iter
-                })
-
-            loss = self.sess.run(self.loss_mean, feed_dict={
-                self.Xs: Xs[:100],
-                self.Ys: Ys[:100]
-            })
-            self.log("e : {} loss : {}".format(e, loss))
