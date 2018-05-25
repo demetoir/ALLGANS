@@ -94,10 +94,6 @@ class BaseModel:
     """
     AUTHOR = 'demetoir'
 
-    @property
-    def hyper_param_key(self):
-        return []
-
     def __str__(self):
         return "%s_%s" % (self.AUTHOR, self.__class__.__name__)
 
@@ -165,13 +161,17 @@ class BaseModel:
         del self.log
         del self.logger
 
+    @property
+    def hyper_param_key(self):
+        return []
+
     def check_setup(self):
         # instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, id)
 
         if not os.path.exists(self.instance_path):
             return False
 
-        if not self.instance_visual_result_folder_path:
+        if not os.path.exists(self.instance_visual_result_folder_path):
             return False
 
         if not os.path.exists(self.instance_source_folder_path):
