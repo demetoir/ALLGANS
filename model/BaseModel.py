@@ -378,11 +378,8 @@ class BaseModel:
             self.open_session()
         self.saver.save(self.sess, self.check_point_path)
 
-        self.log("model saved at {}\n"
-                 "model id = {}\n"
-                 "model path = {}\n".format(self.check_point_path,
-                                            self.id,
-                                            self.instance_path))
+        self.log("saved at {}".format(self.instance_path))
+
         return self.instance_path
 
     def load(self, path):
