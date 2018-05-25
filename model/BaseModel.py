@@ -395,5 +395,9 @@ class BaseModel:
     def get_tf_values(self, fetches, feet_dict):
         self.sess.run(fetches, feet_dict)
 
-    def check_build(self):
-        pass
+    def if_not_ready_to_train(self):
+        if self.sess is None:
+            self.open_session()
+
+        if not self.is_built:
+            self.build()
