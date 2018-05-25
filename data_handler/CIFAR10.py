@@ -1,33 +1,31 @@
-from data_handler.AbstractDataset import AbstractDataset, AbstractDatasetHelper
-from env_settting import CIFAR10_PATH
 from util.numpy_utils import np_imgs_NCWH_to_NHWC, np_index_to_onehot
-from dict_keys.dataset_batch_keys import *
-from dict_keys.input_shape_keys import *
+from data_handler.BaseDataset import BaseDataset, DatasetCollection, DownloadInfo
 from glob import glob
-from data_handler.AbstractDataset import DownloadInfo
 import numpy as np
 import os
 import pickle
 
 
-class CIFAR10(AbstractDataset):
+def X_transform(x):
+    x = np.reshape(x, [-1, 3, 32, 32])
+    x = np_imgs_NCWH_to_NHWC(x)
+    return x
+
+
+def Y_transform(y):
+    y = np_index_to_onehot(y)
+    return y
+
+
+class CIFAR10_train(BaseDataset):
     _PATTERN_TRAIN_FILE = "*/data_batch_*"
-    _PATTERN_TEST_FILE = "*/test_batch"
     _PKCL_KEY_TRAIN_DATA = b"data"
     _PKCL_KEY_TRAIN_LABEL = b"labels"
-    _PKCL_KEY_TEST_DATA = b"data"
-    _PKCL_KEY_TEST_LABEL = b"labels"
     LABEL_SIZE = 10
 
-    def __init__(self, preprocess=None, batch_after_task=None):
-        super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [
-            BATCH_KEY_TRAIN_X,
-            BATCH_KEY_TRAIN_LABEL,
-            BATCH_KEY_TEST_X,
-            BATCH_KEY_TEST_LABEL]
-
-        self.download_infos = [
+    @property
+    def downloadInfos(self):
+        return [
             DownloadInfo(
                 url='https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
                 is_zipped=True,
@@ -38,7 +36,7 @@ class CIFAR10(AbstractDataset):
                     "data_batch_3",
                     "data_batch_4",
                     "data_batch_5",
-                    "test_batch",
+                    # "test_batch",
                     "batches.meta"
                 ]
             )
@@ -53,11 +51,45 @@ class CIFAR10(AbstractDataset):
                 dict_ = pickle.load(fo, encoding='bytes')
 
             x = dict_[self._PKCL_KEY_TRAIN_DATA]
-            self._append_data(BATCH_KEY_TRAIN_X, x)
+            self._append_data('Xs', x)
 
             label = dict_[self._PKCL_KEY_TRAIN_LABEL]
-            self._append_data(BATCH_KEY_TRAIN_LABEL, label)
+            self._append_data('Ys', label)
 
+    def save(self):
+        pass
+
+    def preprocess(self):
+        self.data['Xs'] = X_transform(self.data['Xs'])
+        self.data['Ys'] = Y_transform(self.data['Ys'])
+
+
+class CIFAR10_test(BaseDataset):
+    _PATTERN_TEST_FILE = "*/test_batch"
+    _PKCL_KEY_TEST_DATA = b"data"
+    _PKCL_KEY_TEST_LABEL = b"labels"
+    LABEL_SIZE = 10
+
+    @property
+    def downloadInfos(self):
+        return [
+            DownloadInfo(
+                url='https://www.cs.toronto.edu/~kriz/cifar-10-python.tar.gz',
+                is_zipped=True,
+                download_file_name='cifar-10-python.tar.gz',
+                extracted_file_names=[
+                    # "data_batch_1",
+                    # "data_batch_2",
+                    # "data_batch_3",
+                    # "data_batch_4",
+                    # "data_batch_5",
+                    "test_batch",
+                    "batches.meta"
+                ]
+            )
+        ]
+
+    def load(self, path, limit=None):
         # load test data
         files = glob(os.path.join(path, self._PATTERN_TEST_FILE), recursive=True)
         files.sort()
@@ -66,51 +98,21 @@ class CIFAR10(AbstractDataset):
                 dict_ = pickle.load(fo, encoding='bytes')
 
             x = dict_[self._PKCL_KEY_TEST_DATA]
-            self._append_data(BATCH_KEY_TEST_X, x)
+            self._append_data('Xs', x)
 
             label = dict_[self._PKCL_KEY_TEST_LABEL]
-            self._append_data(BATCH_KEY_TEST_LABEL, label)
+            self._append_data('Ys', label)
 
     def save(self):
-        raise NotImplementedError
+        pass
+
+    def preprocess(self):
+        self.data['Xs'] = X_transform(self.data['Xs'])
+        self.data['Ys'] = Y_transform(self.data['Ys'])
 
 
-class CIFAR10Helper(AbstractDatasetHelper):
-    @staticmethod
-    def next_batch_task(batch):
-        x = batch[0]
-        label = batch[1]
-        return x, label
-
-    @staticmethod
-    def preprocess(dataset):
-        # convert image format from NCWH to NHWC
-        data = dataset.data[BATCH_KEY_TRAIN_X]
-        data = np.reshape(data, [-1, 3, 32, 32])
-        data = np_imgs_NCWH_to_NHWC(data)
-        dataset.data[BATCH_KEY_TRAIN_X] = data
-
-        data = dataset.data[BATCH_KEY_TEST_X]
-        data = np.reshape(data, [-1, 3, 32, 32])
-        data = np_imgs_NCWH_to_NHWC(data)
-        dataset.data[BATCH_KEY_TEST_X] = data
-
-        # make label index to onehot
-        data = dataset.data[BATCH_KEY_TRAIN_LABEL]
-        data = np_index_to_onehot(data)
-        dataset.data[BATCH_KEY_TRAIN_LABEL] = data
-
-        data = dataset.data[BATCH_KEY_TEST_LABEL]
-        data = np_index_to_onehot(data)
-        dataset.data[BATCH_KEY_TEST_LABEL] = data
-
-    @staticmethod
-    def load_dataset(path, limit=None):
-        cifar10 = CIFAR10(preprocess=CIFAR10Helper.preprocess)
-        cifar10.load(path, limit=limit)
-        input_shapes = {
-            INPUT_SHAPE_KEY_DATA_X: [32, 32, 3],
-            INPUT_SHAPE_KEY_LABEL: [10],
-            INPUT_SHAPE_KEY_LABEL_SIZE: 10
-        }
-        return cifar10, input_shapes
+class CIFAR10(DatasetCollection):
+    def __init__(self, train_set=None, test_set=None, validation_set=None):
+        super().__init__(train_set, test_set, validation_set)
+        self.train_set = CIFAR10_train()
+        self.test_set = CIFAR10_test()
