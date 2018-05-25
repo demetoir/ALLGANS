@@ -364,13 +364,13 @@ class BaseDataset(metaclass=MetaDataset):
 
 
 class DatasetCollection:
-    def __init__(self):
+    def __init__(self, train_set=None, test_set=None, validation_set=None):
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
-        self.train_set = None
-        self.test_set = None
-        self.validation_set = None
+        self.train_set = train_set
+        self.test_set = test_set
+        self.validation_set = validation_set
 
     def load(self, path, **kwargs):
         if self.train_set is not None:
