@@ -1,8 +1,8 @@
 # -*- coding:utf-8 -*-
 import codecs
+import pprint
 import webbrowser
 from bs4 import BeautifulSoup
-
 from InstanceManger import InstanceManager
 from DatasetLoader import DatasetLoader
 from VisualizerClassLoader import VisualizerClassLoader
@@ -10,6 +10,8 @@ from ModelClassLoader import ModelClassLoader
 from data_handler.titanic import *
 from sklearn_like_toolkit.sklearn_toolkit import ClassifierPack
 from util.Logger import StdoutOnlyLogger
+import tensorflow as tf
+
 
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR10")
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR100")
@@ -20,9 +22,18 @@ from util.Logger import StdoutOnlyLogger
 
 
 # print(built-in function) is not good for logging
+
+def pprint_logger(log_func):
+    def wrapper(*args, **kwargs):
+        log_func(pprint.pformat(*args, **kwargs))
+
+    return wrapper
+
+
 bprint = print
 logger = StdoutOnlyLogger()
 print = logger.get_log()
+print = pprint_logger(print)
 
 
 def fit_and_test(model, train_Xs, train_Ys, test_Xs, test_Ys):
@@ -269,7 +280,7 @@ MLPClassifier = {
     "dataset": "titanic",
     "visuliziers": [
         ('log_titanic_loss', 25),
-        ('log_confusion_matrix', 100),
+        ('log_confusion_matrix', 400),
     ],
     "epoch": 400
 
@@ -298,7 +309,99 @@ def tf_model_train(model=None, dataset=None, visuliziers=None, epoch=None):
     del manager
 
 
+def model_test():
+    tf.logging.set_verbosity(0)
+    dataset = DatasetLoader().load_dataset("titanic")
+    input_shapes = dataset.train_set.input_shapes
+    from model.Classifier.MLPClassifier import MLPClassifier
+    # model = ModelClassLoader.load_model_class('MLPClassifier')
+
+    Xs, Ys = dataset.train_set.full_batch(
+        batch_keys=["Xs", "Ys"],
+    )
+
+    model = MLPClassifier(input_shapes)
+    model.build()
+    model.train(Xs, Ys, epoch=10)
+    # model.train_dataset(dataset.train_set, epoch=5)
+    # model.train(Xs, Ys, epoch=2)
+    path = model.save()
+
+    Xs, Ys = dataset.train_set.next_batch(
+        10,
+        batch_keys=["Xs", "Ys"],
+    )
+
+    predict = model.predict(Xs)
+    print(predict)
+
+    loss = model.metric(Xs, Ys)
+    print(loss)
+
+    proba = model.proba(Xs)
+    print(proba)
+
+    score = model.score(Xs, Ys)
+    print(score)
+
+    # del model
+    # model = MLPClassifier(input_shapes)
+    # model.load(path)
+    # model.train_dataset(dataset.train_set, epoch=1)
+
+
+def show():
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        # Wrapping all together -> Switch between train and test set
+        EPOCHS = 10
+        BATCH_SIZE = 16
+
+        # create a placeholder to dynamically switch between batch sizes
+        batch_size = tf.placeholder(tf.int64)
+        x, y = tf.placeholder(tf.float32, shape=[None, 2]), tf.placeholder(tf.float32, shape=[None, 1])
+
+        # using two numpy arrays
+        train_data = (np.random.sample((100, 2)), np.random.sample((100, 1)))
+        Xs, Ys = train_data
+        test_data = (np.random.sample((20, 2)), np.random.sample((20, 1)))
+        n_batches = len(train_data[0]) // BATCH_SIZE
+
+        dataset = tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size).repeat()
+        iter = dataset.make_initializable_iterator()
+        features, labels = iter.get_next()
+        # initialise iterator with train data
+        sess.run(iter.initializer, feed_dict={
+            x: Xs,
+            y: Ys,
+            batch_size: BATCH_SIZE
+        })
+
+        # make a simple model
+        net = tf.layers.dense(features, 8, activation=tf.tanh)  # pass the first value from iter.get_next() as input
+        net = tf.layers.dense(net, 8, activation=tf.tanh)
+        prediction = tf.layers.dense(net, 1, activation=tf.tanh)
+        loss = tf.losses.mean_squared_error(prediction, labels)  # pass the second value from iter.get_net() as label
+        train_op = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.01).minimize(loss)
+
+        print('Training...')
+        for i in range(EPOCHS):
+            tot_loss = 0
+            for _ in range(n_batches):
+                _, loss_value = sess.run([train_op, loss])
+                tot_loss += loss_value
+            print("Iter: {}, Loss: {:.4f}".format(i, tot_loss / n_batches))
+
+        # initialise iterator with test data
+        sess.run(iter.initializer, feed_dict={x: test_data[0], y: test_data[1], batch_size: test_data[0].shape[0]})
+        print('Test Loss: {:4f}'.format(sess.run(loss)))
+
+
 def main():
+    # show()
+    model_test()
+
     # open_chrome()
     # filter_book_mark()
     #
@@ -314,16 +417,5 @@ def main():
     # )
     # clfpack.param_search(train_xs, train_labels, test_xs, test_labels)
 
-    # tf_model_train_GAN()
-    # tf_model_train_C_GAN()
-    # tf_model_train_infoGAN()
     #
-    # tf_model_train_AE()
-    # tf_model_train_VAE()
-    # tf_model_train_AAE()
-    # tf_model_train_DAE()
-    # tf_model_train_DVAE()
-    # tf_model_train_CVAE()
-    #
-    tf_model_train(**MLPClassifier)
-    # tf_model_train_MLPClassifier()
+    # tf_model_train(**MLPClassifier)
