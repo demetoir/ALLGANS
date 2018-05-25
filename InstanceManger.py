@@ -422,3 +422,6 @@ class InstanceManager:
     def close_tensorboard(self):
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
+
+    def get_tf_values(self, fetches, feed_dict):
+        return self.instance.get_tf_values(self.sess, fetches, feed_dict)
