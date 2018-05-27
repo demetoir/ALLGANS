@@ -4,7 +4,7 @@ import traceback
 import sys
 import numpy as np
 import os
-from sklearn.utils import shuffle
+import sklearn.utils
 
 
 def _check_attr_is_None(attr):
@@ -20,12 +20,14 @@ def _check_attr_is_None(attr):
     return _check_attr_empty
 
 
-class MetaTask(type):
+class MetaDataset(type):
     """Metaclass for hook inherited class's function
     metaclass ref from 'https://code.i-harness.com/ko/q/11fc307'
     """
 
     def __init__(cls, name, bases, cls_dict):
+        type.__init__(cls, name, bases, cls_dict)
+
         # hook if_need_download, after_load for AbstractDataset.load
         new_load = None
         if 'load' in cls_dict:
@@ -71,10 +73,14 @@ class DownloadInfo:
         return self.url, self.is_zipped, self.download_file_name, self.extracted_file_names
 
 
-class BaseDataset(metaclass=MetaTask):
+class BaseDataset(metaclass=MetaDataset):
     """
     TODO add docstring
     """
+
+    @property
+    def downloadInfos(self):
+        return []
 
     def __init__(self):
         """create dataset handler class
@@ -84,7 +90,6 @@ class BaseDataset(metaclass=MetaTask):
         self.batch_keys: (str) feature label of dataset,
             managing batch keys in dict_keys.dataset_batch_keys recommend
         """
-        self.download_infos = []
         self.batch_keys = []
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
@@ -135,42 +140,42 @@ class BaseDataset(metaclass=MetaTask):
         except FileExistsError:
             pass
 
-        for info in self.download_infos:
+        for info in self.downloadInfos:
             if self._is_invalid(path, info):
                 self.download_data(path, info)
 
-    def _is_invalid(self, path, download_info):
+    def _is_invalid(self, path, downloadInfos):
         """check dataset file validation"""
         validation = None
         files = glob(os.path.join(path, '**'), recursive=True)
         names = list(map(lambda file: os.path.split(file)[1], files))
 
-        if download_info.is_zipped:
-            file_list = download_info.extracted_file_names
+        if downloadInfos.is_zipped:
+            file_list = downloadInfos.extracted_file_names
             for data_file in file_list:
                 if data_file not in names:
                     validation = True
         else:
-            if download_info.download_file_name not in names:
+            if downloadInfos.download_file_name not in names:
                 validation = True
 
         return validation
 
-    def download_data(self, path, download_info):
+    def download_data(self, path, downloadInfos):
         """donwnload data if need
 
         :param path:
-        :param download_info:
+        :param downloadInfos:
         :return:
         """
         head, _ = os.path.split(path)
-        download_file = os.path.join(path, download_info.download_file_name)
+        download_file = os.path.join(path, downloadInfos.download_file_name)
 
-        self.log('download %s at %s ' % (download_info.download_file_name, download_file))
-        download_from_url(download_info.url, download_file)
+        self.log('download %s at %s ' % (downloadInfos.download_file_name, download_file))
+        download_from_url(downloadInfos.url, download_file)
 
-        if download_info.is_zipped:
-            self.log("extract %s at %s" % (download_info.download_file_name, path))
+        if downloadInfos.is_zipped:
+            self.log("extract %s at %s" % (downloadInfos.download_file_name, path))
             extract_file(download_file, path)
 
     def after_load(self, limit=None):
@@ -223,7 +228,7 @@ class BaseDataset(metaclass=MetaTask):
 
     def _append_data(self, batch_key, data):
         if batch_key not in self.data:
-            self.data[batch_key] = data
+            self.data[batch_key] = np.array(data)
         else:
             self.data[batch_key] = np.concatenate((self.data[batch_key], data))
 
@@ -287,8 +292,6 @@ class BaseDataset(metaclass=MetaTask):
         if not look_up:
             self.cursor = (self.cursor + batch_size) % self.data_size
 
-        batches = self.after_next_batch(batches, batch_keys)
-
         return batches[0] if len(batches) == 1 else batches
 
     def preprocess(self):
@@ -296,17 +299,6 @@ class BaseDataset(metaclass=MetaTask):
 
         """
         raise NotImplementedError
-
-    def after_next_batch(self, batches, batch_keys=None):
-        """pre process for every iteration for mini batch
-
-        * must return some mini batch
-
-        :param batch_keys:
-        :param batches:
-        :return: batch
-        """
-        return batches
 
     def split(self, ratio, shuffle=False):
         """return split part of dataset"""
@@ -320,6 +312,10 @@ class BaseDataset(metaclass=MetaTask):
         for key in self.data:
             a_set.add_data(key, self.data[key][:index])
             b_set.add_data(key, self.data[key][index:])
+
+        if shuffle:
+            a_set.shuffle()
+            b_set.shuffle()
 
         return a_set, b_set
 
@@ -340,21 +336,41 @@ class BaseDataset(metaclass=MetaTask):
             random_state = np.random.randint(1, 12345678)
 
         for key in self.data:
-            self.data[key] = shuffle(self.data[key], random_state=random_state)
+            self.data[key] = sklearn.utils.shuffle(self.data[key], random_state=random_state)
 
     def reset_cursor(self):
         """reset cursor"""
         self.cursor = 0
 
+    def full_batch(self, batch_keys):
+        if batch_keys is None:
+            batch_keys = self.batch_keys
+
+        if type(batch_keys) is str:
+            batch_keys = [batch_keys]
+
+        batches = []
+        for key in batch_keys:
+            batches += [self.data[key]]
+
+        return batches[0] if len(batches) == 1 else batches
+
+    @property
+    def size(self):
+        size = 0
+        for key in self.data:
+            size = max(len(self.data[key]), size)
+        return size
+
 
 class DatasetCollection:
-    def __init__(self):
+    def __init__(self, train_set=None, test_set=None, validation_set=None):
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
-        self.train_set = None
-        self.test_set = None
-        self.validation_set = None
+        self.train_set = train_set
+        self.test_set = test_set
+        self.validation_set = validation_set
 
     def load(self, path, **kwargs):
         if self.train_set is not None:

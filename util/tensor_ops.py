@@ -1,4 +1,5 @@
 """operation util for tensorflow"""
+
 import tensorflow as tf
 
 """convolution filter option
@@ -345,5 +346,4 @@ def concat(values, axis, name="concat"):
 
 
 def flatten(input_, name='flatten'):
-    shape = input_.shape
-    return tf.reshape(input_, [shape[0], -1], name=name)
+    return tf.layers.flatten(input_, name=name)

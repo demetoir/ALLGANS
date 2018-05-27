@@ -35,7 +35,7 @@ class InfoGAN(AbstractGANModel):
         self.c_shape = [self.n_c]
         self.cs_shape = [self.batch_size] + self.c_shape
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.n_noise = 256
         self.n_c = 2
         self.batch_size = 64

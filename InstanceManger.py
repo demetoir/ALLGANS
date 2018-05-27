@@ -99,7 +99,7 @@ class InstanceManager:
         del self.instance
         del self.visualizers
 
-    def build_instance(self, model=None):
+    def build_instance(self, model=None, input_shapes=None, param=None):
         """build instance for model class and return instance path
 
         * model must be subclass of AbstractModel
@@ -109,6 +109,8 @@ class InstanceManager:
         generate and save metadata for new instance
         return built instance's path
 
+        :param input_shapes:
+        :param param:
         :type model: class
         :param model: subclass of AbstractModel
 
@@ -148,24 +150,28 @@ class InstanceManager:
             print(e)
 
         self.log("build_metadata")
-        metadata = model.build_metadata()
+        metadata_path = os.path.join(instance_path, 'instance.meta')
+        metadata = {
+            MODEL_METADATA_KEY_INSTANCE_ID: instance_id,
+            MODEL_METADATA_KEY_INSTANCE_PATH: instance_path,
+            MODEL_METADATA_KEY_INSTANCE_VISUAL_RESULT_FOLDER_PATH: instance_visual_result_folder_path,
+            MODEL_METADATA_KEY_INSTANCE_SOURCE_FOLDER_PATH: instance_source_folder_path,
+            MODEL_METADATA_KEY_INSTANCE_SOURCE_PATH: instance_source_path,
+            MODEL_METADATA_KEY_INSTANCE_SUMMARY_FOLDER_PATH: instance_summary_folder_path,
+            MODEL_METADATA_KEY_INSTANCE_CLASS_NAME: model.__name__,
+            MODEL_METADATA_KEY_README: None,
+            MODEL_METADATA_KEY_METADATA_PATH: metadata_path,
+            MODEL_METADATA_KEY_PARAMS: param,
+            MODEL_METADATA_KEY_INPUT_SHAPES: input_shapes,
+        }
 
         self.log('dump metadata')
-        metadata[MODEL_METADATA_KEY_INSTANCE_ID] = instance_id
-        metadata[MODEL_METADATA_KEY_INSTANCE_PATH] = instance_path
-        metadata[MODEL_METADATA_KEY_INSTANCE_VISUAL_RESULT_FOLDER_PATH] = instance_visual_result_folder_path
-        metadata[MODEL_METADATA_KEY_INSTANCE_SOURCE_FOLDER_PATH] = instance_source_folder_path
-        metadata[MODEL_METADATA_KEY_INSTANCE_SOURCE_PATH] = instance_source_path
-        metadata[MODEL_METADATA_KEY_INSTANCE_SUMMARY_FOLDER_PATH] = instance_summary_folder_path
-        metadata[MODEL_METADATA_KEY_INSTANCE_CLASS_NAME] = model.__name__
-        metadata[MODEL_METADATA_KEY_README] = None
-        metadata[MODEL_METADATA_KEY_METADATA_PATH] = os.path.join(instance_path, 'instance.meta')
-        dump_json(metadata, metadata[MODEL_METADATA_KEY_METADATA_PATH])
+        dump_json(metadata, metadata_path)
 
         self.log('build complete')
         return instance_path
 
-    def load_instance(self, instance_path, input_shapes):
+    def load_instance(self, instance_path):
         """ load built instance into InstanceManager
 
         import model class from dumped script in instance_path
@@ -176,9 +182,7 @@ class InstanceManager:
         * more information for input_shapes look dict_keys/input_shape_keys.py
 
         :type instance_path: str
-        :type input_shapes: dict
         :param instance_path: instance path to loading
-        :param input_shapes: input shapes for tensorflow placeholder
         """
         metadata = load_json(os.path.join(instance_path, 'instance.meta'))
         self.log('load metadata')
@@ -189,7 +193,7 @@ class InstanceManager:
         self.log('instance source code load')
 
         self.instance = model(metadata[MODEL_METADATA_KEY_INSTANCE_PATH])
-        self.instance.load_model(metadata, input_shapes)
+        self.instance.load_model(metadata)
         self.log('load instance')
 
         instance_id = metadata[MODEL_METADATA_KEY_INSTANCE_ID]
@@ -418,3 +422,6 @@ class InstanceManager:
     def close_tensorboard(self):
         """close tensorboard for current instance"""
         self.close_subprocess('tensorboard')
+
+    def get_tf_values(self, fetches, feed_dict):
+        return self.instance.get_tf_values(self.sess, fetches, feed_dict)

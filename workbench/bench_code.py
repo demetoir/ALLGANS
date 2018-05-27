@@ -1,17 +1,17 @@
 # -*- coding:utf-8 -*-
 import codecs
+import pprint
 import webbrowser
-import requests
 from bs4 import BeautifulSoup
-
 from InstanceManger import InstanceManager
 from DatasetLoader import DatasetLoader
 from VisualizerClassLoader import VisualizerClassLoader
 from ModelClassLoader import ModelClassLoader
-from workbench.sklearn_toolkit import *
 from data_handler.titanic import *
+from sklearn_like_toolkit.sklearn_toolkit import ClassifierPack
 from util.Logger import StdoutOnlyLogger
-from pprint import pprint
+import tensorflow as tf
+
 
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR10")
 # dataset, input_shapes = DatasetLoader().load_dataset("CIFAR100")
@@ -22,9 +22,18 @@ from pprint import pprint
 
 
 # print(built-in function) is not good for logging
+
+def pprint_logger(log_func):
+    def wrapper(*args, **kwargs):
+        log_func(pprint.pformat(*args, **kwargs))
+
+    return wrapper
+
+
 bprint = print
 logger = StdoutOnlyLogger()
 print = logger.get_log()
+print = pprint_logger(print)
 
 
 def fit_and_test(model, train_Xs, train_Ys, test_Xs, test_Ys):
@@ -165,18 +174,133 @@ def filter_book_mark(html):
     # return html
 
 
-def tf_model_train_GAN():
-    dataset = DatasetLoader().load_dataset("MNIST")
+GAN = {
+    "model": "GAN",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('image_tile', 100),
+        ('log_GAN_loss', 20),
+    ],
+    "epoch": 40
+
+}
+
+C_GAN = {
+    "model": "C_GAN",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('image_C_GAN', 100),
+        ('log_C_GAN_loss', 20),
+    ],
+    "epoch": 40
+
+}
+
+info_GAN = {
+    "model": "InfoGAN",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('image_tile', 100),
+        ('log_GAN_loss', 20),
+    ],
+    "epoch": 40
+
+}
+
+AE = {
+    "model": "AE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AE', 100),
+        ('image_AE', 100),
+    ],
+    "epoch": 40
+
+}
+
+VAE = {
+    "model": "VAE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AE', 100),
+        ('image_AE', 100),
+    ],
+    "epoch": 40
+
+}
+
+AAE = {
+    "model": "AAE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AAE', 100),
+        ('image_AE', 100),
+        ('image_AAE_Ys', 100),
+    ],
+    "epoch": 40
+
+}
+
+DAE = {
+    "model": "DAE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AAE', 100),
+        ('image_DAE', 100),
+    ],
+    "epoch": 40
+
+}
+
+DVAE = {
+    "model": "DAE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AAE', 100),
+        ('image_DAE', 100),
+    ],
+    "epoch": 40
+
+}
+
+CVAE = {
+    "model": "CVAE",
+    "dataset": "MNIST",
+    "visuliziers": [
+        ('log_AE', 100),
+        ('image_AE', 100),
+        ('image_CVAE_Ys', 100),
+    ],
+    "epoch": 40
+
+}
+
+MLPClassifier = {
+    "model": "MLPClassifier",
+    "dataset": "titanic",
+    "visuliziers": [
+        ('log_titanic_loss', 25),
+        ('log_confusion_matrix', 400),
+    ],
+    "epoch": 400
+
+}
+
+
+def tf_model_train(model=None, dataset=None, visuliziers=None, epoch=None):
+    dataset = DatasetLoader().load_dataset(dataset)
     input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("GAN")
+    model = ModelClassLoader.load_model_class(model)
 
     manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('image_tile'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('log_GAN_loss'), 20)
+    metadata_path = manager.build_instance(model, input_shapes)
+    manager.load_instance(metadata_path)
+
+    for v_fun, i in visuliziers:
+        manager.load_visualizer(VisualizerClassLoader.load(v_fun), i)
+
     manager.train_instance(
-        epoch=40,
+        epoch=epoch,
         dataset=dataset,
         check_point_interval=5000,
         with_tensorboard=True
@@ -185,206 +309,103 @@ def tf_model_train_GAN():
     del manager
 
 
-def tf_model_train_C_GAN():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("C_GAN")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('image_C_GAN'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('log_C_GAN_loss'), 20)
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_infoGAN():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("InfoGAN")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-
-    image_tile = VisualizerClassLoader.load('image_tile')
-    log_GAN_loss = VisualizerClassLoader.load('log_GAN_loss')
-    visualizers = [(image_tile, 100), (log_GAN_loss, 20)]
-    for visualizer, interval in visualizers:
-        manager.load_visualizer(visualizer, interval)
-
-    manager.train_instance(
-        epoch=4000,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_AE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("AE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_AE'), 100)
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_VAE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("VAE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_AE'), 100)
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_AAE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("AAE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_AAE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_AAE_Ys'), 100)
-
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_DAE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("DAE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_DAE'), 100)
-
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_DVAE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("DVAE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-
-    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_DAE'), 100)
-
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_CVAE():
-    dataset = DatasetLoader().load_dataset("MNIST")
-    input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("CVAE")
-
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_AE'), 100)
-    manager.load_visualizer(VisualizerClassLoader.load('image_CVAE_Ys'), 100)
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=True
-    )
-
-    del manager
-
-
-def tf_model_train_MLPclf():
+def model_test():
+    tf.logging.set_verbosity(0)
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
-    model = ModelClassLoader.load_model_class("MLPClassifier")
+    from model.Classifier.MLPClassifier import MLPClassifier
+    # model = ModelClassLoader.load_model_class('MLPClassifier')
 
-    manager = InstanceManager()
-    metadata_path = manager.build_instance(model)
-    manager.load_instance(metadata_path, input_shapes)
-    manager.load_visualizer(VisualizerClassLoader.load('log_titanic_loss'), 25)
-    manager.load_visualizer(VisualizerClassLoader.load('log_confusion_matrix'), 500)
-    manager.train_instance(
-        epoch=40,
-        dataset=dataset,
-        check_point_interval=5000,
-        with_tensorboard=False)
-    manager.sampling_instance(
-        dataset=dataset
+    Xs, Ys = dataset.train_set.full_batch(
+        batch_keys=["Xs", "Ys"],
     )
 
-    del manager
+    model = MLPClassifier(input_shapes)
+    model.build()
+    model.train(Xs, Ys, epoch=10)
+    # model.train_dataset(dataset.train_set, epoch=5)
+    # model.train(Xs, Ys, epoch=2)
+    path = model.save()
+
+    Xs, Ys = dataset.train_set.next_batch(
+        10,
+        batch_keys=["Xs", "Ys"],
+    )
+
+    predict = model.predict(Xs)
+    print(predict)
+
+    loss = model.metric(Xs, Ys)
+    print(loss)
+
+    proba = model.proba(Xs)
+    print(proba)
+
+    score = model.score(Xs, Ys)
+    print(score)
+
+    # del model
+    # model = MLPClassifier(input_shapes)
+    # model.load(path)
+    # model.train_dataset(dataset.train_set, epoch=1)
+
+
+def show():
+    with tf.Session() as sess:
+        sess.run(tf.global_variables_initializer())
+
+        # Wrapping all together -> Switch between train and test set
+        EPOCHS = 10
+        BATCH_SIZE = 16
+
+        # create a placeholder to dynamically switch between batch sizes
+        batch_size = tf.placeholder(tf.int64)
+        x, y = tf.placeholder(tf.float32, shape=[None, 2]), tf.placeholder(tf.float32, shape=[None, 1])
+
+        # using two numpy arrays
+        train_data = (np.random.sample((100, 2)), np.random.sample((100, 1)))
+        Xs, Ys = train_data
+        test_data = (np.random.sample((20, 2)), np.random.sample((20, 1)))
+        n_batches = len(train_data[0]) // BATCH_SIZE
+
+        dataset = tf.data.Dataset.from_tensor_slices((x, y)).batch(batch_size).repeat()
+        iter = dataset.make_initializable_iterator()
+        features, labels = iter.get_next()
+        # initialise iterator with train data
+        sess.run(iter.initializer, feed_dict={
+            x: Xs,
+            y: Ys,
+            batch_size: BATCH_SIZE
+        })
+
+        # make a simple model
+        net = tf.layers.dense(features, 8, activation=tf.tanh)  # pass the first value from iter.get_next() as input
+        net = tf.layers.dense(net, 8, activation=tf.tanh)
+        prediction = tf.layers.dense(net, 1, activation=tf.tanh)
+        loss = tf.losses.mean_squared_error(prediction, labels)  # pass the second value from iter.get_net() as label
+        train_op = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.01).minimize(loss)
+
+        print('Training...')
+        for i in range(EPOCHS):
+            tot_loss = 0
+            for _ in range(n_batches):
+                _, loss_value = sess.run([train_op, loss])
+                tot_loss += loss_value
+            print("Iter: {}, Loss: {:.4f}".format(i, tot_loss / n_batches))
+
+        # initialise iterator with test data
+        sess.run(iter.initializer, feed_dict={x: test_data[0], y: test_data[1], batch_size: test_data[0].shape[0]})
+        print('Test Loss: {:4f}'.format(sess.run(loss)))
 
 
 def main():
+    # show()
+    model_test()
+
     # open_chrome()
     # filter_book_mark()
     #
     # dataset = DatasetLoader().load_dataset("titanic")
-    #
-    #
     # clfpack = ClassifierPack()
     # train_xs, train_labels = dataset.train_set.next_batch(
     #     dataset.train_set.data_size,
@@ -396,15 +417,5 @@ def main():
     # )
     # clfpack.param_search(train_xs, train_labels, test_xs, test_labels)
 
-    # tf_model_train_GAN()
-    # tf_model_train_C_GAN()
-    # tf_model_train_infoGAN()
     #
-    # tf_model_train_AE()
-    # tf_model_train_VAE()
-    # tf_model_train_AAE()
-    # tf_model_train_DAE()
-    # tf_model_train_DVAE()
-    #
-    # tf_model_train_MLPclf()
-    tf_model_train_CVAE()
+    # tf_model_train(**MLPClassifier)

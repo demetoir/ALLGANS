@@ -26,7 +26,7 @@ class AbstractGANModel(AbstractModel):
             self.input_h = H
             self.input_c = 1
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         raise NotImplementedError
 
     def load_main_tensor_graph(self):

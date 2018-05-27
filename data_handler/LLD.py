@@ -1,27 +1,19 @@
 from __future__ import division
 from glob import glob
-from PIL import Image
-from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
+from data_handler.BaseDataset import BaseDataset, DownloadInfo, DatasetCollection
 from dict_keys.dataset_batch_keys import *
-from env_settting import LLD_PATH
-from dict_keys.input_shape_keys import *
 import _pickle as cPickle
 import os
-import numpy as np
 
 
-class LLD(AbstractDataset):
+class LLD_clean(BaseDataset):
     LLD_CLEAN = 'CLEAN'
     LLD_FULL = 'FULL'
     PATTERN = 'LLD_favicon_data*.pkl'
 
-    def __init__(self, preprocess=None, batch_after_task=None):
-        super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [
-            LLD_CLEAN,
-        ]
-
-        self.download_infos = [
+    @property
+    def downloadInfos(self):
+        return [
             DownloadInfo(
                 url="https://data.vision.ee.ethz.ch/cvl/lld_data/LLD_favicons_clean.zip",
                 is_zipped=True,
@@ -44,19 +36,7 @@ class LLD(AbstractDataset):
             with open(file, 'rb') as f:
                 data = cPickle.load(f, encoding='latin1')
                 self.log('pickle load :%s' % file)
-
-            if self.data[BATCH_KEY_TRAIN_X] is None:
-                self.data[BATCH_KEY_TRAIN_X] = data
-            else:
-                self.data[BATCH_KEY_TRAIN_X] = np.concatenate((self.data[BATCH_KEY_TRAIN_X], data))
-
-        if limit is not None:
-            self.data[BATCH_KEY_TRAIN_X] = self.data[BATCH_KEY_TRAIN_X][:limit]
-
-        self.cursor[BATCH_KEY_TRAIN_X] = 0
-        self.data_size = len(self.data[BATCH_KEY_TRAIN_X])
-
-        self.log('data set fully loaded')
+            self._append_data('Xs', data)
 
     def save(self):
         # def save_icon_data(icons, data_path, package_size=100000):
@@ -67,36 +47,14 @@ class LLD(AbstractDataset):
         #     for p in range(num_packages):
         #         with open(os.instance_path.join(data_path, 'icon_data_' + str(p).zfill(num_len) + '.pkl'), 'wb') as f:
         #             cPickle.dump(icons[p * package_size:(p + 1) * package_size], f, protocol=cPickle.HIGHEST_PROTOCOL)
-        raise NotImplementedError
+        pass
 
-    @staticmethod
-    def load_sample(path):
-        files = glob(os.path.join(path, '5klogos', '*.png'))
-        files.sort()
-
-        imgs = []
-        for file in files:
-            img = Image.open(file)
-            img.load_model_instance()
-            im_arr = np.fromstring(img.tobytes(), dtype=np.uint8)
-            im_arr = im_arr.reshape((img.size[1], img.size[0], 3))
-            imgs += [im_arr]
-
-        return np.array(imgs)
+    def preprocess(self):
+        pass
 
 
-class LLDHelper(AbstractDatasetHelper):
-    @staticmethod
-    def next_batch_task(batch):
-        x = batch[0]
-        return x
+class LLD(DatasetCollection):
 
-    @staticmethod
-    def load_dataset(path, limit=None):
-        lld_data = LLD(batch_after_task=LLDHelper.next_batch_task)
-        lld_data.load(path, limit=limit)
-        input_shapes = {
-            INPUT_SHAPE_KEY_DATA_X: [32, 32, 3],
-        }
-
-        return lld_data, input_shapes
+    def __init__(self, train_set=None, test_set=None, validation_set=None):
+        super().__init__(train_set, test_set, validation_set)
+        self.train_set = LLD_clean()
