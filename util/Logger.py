@@ -62,10 +62,11 @@ class Logger:
         """
 
         # catch *args and make to str
-        def deco(target_function):
+        def deco(func):
             def wrapper(*args):
-                return target_function(" ".join(map(str, args)))
+                return func(" ".join(map(str, args)))
 
+            wrapper.__name__ = func.__name__
             return wrapper
 
         func = getattr(self.logger, level)
