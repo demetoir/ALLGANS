@@ -24,6 +24,8 @@ def dump_pickle(path, data):
     :param path: dump path
     :param data: target data to dump
     """
+    head, _ = os.path.split(path)
+    check_path(head)
     with open(path, 'wb') as f:
         pickle.dump(data, f)
 
@@ -121,6 +123,8 @@ def dump_json(obj, path):
     :param obj: object to dump
     :param path: path to dump
     """
+    head, _ = os.path.split(path)
+    check_path(head)
     with open(path, 'w') as f:
         json.dump(obj, f)
 
