@@ -2,6 +2,8 @@ import logging
 import logging.handlers
 import os
 
+from util.misc_util import time_stamp
+
 
 class Logger:
     """wrapper class of logging module
@@ -26,7 +28,7 @@ class Logger:
         :param stdout_only: default False
         if std_only is True, log message print only stdout not in logfile
         """
-        self.logger = logging.getLogger(name)
+        self.logger = logging.getLogger(name + time_stamp())
         self.logger.setLevel(level)
 
         if no_format:
@@ -37,6 +39,8 @@ class Logger:
 
         self.file_handler = None
         if not stdout_only:
+            if path is None:
+                path = os.path.join('.', 'log')
             self.file_handler = logging.FileHandler(os.path.join(path, file_name))
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
@@ -76,7 +80,8 @@ class Logger:
 class StdoutOnlyLogger(Logger):
     def __init__(self, name=None):
         if name is None:
-            name = "None"
+            name = self.__class__.__name__
+
         super().__init__(name, stdout_only=True, no_format=True)
 
 
