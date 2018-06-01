@@ -126,7 +126,7 @@ def dump_json(obj, path):
     head, _ = os.path.split(path)
     check_path(head)
     with open(path, 'w') as f:
-        json.dump(obj, f)
+        json.dump(obj, f, indent=4, separators=(',', ': '))
 
 
 def load_json(path):
