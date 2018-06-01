@@ -1,11 +1,11 @@
-from util.Logger import Logger
+from util.Logger import StdoutOnlyLogger
 from env_settting import *
 from util.misc_util import *
 
 
 class ModelClassLoader:
     def __init__(self):
-        self.logger = Logger(self.__class__.__name__, stdout_only=True)
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
     @staticmethod

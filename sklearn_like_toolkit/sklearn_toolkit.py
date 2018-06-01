@@ -9,7 +9,7 @@ from sklearn_like_toolkit.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, sk
     skDecisionTree, skRandomForest, skExtraTrees, skAdaBoost, skGradientBoosting, skQDA, skKNeighbors, skLinear_SVC, \
     skRBF_SVM, skGaussianProcess
 from sklearn_like_toolkit.xgboost_wrapper import XGBoost
-from util.Logger import Logger, StdoutOnlyLogger
+from util.Logger import StdoutOnlyLogger
 from util.numpy_utils import reformat_np_arr
 
 
@@ -26,7 +26,7 @@ class ParamOptimizer(BaseSklearn):
         self.optimizer = None
         self.result = None
 
-        self.logger = Logger(self.__class__.__name__, stdout_only=True)
+        self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
         self.best_param = None
         self.best_estimator = None

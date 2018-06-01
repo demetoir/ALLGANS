@@ -29,7 +29,7 @@ class AbstractModel:
         if logger_path is None, log ony stdout
         """
         if logger_path is None:
-            self.logger = Logger(self.__class__.__name__, stdout_only=True)
+            self.logger = Logger(self.__class__.__name__, with_file=True)
         else:
             self.logger = Logger(self.__class__.__name__, logger_path)
         self.log = self.logger.get_log()
