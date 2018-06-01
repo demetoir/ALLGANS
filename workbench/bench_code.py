@@ -1,8 +1,9 @@
 # -*- coding:utf-8 -*-
 import codecs
-import pprint
 import webbrowser
+
 from bs4 import BeautifulSoup
+
 from InstanceManger import InstanceManager
 from DatasetLoader import DatasetLoader
 from VisualizerClassLoader import VisualizerClassLoader
@@ -12,20 +13,14 @@ from sklearn_like_toolkit.sklearn_toolkit import ClassifierPack
 from util.Logger import StdoutOnlyLogger
 import tensorflow as tf
 
-
-# dataset, input_shapes = DatasetLoader().load_dataset("CIFAR10")
-# dataset, input_shapes = DatasetLoader().load_dataset("CIFAR100")
-# dataset, input_shapes = DatasetLoader().load_dataset("LLD")
-# dataset, input_shapes = DatasetLoader().load_dataset("MNIST")
-# dataset, input_shapes = DatasetLoader().load_dataset("Fashion_MNIST")
-# model = ModelClassLoader.load_model_class("GAN")
-
-
 # print(built-in function) is not good for logging
+from util.misc_util import dump_json, load_json
+
 
 def pprint_logger(log_func):
     def wrapper(*args, **kwargs):
-        log_func(pprint.pformat(*args, **kwargs))
+        import pprint
+        return log_func(pprint.pformat(args, **kwargs))
 
     return wrapper
 
@@ -33,7 +28,7 @@ def pprint_logger(log_func):
 bprint = print
 logger = StdoutOnlyLogger()
 print = logger.get_log()
-print = pprint_logger(print)
+pprint = pprint_logger(print)
 
 
 def fit_and_test(model, train_Xs, train_Ys, test_Xs, test_Ys):
@@ -55,123 +50,6 @@ def fit_and_test(model, train_Xs, train_Ys, test_Xs, test_Ys):
     print("predict")
     print(instance.predict(test_Xs[:10]))
     print()
-
-
-def get_html(url):
-    _html = ""
-    resp = requests.get(url)
-    if resp.status_code == 200:
-        _html = resp.text
-    return _html
-
-
-def deco_file_lines_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
-    def wrapper():
-        with codecs.open(in_file, 'r', encoding=encoding) as f:
-            lines = [line for line in f.readlines()]
-
-        print("read '{}', {} lines".format(in_file, len(lines)))
-
-        lines = func(lines)
-
-        if lines is not None:
-            with codecs.open(out_file, 'w', encoding=encoding) as f:
-                f.writelines(lines)
-            print("write '{}', {} lines".format(out_file, len(lines)))
-
-    return wrapper
-
-
-def deco_file_str_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
-    def wrapper():
-        with codecs.open(in_file, 'r', encoding=encoding) as f:
-            line = "".join([line for line in f.readlines()])
-
-        print("read '{}', {} lenght".format(in_file, len(line)))
-
-        line = func(line)
-
-        if line is not None:
-            with codecs.open(out_file, 'w', encoding=encoding) as f:
-                f.writelines(str(line))
-            print("write '{}', {} lenght".format(out_file, len(line)))
-
-    return wrapper
-
-
-def filter_str(s, filter_):
-    for del_char in filter_:
-        s = s.replace(del_char, '')
-    return s
-
-
-@deco_file_lines_job
-def filter_lines(lines):
-    out = []
-    for line in lines:
-        print("%s [ %s ]" % (len(line), line))
-        line = filter_str(line, """+-():?"':!~,‘’""")
-        # if len(line) == 2 or len(line) > 30 or '[' in line or '.' in line:
-        #     continue
-        out += [line]
-
-        print("%s [ %s ]" % (len(line), line))
-
-    out = set(out)
-    out = list(out)
-    out = sorted(out)
-    return out
-
-
-@deco_file_lines_job
-def open_chrome(lines):
-    batch_size = 5
-    for idx in range(0, len(lines), batch_size):
-        url_head = "https://www.google.co.kr/search?q=%s"
-        for token in lines[idx:idx + batch_size]:
-            url = url_head % token
-            print(idx, url)
-            webbrowser.open(url)
-
-        input("enter to open next batch")
-
-
-@deco_file_lines_job
-def get_google_cite_url(lines):
-    out = []
-    for line in lines:
-        # url = "https://www.google.co.kr/search?q=%s" + line
-        url = line
-
-        print(line)
-
-        html = get_html(url)
-        soup = BeautifulSoup(html, 'html.parser')
-
-        cites = soup.find_all("cite")
-        print(cites[0].text)
-        out += [cites[0].text]
-
-
-@deco_file_str_job
-def filter_book_mark(html):
-    # print(html)
-    soup = BeautifulSoup(html, 'html.parser')
-    print(len(soup.find_all('a')))
-    out = []
-    for i in soup.find_all('a'):
-        # if i is None: continue
-        # if hasattr(i, 'icon'):
-        #     i['icon'] = None
-        #     i['ICON'] = None
-        # print()
-        out += [i['href']]
-        # print(a)
-    # print(soup)
-
-    out = sorted(out)
-    return "\n".join(out)
-    # return html
 
 
 GAN = {
@@ -350,7 +228,7 @@ def model_test():
     # model.train_dataset(dataset.train_set, epoch=1)
 
 
-def show():
+def tf_data_pipeline():
     with tf.Session() as sess:
         sess.run(tf.global_variables_initializer())
 
@@ -398,9 +276,84 @@ def show():
         print('Test Loss: {:4f}'.format(sess.run(loss)))
 
 
+def deco_file_lines_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
+    def wrapper():
+        with codecs.open(in_file, 'r', encoding=encoding) as f:
+            lines = [line for line in f.readlines()]
+
+        print("read '{}', {} lines".format(in_file, len(lines)))
+
+        lines = func(lines)
+
+        if lines is not None:
+            with codecs.open(out_file, 'w', encoding=encoding) as f:
+                f.writelines(lines)
+            print("write '{}', {} lines".format(out_file, len(lines)))
+
+    return wrapper
+
+
+def deco_file_str_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
+    def wrapper():
+        with codecs.open(in_file, 'r', encoding=encoding) as f:
+            line = "".join([line for line in f.readlines()])
+
+        print("read '{}', {} lenght".format(in_file, len(line)))
+
+        line = func(line)
+
+        if line is not None:
+            with codecs.open(out_file, 'w', encoding=encoding) as f:
+                f.writelines(str(line))
+            print("write '{}', {} lenght".format(out_file, len(line)))
+
+    return wrapper
+
+
+def filter_str(s, filter_):
+    for del_char in filter_:
+        s = s.replace(del_char, '')
+    return s
+
+
+@deco_file_lines_job
+def filter_lines(lines):
+    out = []
+    for line in lines:
+        print("%s [ %s ]" % (len(line), line))
+        line = filter_str(line, """+-():?"':!~,‘’""")
+        # if len(line) == 2 or len(line) > 30 or '[' in line or '.' in line:
+        #     continue
+        out += [line]
+
+        print("%s [ %s ]" % (len(line), line))
+
+    out = set(out)
+    out = list(out)
+    out = sorted(out)
+    return out
+
+
 def main():
-    # show()
-    model_test()
+    size = 100
+    urls = []
+    base_format = """http://gall.dcinside.com/board/lists/?id=disease&page={}"""
+    for i in range(1, size + 1):
+        url = base_format.format(i)
+        urls += [url]
+        print(url)
+
+    from workbench.crawler import Crawler
+    crawler = Crawler()
+    ret = crawler.run(urls)
+    path = os.path.join('.', 'crawl_result', 'result.txt')
+    crawler.save(ret, path)
+
+    # dataset = DatasetLoader().load_dataset("MNIST")
+    # dataset = DatasetLoader().load_dataset("CIFAR10")
+    # dataset = DatasetLoader().load_dataset("CIFAR100")
+    # dataset = DatasetLoader().load_dataset("Fashion_MNIST")
+    # model_test()
 
     # open_chrome()
     # filter_book_mark()
@@ -417,5 +370,4 @@ def main():
     # )
     # clfpack.param_search(train_xs, train_labels, test_xs, test_labels)
 
-    #
     # tf_model_train(**MLPClassifier)
