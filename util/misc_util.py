@@ -14,20 +14,20 @@ import json
 import sys
 
 
-def dump_pickle(path, data):
+def dump_pickle(obj, path):
     """dump pickle
 
     * [warning] use pickle module python3, python2 may incompatible
 
     :type path: str
-    :type data: object
+    :type obj: object
     :param path: dump path
-    :param data: target data to dump
+    :param obj: target data to dump
     """
     head, _ = os.path.split(path)
     check_path(head)
     with open(path, 'wb') as f:
-        pickle.dump(data, f)
+        pickle.dump(obj, f)
 
 
 def load_pickle(path):
