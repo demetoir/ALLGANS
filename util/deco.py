@@ -4,32 +4,62 @@ import time
 import traceback
 
 
-def deco_file_lines_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
+def file_lines_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
     def wrapper():
+        read_time = time.time()
         with codecs.open(in_file, 'r', encoding=encoding) as f:
             lines = [line for line in f.readlines()]
 
-        new_line = []
+        new_lines = []
         for line in lines:
             line = line.replace('\r', '')
             line = line.replace('\n', '')
-            new_line += [line]
-        lines = new_line
+            new_lines += [line]
+        lines = new_lines
 
-        print("read '{}', {} lines".format(in_file, len(lines)))
+        read_time = time.time() - read_time
+        old_len = len(lines)
+        print("read '{}', {} lines, {:.3f}'s elapsed".format(in_file, old_len, read_time))
 
+        func_time = time.time()
         lines = func(lines)
+        func_time = time.time() - func_time
+        print("in func {:.3f}'s elapsed".format(func_time))
+
+        write_time = time.time()
 
         if lines is not None:
+            new_lines = []
+            for line in lines:
+                line = str(line)
+                if line[-1] is not '\n':
+                    new_lines += [line + '\n']
+                else:
+                    new_lines += [line]
+            lines = new_lines
+
             with codecs.open(out_file, 'w', encoding=encoding) as f:
                 f.writelines(lines)
-            print("write '{}', {} lines".format(out_file, len(lines)))
+            write_time = time.time() - write_time
+            new_len = len(lines)
+
+            if old_len - new_len == 0:
+                print('same len')
+            elif old_len - new_len > 0:
+                print("del {} lines".format(old_len - new_len))
+            else:
+                print("add {} lines".format(-(old_len - new_len)))
+
+            print("write '{}', {} lines, {:.3f}'s elapsed".format(out_file, new_len, write_time))
+        else:
+            write_time = 0
+        print("total {:.4f}'s elapsed".format(read_time + func_time + write_time))
 
     wrapper.__name__ = func.__name__
     return wrapper
 
 
-def deco_file_str_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
+def file_str_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
     def wrapper():
         with codecs.open(in_file, 'r', encoding=encoding) as f:
             line = "".join([line for line in f.readlines()])
@@ -90,7 +120,7 @@ def deco_timeit(func):
     def wrapper(*args, **kwargs):
         start = time.time()
         ret = func(*args, **kwargs)
-        print("total time {}".format(time.time() - start))
+        print("time {:.3f}'s elapsed".format(time.time() - start))
 
         return ret
 
