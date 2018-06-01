@@ -2,7 +2,7 @@ import logging
 import logging.handlers
 import os
 
-from util.misc_util import time_stamp
+from util.misc_util import time_stamp, check_path
 
 
 class Logger:
@@ -18,7 +18,7 @@ class Logger:
     PRINT_LOGGER_FORMAT = '%(asctime)s > %(message)s'
     NO_FORMAT = ""
 
-    def __init__(self, name, path=None, file_name='log', level=logging.INFO, stdout_only=False, no_format=False):
+    def __init__(self, name, path=None, file_name=None, level=logging.INFO, stdout_only=False, no_format=False):
         """create logger
 
         :param name:name of logger
@@ -41,6 +41,10 @@ class Logger:
         if not stdout_only:
             if path is None:
                 path = os.path.join('.', 'log')
+            if file_name is None:
+                file_name = time_stamp()
+
+            check_path(path)
             self.file_handler = logging.FileHandler(os.path.join(path, file_name))
             self.file_handler.setFormatter(formatter)
             self.logger.addHandler(self.file_handler)
