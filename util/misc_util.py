@@ -214,6 +214,15 @@ def time_stamp():
 
 
 def check_path(path):
+    tail = None
+    if os.path.isfile(path):
+        path, tail = os.path.split(path)
+
+    if not os.path.isdir(path):
+        if tail is not None:
+            path = os.path.join(path, tail)
+        raise IsADirectoryError("{} is not directory".format(path))
+
     if not os.path.exists(path):
         os.mkdir(path)
 
