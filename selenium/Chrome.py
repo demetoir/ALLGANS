@@ -18,7 +18,7 @@ class Chrome:
         args.add_argument("disable-gpu")
 
         if driver_path is None:
-            driver_path = os.path.join('.', 'selenium', 'chromedriver_win32', 'chromedriver')
+            driver_path = os.path.join('.', 'selenium', 'bin', 'chromedriver_win32', 'chromedriver')
 
         self.driver = webdriver.Chrome(driver_path, chrome_options=args)
 
