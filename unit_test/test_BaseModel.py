@@ -1,4 +1,4 @@
-from DatasetLoader import DatasetLoader
+from data_handler.DatasetLoader import DatasetLoader
 
 
 GAN = {
