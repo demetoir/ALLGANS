@@ -88,6 +88,14 @@ class StdoutOnlyLogger(Logger):
         super().__init__(name, with_file=False, no_format=True)
 
 
+def pprint_logger(log_func):
+    def wrapper(*args, **kwargs):
+        import pprint
+        return log_func(pprint.pformat(args, **kwargs))
+
+    return wrapper
+
+
 """
 self.logger = Logger(self.__class__.__name__)
 self.log = self.logger.get_log()

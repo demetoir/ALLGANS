@@ -1,6 +1,6 @@
 # usage
 # after load instance to InstanceManager
-from VisualizerClassLoader import VisualizerClassLoader
+from visualizer.VisualizerClassLoader import VisualizerClassLoader
 
 visualizer = VisualizerClassLoader.load("visualizer_name")
 manager.load_visualizer(visualizer, execute_interval=10)

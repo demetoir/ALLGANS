@@ -5,14 +5,8 @@ from util.misc_util import *
 
 
 class DatasetLoader:
-    """
-    TODO add docstring
-    """
 
     def __init__(self, root_path=ROOT_PATH):
-        """create DatasetManager
-        TODO add docstring
-        """
         self.root_path = root_path
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()

@@ -1,9 +1,5 @@
 import os
 from selenium import webdriver
-from selenium.webdriver.support.wait import WebDriverWait
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
 
 class Chrome:
@@ -18,7 +14,7 @@ class Chrome:
         args.add_argument("disable-gpu")
 
         if driver_path is None:
-            driver_path = os.path.join('.', 'selenium', 'chromedriver_win32', 'chromedriver')
+            driver_path = os.path.join('.', 'selenium', 'bin', 'chromedriver_win32', 'chromedriver')
 
         self.driver = webdriver.Chrome(driver_path, chrome_options=args)
 

@@ -214,9 +214,33 @@ def time_stamp():
 
 
 def check_path(path):
+    tail = None
+    if os.path.isfile(path):
+        path, tail = os.path.split(path)
+
+    if not os.path.isdir(path):
+        if tail is not None:
+            path = os.path.join(path, tail)
+        raise IsADirectoryError("{} is not directory".format(path))
+
     if not os.path.exists(path):
         os.mkdir(path)
 
 
 def open_chrome(url):
     webbrowser.open(url)
+
+
+def print_lines(lines, max_line=50, split_print=True):
+    remain_lines = len(lines)
+    line_count = 0
+    for line in lines:
+        print("<{}>[{}]".format(line_count, line))
+        line_count += 1
+        remain_lines -= 1
+
+        if split_print and line_count == max_line:
+            line_count = 0
+            input("remain {} lines, press key to continue".format(remain_lines))
+
+    print("print lines end\n")
