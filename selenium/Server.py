@@ -6,7 +6,7 @@ from util.Logger import StdoutOnlyLogger
 from util.deco import log_error_trace
 
 
-class SeleniumServer:
+class Server:
     def __init__(self, port=4444):
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
@@ -43,7 +43,7 @@ if __name__ == '__main__':
     ports = [4444]
     server_address = "http://127.0.0.1:{}/wd/hub"
 
-    servers = [SeleniumServer(port) for port in ports]
+    servers = [Server(port) for port in ports]
     [server.open() for server in servers]
 
     try:
