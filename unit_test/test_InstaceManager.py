@@ -7,6 +7,28 @@ from unit_test.DummyDataset import DummyDataset
 from env_settting import *
 
 
+def tf_model_train(model=None, dataset=None, visuliziers=None, epoch=None):
+    dataset = DatasetLoader().load_dataset(dataset)
+    input_shapes = dataset.train_set.input_shapes
+    model = ModelClassLoader.load_model_class(model)
+
+    manager = InstanceManager()
+    metadata_path = manager.build_instance(model, input_shapes)
+    manager.load_instance(metadata_path)
+
+    for v_fun, i in visuliziers:
+        manager.load_visualizer(VisualizerClassLoader.load(v_fun), i)
+
+    manager.train_instance(
+        epoch=epoch,
+        dataset=dataset,
+        check_point_interval=5000,
+        with_tensorboard=True
+    )
+
+    del manager
+
+
 class dummy_log(AbstractPrintLog):
     def task(self, sess=None, iter_num=None, model=None, dataset=None):
         super().task(sess, iter_num, model, dataset)

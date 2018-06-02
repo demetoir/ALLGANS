@@ -1,7 +1,9 @@
 """misc utils
 pickle, import module, zip, etc ..."""
+import webbrowser
 from glob import glob
 from importlib._bootstrap_external import SourceFileLoader
+from time import strftime, localtime
 import tarfile
 import zipfile
 import requests
@@ -12,18 +14,20 @@ import json
 import sys
 
 
-def dump_pickle(path, data):
+def dump_pickle(obj, path):
     """dump pickle
 
     * [warning] use pickle module python3, python2 may incompatible
 
     :type path: str
-    :type data: object
+    :type obj: object
     :param path: dump path
-    :param data: target data to dump
+    :param obj: target data to dump
     """
+    head, _ = os.path.split(path)
+    check_path(head)
     with open(path, 'wb') as f:
-        pickle.dump(data, f)
+        pickle.dump(obj, f)
 
 
 def load_pickle(path):
@@ -119,8 +123,10 @@ def dump_json(obj, path):
     :param obj: object to dump
     :param path: path to dump
     """
+    head, _ = os.path.split(path)
+    check_path(head)
     with open(path, 'w') as f:
-        json.dump(obj, f)
+        json.dump(obj, f, indent=4, separators=(',', ': '))
 
 
 def load_json(path):
@@ -201,3 +207,16 @@ def extract_file(source_path, destination_path):
         extract_tar(source_path, destination_path)
     elif extend in extender_zip:
         extract_zip(source_path, destination_path)
+
+
+def time_stamp():
+    return strftime("%Y-%m-%d_%H-%M-%S", localtime())
+
+
+def check_path(path):
+    if not os.path.exists(path):
+        os.mkdir(path)
+
+
+def open_chrome(url):
+    webbrowser.open(url)
