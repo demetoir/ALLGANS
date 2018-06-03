@@ -55,10 +55,16 @@ class Logger:
         return self.__class__.__name__
 
     def __del__(self):
-        if self.file_handler is not None:
-            self.logger.removeHandler(self.file_handler)
-        self.logger.removeHandler(self.stream_handler)
-        del self.logger
+        # TODO this del need hack
+        try:
+            if self.file_handler is not None:
+                self.logger.removeHandler(self.file_handler)
+            if self.stream_handler is not None:
+                self.logger.removeHandler(self.stream_handler)
+
+            del self.logger
+        except BaseException as e:
+            pass
 
     def get_log(self, level='info'):
         """return logging function
