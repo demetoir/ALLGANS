@@ -113,7 +113,8 @@ MLPClassifier = {
 
 }
 
-def model_test():
+
+def test_MLPClassifier():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
     from model.sklearn_like_model.MLPClassifier import MLPClassifier
