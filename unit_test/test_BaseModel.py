@@ -116,7 +116,7 @@ MLPClassifier = {
 def model_test():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
-    from model.Classifier.MLPClassifier import MLPClassifier
+    from model.sklearn_like_model.MLPClassifier import MLPClassifier
     # model = ModelClassLoader.load_model_class('MLPClassifier')
 
     Xs, Ys = dataset.train_set.full_batch(
