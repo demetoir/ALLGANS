@@ -20,6 +20,9 @@ DATA_PATH = os.path.join(ROOT_PATH, 'data')
 # instance
 INSTANCE_PATH = os.path.join(ROOT_PATH, 'instance')
 
+# log
+LOG_PATH = os.path.join(ROOT_PATH, 'log')
+
 
 def tensorboard_dir():
     import tensorboard
@@ -27,5 +30,3 @@ def tensorboard_dir():
     tensorboard_main = os.path.join(path, 'main.py')
     del tensorboard
     return tensorboard_main
-
-
