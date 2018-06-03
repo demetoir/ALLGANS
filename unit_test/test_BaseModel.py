@@ -1,5 +1,5 @@
 from data_handler.DatasetLoader import DatasetLoader
-
+import numpy as np
 
 GAN = {
     "model": "GAN",
@@ -113,10 +113,11 @@ MLPClassifier = {
 
 }
 
-def model_test():
+
+def test_MLPClassifier():
     dataset = DatasetLoader().load_dataset("titanic")
     input_shapes = dataset.train_set.input_shapes
-    from model.Classifier.MLPClassifier import MLPClassifier
+    from model.sklearn_like_model.MLPClassifier import MLPClassifier
     # model = ModelClassLoader.load_model_class('MLPClassifier')
 
     Xs, Ys = dataset.train_set.full_batch(
@@ -148,3 +149,44 @@ def model_test():
     model = MLPClassifier(input_shapes)
     model.load(path)
 
+
+def test_sklike_AE_test():
+    from data_handler.DatasetLoader import DatasetLoader
+    from model.sklearn_like_model.AutoEncoder import AutoEncoder
+
+    dataset = DatasetLoader().load_dataset("MNIST")
+    dataset = dataset.train_set
+
+    model = AutoEncoder(dataset.input_shapes)
+    model.build()
+
+    Xs = dataset.full_batch(['Xs'])
+    model.train(Xs, epoch=1)
+
+    sample_X = Xs[:2]
+    code = model.code(sample_X)
+    print("code {code}".format(code=code))
+
+    recon = model.recon(sample_X)
+    print("recon {recon}".format(recon=recon))
+
+    loss = model.metric(Xs)
+    loss = np.mean(loss)
+    print("loss {:.4}".format(loss))
+
+    path = model.save()
+
+    model = AutoEncoder()
+    model.load(path)
+    print('model reloaded')
+
+    sample_X = Xs[:2]
+    code = model.code(sample_X)
+    print("code {code}".format(code=code))
+
+    recon = model.recon(sample_X)
+    print("recon {recon}".format(recon=recon))
+
+    loss = model.metric(Xs)
+    loss = np.mean(loss)
+    print("loss {:.4}".format(loss))

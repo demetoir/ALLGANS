@@ -1,5 +1,5 @@
 from env_settting import ROOT_PATH
-from unit_test.DummyModel import DummyModel
+from unit_test.dummy.DummyModel import DummyModel
 
 
 class test_AbstractModel:

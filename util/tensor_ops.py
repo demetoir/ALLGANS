@@ -338,6 +338,8 @@ def average_top_k_loss(loss, k, name='average_top_k_loss'):
 
 
 def reshape(input_, shape, name='reshape'):
+    if shape[0] == None:
+        shape[0] = -1
     return tf.reshape(input_, shape, name=name)
 
 

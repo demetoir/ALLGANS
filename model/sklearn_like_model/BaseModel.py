@@ -87,11 +87,7 @@ VISUAL_RESULT_FOLDER = 'visual_results'
 
 
 class BaseModel:
-    """Abstract class of model for tensorflow graph
-
-    TODO add docstring
-
-    """
+    """Abstract class of model for tensorflow graph"""
     AUTHOR = 'demetoir'
 
     def __str__(self):
@@ -147,19 +143,18 @@ class BaseModel:
         }
 
     def __del__(self):
-        """ destructor of InstanceManager
+        # TODO this del need hack
+        try:
+            # reset tensorflow graph
+            tf.reset_default_graph()
+            self.close_session()
 
-        clean up all memory, subprocess, logging, tensorflow graph
-        """
-        # reset tensorflow graph
-        tf.reset_default_graph()
-
-        self.close_session()
-
-        del self.sess
-        del self.root_path
-        del self.log
-        del self.logger
+            del self.sess
+            del self.root_path
+            del self.log
+            del self.logger
+        except BaseException as e:
+            pass
 
     @property
     def hyper_param_key(self):
@@ -237,6 +232,9 @@ class BaseModel:
                 self.build_hyper_parameter(self.params)
 
             self.log('build_input_shapes')
+
+            if self.input_shapes is None:
+                raise AttributeError("input_shapes not feed")
             self.build_input_shapes(self.input_shapes)
 
             self.log('build_main_graph')
@@ -396,8 +394,8 @@ class BaseModel:
         self.sess.run(fetches, feet_dict)
 
     def if_not_ready_to_train(self):
-        if self.sess is None:
-            self.open_session()
-
         if not self.is_built:
             self.build()
+
+        if self.sess is None:
+            self.open_session()

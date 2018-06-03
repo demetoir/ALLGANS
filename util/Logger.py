@@ -1,7 +1,6 @@
 import logging
 import logging.handlers
 import os
-
 from util.misc_util import time_stamp, check_path
 
 
@@ -36,7 +35,7 @@ class Logger:
             if path is None:
                 path = os.path.join('.', 'log')
             if file_name is None:
-                file_name = time_stamp()
+                file_name = "{name}_{time}".format(name=name, time=time_stamp())
 
             check_path(path)
             self.file_handler = logging.FileHandler(os.path.join(path, file_name))
@@ -56,10 +55,16 @@ class Logger:
         return self.__class__.__name__
 
     def __del__(self):
-        if self.file_handler is not None:
-            self.logger.removeHandler(self.file_handler)
-        self.logger.removeHandler(self.stream_handler)
-        del self.logger
+        # TODO this del need hack
+        try:
+            if self.file_handler is not None:
+                self.logger.removeHandler(self.file_handler)
+            if self.stream_handler is not None:
+                self.logger.removeHandler(self.stream_handler)
+
+            del self.logger
+        except BaseException as e:
+            pass
 
     def get_log(self, level='info'):
         """return logging function

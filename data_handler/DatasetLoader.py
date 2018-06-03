@@ -6,7 +6,7 @@ from util.misc_util import *
 
 class DatasetLoader:
 
-    def __init__(self, root_path=ROOT_PATH):
+    def __init__(self, root_path=LOG_PATH):
         self.root_path = root_path
         self.logger = Logger(self.__class__.__name__, self.root_path)
         self.log = self.logger.get_log()
