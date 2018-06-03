@@ -1,4 +1,4 @@
-from model.BaseClassifierModel import BaseClassifierModel
+from model.sklearn_like_model.BaseClassifierModel import BaseClassifierModel
 from util.Stacker import Stacker
 from util.tensor_ops import *
 import tensorflow as tf

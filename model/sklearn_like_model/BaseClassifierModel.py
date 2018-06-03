@@ -1,5 +1,5 @@
 from data_handler.BaseDataset import BaseDataset
-from model.BaseModel import BaseModel
+from model.sklearn_like_model.BaseModel import BaseModel
 
 
 class Dataset(BaseDataset):
