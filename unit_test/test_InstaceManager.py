@@ -1,9 +1,9 @@
 from visualizer.AbstractPrintLog import AbstractPrintLog
-from unit_test.DummyModel import DummyModel
+from unit_test.dummy.DummyModel import DummyModel
 from InstanceManger import InstanceManager
-from unit_test.DummyVisualizer import DummyVisualizer_1
-from unit_test.DummyVisualizer import DummyVisualizer_2
-from unit_test.DummyDataset import DummyDataset
+from unit_test.dummy.DummyVisualizer import DummyVisualizer_1
+from unit_test.dummy.DummyVisualizer import DummyVisualizer_2
+from unit_test.dummy.DummyDataset import DummyDataset
 from env_settting import *
 
 
