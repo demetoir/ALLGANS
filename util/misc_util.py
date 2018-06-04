@@ -224,20 +224,20 @@ def check_path(path):
 
     head, _ = os.path.split(path)
     if not os.path.exists(head):
-        os.mkdir(head)
+        os.makedirs(head)
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
 
 def setup_file(path):
     head, _ = os.path.split(path)
     if not os.path.exists(head):
-        os.mkdir(head)
+        os.makedirs(head)
 
 
 def setup_directory(path):
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
 
 
 def open_chrome(url):
