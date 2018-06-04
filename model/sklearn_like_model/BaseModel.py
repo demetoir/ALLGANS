@@ -1,6 +1,6 @@
 from dict_keys.model_metadata_keys import *
 from util.Logger import Logger, StdoutOnlyLogger
-from util.misc_util import dump_json, load_json, time_stamp, check_path
+from util.misc_util import dump_json, load_json, time_stamp, setup_directory
 from env_settting import *
 import tensorflow as tf
 import os
@@ -179,11 +179,11 @@ class BaseModel:
 
     def setup_model(self):
         self.log.debug('init directory')
-        check_path(self.instance_path)
-        check_path(self.instance_visual_result_folder_path)
-        check_path(self.instance_source_folder_path)
-        check_path(self.instance_summary_folder_path)
-        check_path(self.save_folder_path)
+        setup_directory(self.instance_path)
+        setup_directory(self.instance_visual_result_folder_path)
+        setup_directory(self.instance_source_folder_path)
+        setup_directory(self.instance_summary_folder_path)
+        setup_directory(self.save_folder_path)
 
     def load_metadata(self, path):
         self.metadata = load_json(path)
