@@ -91,15 +91,16 @@ class AutoEncoder(BaseAutoEncoder):
         return stack.last_layer
 
     def build_main_graph(self):
-        self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
-        self.zs = tf.placeholder(tf.float32, self.zs_shape, name='zs')
+        self.Xs = placeholder(tf.float32, self.Xs_shape, name='Xs')
+        self.zs = placeholder(tf.float32, self.zs_shape, name='zs')
 
         self.latent_code = self.encoder(self.Xs)
         self.Xs_recon = self.decoder(self.latent_code)
         self.Xs_gen = self.decoder(self.zs, reuse=True)
 
-        self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
-        self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
+        head = get_scope()
+        self.vars = collect_vars(join_scope(head, 'encoder'))
+        self.vars += collect_vars(join_scope(head, 'decoder'))
 
     def build_loss_function(self):
         self.loss = tf.squared_difference(self.Xs, self.Xs_recon, name='loss')
