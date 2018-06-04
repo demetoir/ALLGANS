@@ -115,8 +115,8 @@ class BaseModel:
         self.input_shapes = input_shapes
         self.params = params
 
-        self.id = self.__str__() + time_stamp()
-        self.instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, self.id)
+        self.id = "_".join([self.__str__(), time_stamp()])
+        self.instance_path = os.path.join(INSTANCE_PATH, self.id)
         self.instance_visual_result_folder_path = os.path.join(self.instance_path, VISUAL_RESULT_FOLDER)
         self.instance_source_folder_path = os.path.join(self.instance_path, 'src_code')
         self.instance_summary_folder_path = os.path.join(self.instance_path, 'summary')
