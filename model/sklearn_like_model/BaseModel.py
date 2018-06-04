@@ -145,9 +145,9 @@ class BaseModel:
     def __del__(self):
         # TODO this del need hack
         try:
+            self.close_session()
             # reset tensorflow graph
             tf.reset_default_graph()
-            self.close_session()
 
             del self.sess
             del self.root_path
@@ -220,52 +220,12 @@ class BaseModel:
         self.log('dump metadata')
         dump_json(self.metadata, path)
 
-    def build(self):
-        try:
-            with tf.variable_scope("misc_ops"):
-                self.log("build_misc_ops")
-                self.build_misc_ops()
-
-            with tf.variable_scope("hyper_parameter"):
-                self.log('build_hyper_parameter')
-                self.hyper_parameter()
-                self.build_hyper_parameter(self.params)
-
-            self.log('build_input_shapes')
-
-            if self.input_shapes is None:
-                raise AttributeError("input_shapes not feed")
-            self.build_input_shapes(self.input_shapes)
-
-            self.log('build_main_graph')
-            self.build_main_graph()
-
-            with tf.variable_scope('loss_function'):
-                self.log('build_loss_function')
-                self.build_loss_function()
-
-            with tf.variable_scope('train_ops'):
-                self.log('build_train_ops')
-                self.build_train_ops()
-
-            with tf.variable_scope('summary_ops'):
-                self.log('build_summary_ops')
-                self.build_summary_ops()
-
-        except Exception:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
-            raise ModelBuildFailError("ModelBuildFailError")
-        else:
-            self.is_built = True
-            self.log("build success")
-
     def open_session(self):
         if self.sess is None:
             self.sess = tf.Session()
             self.saver = tf.train.Saver()
             self.sess.run(tf.global_variables_initializer())
-            self.summary_writer = tf.summary.FileWriter(self.instance_summary_folder_path, self.sess.graph)
+            # self.summary_writer = tf.summary.FileWriter(self.instance_summary_folder_path, self.sess.graph)
         else:
             raise Exception("fail to open tf session")
 
@@ -277,7 +237,49 @@ class BaseModel:
             self.saver = None
 
         if self.summary_writer is not None:
-            self.summary_writer.close()
+            pass
+            # self.summary_writer.close()
+
+    def build(self):
+        try:
+            with tf.variable_scope(str(self.id)):
+                with tf.variable_scope("misc_ops"):
+                    self.log("build_misc_ops")
+                    self.build_misc_ops()
+
+                with tf.variable_scope("hyper_parameter"):
+                    self.log('build_hyper_parameter')
+                    self.hyper_parameter()
+                    self.build_hyper_parameter(self.params)
+
+                self.log('build_input_shapes')
+
+                if self.input_shapes is None:
+                    raise AttributeError("input_shapes not feed")
+                self.build_input_shapes(self.input_shapes)
+
+                self.log('build_main_graph')
+                self.build_main_graph()
+
+                with tf.variable_scope('loss_function'):
+                    self.log('build_loss_function')
+                    self.build_loss_function()
+
+                with tf.variable_scope('train_ops'):
+                    self.log('build_train_ops')
+                    self.build_train_ops()
+
+                with tf.variable_scope('summary_ops'):
+                    self.log('build_summary_ops')
+                    self.build_summary_ops()
+
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
+            raise ModelBuildFailError("ModelBuildFailError")
+        else:
+            self.is_built = True
+            self.log("build success")
 
     def build_input_shapes(self, input_shapes):
         """load input shapes for tensor placeholder
