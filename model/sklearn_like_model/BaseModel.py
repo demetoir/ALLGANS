@@ -1,5 +1,5 @@
 from dict_keys.model_metadata_keys import *
-from util.Logger import Logger, StdoutOnlyLogger
+from util.Logger import Logger
 from util.misc_util import dump_json, load_json, time_stamp, setup_directory
 from env_settting import *
 import tensorflow as tf
@@ -102,7 +102,7 @@ class BaseModel:
         self.root_path = root_path
 
         if logger_path is None:
-            self.log = Logger(self.__class__.__name__, INSTANCE_PATH)
+            self.log = Logger(self.__class__.__name__, LOG_PATH)
         else:
             self.log = Logger(self.__class__.__name__, logger_path)
 
