@@ -100,11 +100,11 @@ class BaseModel:
         if logger_path is None, log ony stdout
         """
         self.root_path = root_path
+
         if logger_path is None:
-            self.logger = StdoutOnlyLogger(self.__class__.__name__)
+            self.log = StdoutOnlyLogger(self.__class__.__name__)
         else:
-            self.logger = Logger(self.__class__.__name__, logger_path)
-        self.log = self.logger.get_log()
+            self.log = Logger(self.__class__.__name__, logger_path)
 
         self.sess = None
         self.saver = None
@@ -151,7 +151,6 @@ class BaseModel:
             del self.sess
             del self.root_path
             del self.log
-            del self.logger
         except BaseException as e:
             pass
 
@@ -186,12 +185,6 @@ class BaseModel:
         check_path(self.instance_summary_folder_path)
         check_path(self.save_folder_path)
 
-        # self.log('dump instance source code')
-        # try:
-        #     copy(inspect.getsourcefile(self.instance_class_name), self.instance_source_path)
-        # except IOError as e:
-        #     print(e)
-
     def load_metadata(self, path):
         self.metadata = load_json(path)
 
@@ -207,7 +200,7 @@ class BaseModel:
         self.input_shapes = self.metadata[MODEL_METADATA_KEY_INPUT_SHAPES]
 
     def save_metadata(self, path):
-        self.log('dump metadata')
+        self.log.debug('dump metadata')
         dump_json(self.metadata, path)
 
     def open_session(self):
@@ -234,42 +227,42 @@ class BaseModel:
         try:
             with tf.variable_scope(str(self.id)):
                 with tf.variable_scope("misc_ops"):
-                    self.log("build_misc_ops")
+                    self.log.debug("build_misc_ops")
                     self.build_misc_ops()
 
                 with tf.variable_scope("hyper_parameter"):
-                    self.log('build_hyper_parameter')
+                    self.log.debug('build_hyper_parameter')
                     self.hyper_parameter()
                     self.build_hyper_parameter(self.params)
 
-                self.log('build_input_shapes')
+                self.log.debug('build_input_shapes')
 
                 if self.input_shapes is None:
                     raise AttributeError("input_shapes not feed")
                 self.build_input_shapes(self.input_shapes)
 
-                self.log('build_main_graph')
+                self.log.debug('build_main_graph')
                 self.build_main_graph()
 
                 with tf.variable_scope('loss_function'):
-                    self.log('build_loss_function')
+                    self.log.debug('build_loss_function')
                     self.build_loss_function()
 
                 with tf.variable_scope('train_ops'):
-                    self.log('build_train_ops')
+                    self.log.debug('build_train_ops')
                     self.build_train_ops()
 
                 with tf.variable_scope('summary_ops'):
-                    self.log('build_summary_ops')
+                    self.log.debug('build_summary_ops')
                     self.build_summary_ops()
 
         except Exception:
             exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
+            self.log.error("\n", "".join(traceback.format_tb(exc_traceback)))
             raise ModelBuildFailError("ModelBuildFailError")
         else:
             self.is_built = True
-            self.log("build success")
+            self.log.info("build success")
 
     def build_input_shapes(self, input_shapes):
         """load input shapes for tensor placeholder
@@ -368,7 +361,7 @@ class BaseModel:
             self.open_session()
         self.saver.save(self.sess, self.check_point_path)
 
-        self.log("saved at {}".format(self.instance_path))
+        self.log.info("saved at {}".format(self.instance_path))
 
         return self.instance_path
 
