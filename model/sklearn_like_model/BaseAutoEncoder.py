@@ -69,7 +69,7 @@ class BaseAutoEncoder(BaseModel):
 
         iter_num = 0
         iter_per_epoch = dataset.size // batch_size
-        self.log("train epoch {}, iter/epoch {}".format(epoch, iter_per_epoch))
+        self.log.info("train epoch {}, iter/epoch {}".format(epoch, iter_per_epoch))
 
         for e in tqdm.tqdm(range(epoch)):
             for i in range(iter_per_epoch):
@@ -81,7 +81,7 @@ class BaseAutoEncoder(BaseModel):
             Xs = dataset.next_batch(batch_size, batch_keys=['Xs'], look_up=False)
             loss = self.sess.run(self._metric_ops, feed_dict={self._Xs: Xs})
             loss = np.mean(loss)
-            self.log("e:{e} loss : {loss}".format(e=e, loss=loss))
+            self.log.info("e:{e} loss : {loss}".format(e=e, loss=loss))
 
             if save_interval is not None and e % save_interval == 0:
                 self.save()
