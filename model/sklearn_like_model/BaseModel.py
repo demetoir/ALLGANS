@@ -102,7 +102,7 @@ class BaseModel:
         self.root_path = root_path
 
         if logger_path is None:
-            self.log = StdoutOnlyLogger(self.__class__.__name__)
+            self.log = Logger(self.__class__.__name__, INSTANCE_PATH)
         else:
             self.log = Logger(self.__class__.__name__, logger_path)
 
@@ -157,25 +157,6 @@ class BaseModel:
     @property
     def hyper_param_key(self):
         return []
-
-    def check_setup(self):
-        # instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, id)
-
-        if not os.path.exists(self.instance_path):
-            return False
-
-        if not os.path.exists(self.instance_visual_result_folder_path):
-            return False
-
-        if not os.path.exists(self.instance_source_folder_path):
-            return False
-
-        if not os.path.exists(self.instance_summary_folder_path):
-            return False
-
-        if not os.path.exists(self.save_folder_path):
-            return False
-        return True
 
     def setup_model(self):
         self.log.debug('init directory')
@@ -353,9 +334,8 @@ class BaseModel:
         pass
 
     def save(self):
-        if not self.check_setup():
-            self.setup_model()
-            self.save_metadata(self.metadata_path)
+        self.setup_model()
+        self.save_metadata(self.metadata_path)
 
         if self.sess is None:
             self.open_session()
