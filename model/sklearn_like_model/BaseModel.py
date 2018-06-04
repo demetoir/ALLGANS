@@ -179,21 +179,12 @@ class BaseModel:
         return True
 
     def setup_model(self):
-        self.log('init directory')
-        if not os.path.exists(self.instance_path):
-            os.mkdir(self.instance_path)
-
-        if not self.instance_visual_result_folder_path:
-            os.mkdir(self.instance_visual_result_folder_path)
-
-        if not os.path.exists(self.instance_source_folder_path):
-            os.mkdir(self.instance_source_folder_path)
-
-        if not os.path.exists(self.instance_summary_folder_path):
-            os.mkdir(self.instance_summary_folder_path)
-
-        if not os.path.exists(self.save_folder_path):
-            os.mkdir(self.save_folder_path)
+        self.log.debug('init directory')
+        check_path(self.instance_path)
+        check_path(self.instance_visual_result_folder_path)
+        check_path(self.instance_source_folder_path)
+        check_path(self.instance_summary_folder_path)
+        check_path(self.save_folder_path)
 
         # self.log('dump instance source code')
         # try:
