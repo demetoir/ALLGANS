@@ -3,6 +3,43 @@ import logging.handlers
 import os
 from util.misc_util import time_stamp, check_path
 
+CRITICAL = 50
+FATAL = CRITICAL
+ERROR = 40
+WARNING = 30
+WARN = WARNING
+INFO = 20
+DEBUG = 10
+NOTSET = 0
+
+_levelToName = {
+    CRITICAL: 'CRITICAL',
+    ERROR: 'ERROR',
+    WARNING: 'WARNING',
+    INFO: 'INFO',
+    DEBUG: 'DEBUG',
+    NOTSET: 'NOTSET',
+}
+_nameToLevel = {
+    'CRITICAL': CRITICAL,
+    'FATAL': FATAL,
+    'ERROR': ERROR,
+    'WARN': WARNING,
+    'WARNING': WARNING,
+    'INFO': INFO,
+    'DEBUG': DEBUG,
+    'NOTSET': NOTSET,
+}
+
+
+# catch *args and make to str
+def deco_args_to_str(func):
+    def wrapper(*args, **kwargs):
+        return func(" ".join(map(str, args)), **kwargs)
+
+    wrapper.__name__ = func.__name__
+    return wrapper
+
 
 class Logger:
     """wrapper class of logging module
@@ -51,6 +88,12 @@ class Logger:
         self.stream_handler.setFormatter(formatter)
         self.logger.addHandler(self.stream_handler)
 
+        self._fatal = deco_args_to_str(getattr(self.logger, 'fatal'))
+        self._error = deco_args_to_str(getattr(self.logger, 'error'))
+        self._warn = deco_args_to_str(getattr(self.logger, 'warn'))
+        self._info = deco_args_to_str(getattr(self.logger, 'info'))
+        self._debug = deco_args_to_str(getattr(self.logger, 'debug'))
+
     def __repr__(self):
         return self.__class__.__name__
 
@@ -63,7 +106,7 @@ class Logger:
                 self.logger.removeHandler(self.stream_handler)
 
             del self.logger
-        except BaseException as e:
+        except BaseException:
             pass
 
     def get_log(self, level='info'):
@@ -72,17 +115,23 @@ class Logger:
         :param level: level of logging
         :return: log function
         """
+        func = deco_args_to_str(getattr(self.logger, level))
+        return func
 
-        # catch *args and make to str
-        def deco(func):
-            def wrapper(*args):
-                return func(" ".join(map(str, args)))
+    def fatal(self, *args, **kwargs):
+        self._fatal(*args, **kwargs)
 
-            wrapper.__name__ = func.__name__
-            return wrapper
+    def error(self, *args, **kwargs):
+        self._error(*args, **kwargs)
 
-        func = getattr(self.logger, level)
-        return deco(func)
+    def warn(self, *args, **kwargs):
+        self._warn(*args, **kwargs)
+
+    def info(self, *args, **kwargs):
+        self._info(*args, **kwargs)
+
+    def debug(self, *args, **kwargs):
+        self._debug(*args, **kwargs)
 
 
 class StdoutOnlyLogger(Logger):
