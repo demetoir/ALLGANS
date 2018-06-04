@@ -84,8 +84,7 @@ class AutoEncoder(BaseAutoEncoder):
             stack.linear_block(256, relu)
             stack.linear_block(512, relu)
             stack.linear_block(self.X_flatten_size, sigmoid)
-            a = stack.last_layer
-            print(a.shape, self.Xs_shape)
+
             stack.reshape(self.Xs_shape)
 
         return stack.last_layer
