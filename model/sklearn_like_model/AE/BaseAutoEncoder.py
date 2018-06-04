@@ -1,18 +1,7 @@
-from data_handler.BaseDataset import BaseDataset
 from model.sklearn_like_model.BaseModel import BaseModel
 import numpy as np
 import tqdm
-
-
-class Dataset(BaseDataset):
-    def load(self, path, limit=None):
-        pass
-
-    def save(self):
-        pass
-
-    def preprocess(self):
-        pass
+from model.sklearn_like_model.DummyDataset import DummyDataset
 
 
 class BaseAutoEncoder(BaseModel):
@@ -61,7 +50,7 @@ class BaseAutoEncoder(BaseModel):
     def train(self, Xs, epoch=100, save_interval=None, batch_size=None):
         self.if_not_ready_to_train()
 
-        dataset = Dataset()
+        dataset = DummyDataset()
         dataset.add_data('Xs', Xs)
 
         if batch_size is None:

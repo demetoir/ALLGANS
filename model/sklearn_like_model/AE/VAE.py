@@ -1,4 +1,4 @@
-from model.sklearn_like_model.BaseAutoEncoder import BaseAutoEncoder
+from model.sklearn_like_model.AE.BaseAutoEncoder import BaseAutoEncoder
 from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import *
