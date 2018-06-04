@@ -349,3 +349,25 @@ def concat(values, axis, name="concat"):
 
 def flatten(input_, name='flatten'):
     return tf.layers.flatten(input_, name=name)
+
+
+def join_scope(*args, spliter='/'):
+    return spliter.join(map(str, args))
+
+
+def split_scope(scope, spliter='/'):
+    return str(scope).split(spliter)
+
+
+def get_scope():
+    return tf.get_variable_scope().name
+
+
+def collect_vars(scope):
+    return tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope=scope)
+
+
+def placeholder(dtype, shape, name):
+    if shape[0] == -1:
+        shape[0] = None
+    return tf.placeholder(dtype=dtype, shape=shape, name=name)
