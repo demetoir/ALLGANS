@@ -1,8 +1,7 @@
 from dict_keys.model_metadata_keys import *
 from util.Logger import Logger, StdoutOnlyLogger
-from util.misc_util import dump_json, load_json
+from util.misc_util import dump_json, load_json, time_stamp, check_path
 from env_settting import *
-from time import strftime, localtime
 import tensorflow as tf
 import os
 import sys
@@ -116,7 +115,7 @@ class BaseModel:
         self.input_shapes = input_shapes
         self.params = params
 
-        self.id = self.__str__() + '_' + strftime("%Y_%m_%d_%H_%M_%S", localtime())
+        self.id = self.__str__() + time_stamp()
         self.instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, self.id)
         self.instance_visual_result_folder_path = os.path.join(self.instance_path, VISUAL_RESULT_FOLDER)
         self.instance_source_folder_path = os.path.join(self.instance_path, 'src_code')
