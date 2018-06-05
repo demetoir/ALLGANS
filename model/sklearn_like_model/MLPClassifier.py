@@ -43,7 +43,7 @@ class MLPClassifier(BaseClassifierModel):
 
     @property
     def _metric_ops(self):
-        return self.loss_mean
+        return self.loss
 
     @property
     def _train_ops(self):
