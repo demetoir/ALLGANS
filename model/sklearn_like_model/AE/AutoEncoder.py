@@ -1,4 +1,4 @@
-from model.sklearn_like_model.BaseAutoEncoder import BaseAutoEncoder
+from model.sklearn_like_model.AE.BaseAutoEncoder import BaseAutoEncoder
 from util.Stacker import Stacker
 from util.tensor_ops import *
 from util.summary_func import *
@@ -17,6 +17,8 @@ class AutoEncoder(BaseAutoEncoder):
             'K_average_top_k_loss',
             'code_size',
             'z_size',
+            'encoder_net_shapes',
+            'decoder_net_shapes'
         ]
 
     @property
@@ -29,7 +31,7 @@ class AutoEncoder(BaseAutoEncoder):
 
     @property
     def _train_ops(self):
-        return [self.train_op]
+        return [self.train_op, self.op_inc_global_step]
 
     @property
     def _code_ops(self):
@@ -53,8 +55,10 @@ class AutoEncoder(BaseAutoEncoder):
         self.beta1 = 0.5
         self.L1_norm_lambda = 0.001
         self.K_average_top_k_loss = 10
-        self.code_size = 32
+        self.latent_code_size = 32
         self.z_size = 32
+        self.encoder_net_shapes = [512, 256, 128]
+        self.decoder_net_shapes = [128, 256, 512]
 
     def build_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
@@ -66,40 +70,39 @@ class AutoEncoder(BaseAutoEncoder):
         self.z_shape = [self.z_size]
         self.zs_shape = [None] + self.z_shape
 
-    def encoder(self, Xs, name='encoder'):
-        with tf.variable_scope(name):
+    def encoder(self, Xs, net_shapes, reuse=False, name='encoder'):
+        with tf.variable_scope(name, reuse=reuse):
             stack = Stacker(Xs)
             stack.flatten()
-            stack.linear_block(512, relu)
-            stack.linear_block(256, relu)
-            stack.linear_block(128, relu)
-            stack.linear_block(self.code_size, relu)
+            for shape in net_shapes:
+                stack.linear_block(shape, relu)
+
+            stack.linear_block(self.latent_code_size, relu)
 
         return stack.last_layer
 
-    def decoder(self, zs, reuse=False, name='decoder'):
+    def decoder(self, zs, net_shapes, reuse=False, name='decoder'):
         with tf.variable_scope(name, reuse=reuse):
             stack = Stacker(zs)
-            stack.linear_block(128, relu)
-            stack.linear_block(256, relu)
-            stack.linear_block(512, relu)
+            for shape in net_shapes:
+                stack.linear_block(shape, relu)
+
             stack.linear_block(self.X_flatten_size, sigmoid)
-            a = stack.last_layer
-            print(a.shape, self.Xs_shape)
             stack.reshape(self.Xs_shape)
 
         return stack.last_layer
 
     def build_main_graph(self):
-        self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
-        self.zs = tf.placeholder(tf.float32, self.zs_shape, name='zs')
+        self.Xs = placeholder(tf.float32, self.Xs_shape, name='Xs')
+        self.zs = placeholder(tf.float32, self.zs_shape, name='zs')
 
-        self.latent_code = self.encoder(self.Xs)
-        self.Xs_recon = self.decoder(self.latent_code)
-        self.Xs_gen = self.decoder(self.zs, reuse=True)
+        self.latent_code = self.encoder(self.Xs, self.encoder_net_shapes)
+        self.Xs_recon = self.decoder(self.latent_code, self.decoder_net_shapes)
+        self.Xs_gen = self.decoder(self.zs, self.decoder_net_shapes, reuse=True)
 
-        self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='encoder')
-        self.vars += tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='decoder')
+        head = get_scope()
+        self.vars = collect_vars(join_scope(head, 'encoder'))
+        self.vars += collect_vars(join_scope(head, 'decoder'))
 
     def build_loss_function(self):
         self.loss = tf.squared_difference(self.Xs, self.Xs_recon, name='loss')

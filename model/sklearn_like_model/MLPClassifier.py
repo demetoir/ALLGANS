@@ -43,7 +43,7 @@ class MLPClassifier(BaseClassifierModel):
 
     @property
     def _metric_ops(self):
-        return self.loss_mean
+        return self.loss
 
     @property
     def _train_ops(self):
@@ -69,10 +69,7 @@ class MLPClassifier(BaseClassifierModel):
         self.Ys_shape = [None] + self.Y_shape
         self.Y_size = self.Y_shape[0]
 
-    def classifier(self, Xs, net_shapes=None, name='classifier'):
-        if net_shapes is None:
-            net_shapes = self.net_shapes
-
+    def classifier(self, Xs, net_shapes, name='classifier'):
         with tf.variable_scope(name):
             layer = Stacker(flatten(Xs))
 
@@ -88,8 +85,9 @@ class MLPClassifier(BaseClassifierModel):
         self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name='Xs')
         self.Ys = tf.placeholder(tf.float32, self.Ys_shape, name='Ys')
 
-        self.logit, self.h = self.classifier(self.Xs)
-        self.vars = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope='classifier')
+        self.logit, self.h = self.classifier(self.Xs, self.net_shapes)
+
+        self.vars = collect_vars(join_scope(get_scope(), 'classifier'))
 
         self.predict_index = tf.cast(tf.argmax(self.h, 1, name="predicted_label"), tf.float32)
         self.label_index = onehot_to_index(self.Ys)

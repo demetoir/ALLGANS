@@ -1,8 +1,7 @@
 from dict_keys.model_metadata_keys import *
-from util.Logger import Logger, StdoutOnlyLogger
-from util.misc_util import dump_json, load_json
+from util.Logger import Logger
+from util.misc_util import dump_json, load_json, time_stamp, setup_directory
 from env_settting import *
-from time import strftime, localtime
 import tensorflow as tf
 import os
 import sys
@@ -101,11 +100,11 @@ class BaseModel:
         if logger_path is None, log ony stdout
         """
         self.root_path = root_path
+
         if logger_path is None:
-            self.logger = StdoutOnlyLogger(self.__class__.__name__)
+            self.log = Logger(self.__class__.__name__, LOG_PATH)
         else:
-            self.logger = Logger(self.__class__.__name__, logger_path)
-        self.log = self.logger.get_log()
+            self.log = Logger(self.__class__.__name__, logger_path)
 
         self.sess = None
         self.saver = None
@@ -116,8 +115,8 @@ class BaseModel:
         self.input_shapes = input_shapes
         self.params = params
 
-        self.id = self.__str__() + '_' + strftime("%Y_%m_%d_%H_%M_%S", localtime())
-        self.instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, self.id)
+        self.id = "_".join([self.__str__(), time_stamp()])
+        self.instance_path = os.path.join(INSTANCE_PATH, self.id)
         self.instance_visual_result_folder_path = os.path.join(self.instance_path, VISUAL_RESULT_FOLDER)
         self.instance_source_folder_path = os.path.join(self.instance_path, 'src_code')
         self.instance_summary_folder_path = os.path.join(self.instance_path, 'summary')
@@ -145,14 +144,13 @@ class BaseModel:
     def __del__(self):
         # TODO this del need hack
         try:
+            self.close_session()
             # reset tensorflow graph
             tf.reset_default_graph()
-            self.close_session()
 
             del self.sess
             del self.root_path
             del self.log
-            del self.logger
         except BaseException as e:
             pass
 
@@ -160,47 +158,13 @@ class BaseModel:
     def hyper_param_key(self):
         return []
 
-    def check_setup(self):
-        # instance_path = os.path.join(self.root_path, INSTANCE_FOLDER, id)
-
-        if not os.path.exists(self.instance_path):
-            return False
-
-        if not os.path.exists(self.instance_visual_result_folder_path):
-            return False
-
-        if not os.path.exists(self.instance_source_folder_path):
-            return False
-
-        if not os.path.exists(self.instance_summary_folder_path):
-            return False
-
-        if not os.path.exists(self.save_folder_path):
-            return False
-        return True
-
     def setup_model(self):
-        self.log('init directory')
-        if not os.path.exists(self.instance_path):
-            os.mkdir(self.instance_path)
-
-        if not self.instance_visual_result_folder_path:
-            os.mkdir(self.instance_visual_result_folder_path)
-
-        if not os.path.exists(self.instance_source_folder_path):
-            os.mkdir(self.instance_source_folder_path)
-
-        if not os.path.exists(self.instance_summary_folder_path):
-            os.mkdir(self.instance_summary_folder_path)
-
-        if not os.path.exists(self.save_folder_path):
-            os.mkdir(self.save_folder_path)
-
-        # self.log('dump instance source code')
-        # try:
-        #     copy(inspect.getsourcefile(self.instance_class_name), self.instance_source_path)
-        # except IOError as e:
-        #     print(e)
+        self.log.debug('init directory')
+        setup_directory(self.instance_path)
+        setup_directory(self.instance_visual_result_folder_path)
+        setup_directory(self.instance_source_folder_path)
+        setup_directory(self.instance_summary_folder_path)
+        setup_directory(self.save_folder_path)
 
     def load_metadata(self, path):
         self.metadata = load_json(path)
@@ -217,55 +181,15 @@ class BaseModel:
         self.input_shapes = self.metadata[MODEL_METADATA_KEY_INPUT_SHAPES]
 
     def save_metadata(self, path):
-        self.log('dump metadata')
+        self.log.debug('dump metadata')
         dump_json(self.metadata, path)
-
-    def build(self):
-        try:
-            with tf.variable_scope("misc_ops"):
-                self.log("build_misc_ops")
-                self.build_misc_ops()
-
-            with tf.variable_scope("hyper_parameter"):
-                self.log('build_hyper_parameter')
-                self.hyper_parameter()
-                self.build_hyper_parameter(self.params)
-
-            self.log('build_input_shapes')
-
-            if self.input_shapes is None:
-                raise AttributeError("input_shapes not feed")
-            self.build_input_shapes(self.input_shapes)
-
-            self.log('build_main_graph')
-            self.build_main_graph()
-
-            with tf.variable_scope('loss_function'):
-                self.log('build_loss_function')
-                self.build_loss_function()
-
-            with tf.variable_scope('train_ops'):
-                self.log('build_train_ops')
-                self.build_train_ops()
-
-            with tf.variable_scope('summary_ops'):
-                self.log('build_summary_ops')
-                self.build_summary_ops()
-
-        except Exception:
-            exc_type, exc_value, exc_traceback = sys.exc_info()
-            self.log("\n", "".join(traceback.format_tb(exc_traceback)))
-            raise ModelBuildFailError("ModelBuildFailError")
-        else:
-            self.is_built = True
-            self.log("build success")
 
     def open_session(self):
         if self.sess is None:
             self.sess = tf.Session()
             self.saver = tf.train.Saver()
             self.sess.run(tf.global_variables_initializer())
-            self.summary_writer = tf.summary.FileWriter(self.instance_summary_folder_path, self.sess.graph)
+            # self.summary_writer = tf.summary.FileWriter(self.instance_summary_folder_path, self.sess.graph)
         else:
             raise Exception("fail to open tf session")
 
@@ -277,7 +201,49 @@ class BaseModel:
             self.saver = None
 
         if self.summary_writer is not None:
-            self.summary_writer.close()
+            pass
+            # self.summary_writer.close()
+
+    def build(self):
+        try:
+            with tf.variable_scope(str(self.id)):
+                with tf.variable_scope("misc_ops"):
+                    self.log.debug("build_misc_ops")
+                    self.build_misc_ops()
+
+                with tf.variable_scope("hyper_parameter"):
+                    self.log.debug('build_hyper_parameter')
+                    self.hyper_parameter()
+                    self.build_hyper_parameter(self.params)
+
+                self.log.debug('build_input_shapes')
+
+                if self.input_shapes is None:
+                    raise AttributeError("input_shapes not feed")
+                self.build_input_shapes(self.input_shapes)
+
+                self.log.debug('build_main_graph')
+                self.build_main_graph()
+
+                with tf.variable_scope('loss_function'):
+                    self.log.debug('build_loss_function')
+                    self.build_loss_function()
+
+                with tf.variable_scope('train_ops'):
+                    self.log.debug('build_train_ops')
+                    self.build_train_ops()
+
+                with tf.variable_scope('summary_ops'):
+                    self.log.debug('build_summary_ops')
+                    self.build_summary_ops()
+
+        except Exception:
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            self.log.error("\n", "".join(traceback.format_tb(exc_traceback)))
+            raise ModelBuildFailError("ModelBuildFailError")
+        else:
+            self.is_built = True
+            self.log.info("build success")
 
     def build_input_shapes(self, input_shapes):
         """load input shapes for tensor placeholder
@@ -368,15 +334,14 @@ class BaseModel:
         pass
 
     def save(self):
-        if not self.check_setup():
-            self.setup_model()
-            self.save_metadata(self.metadata_path)
+        self.setup_model()
+        self.save_metadata(self.metadata_path)
 
         if self.sess is None:
             self.open_session()
         self.saver.save(self.sess, self.check_point_path)
 
-        self.log("saved at {}".format(self.instance_path))
+        self.log.info("saved at {}".format(self.instance_path))
 
         return self.instance_path
 

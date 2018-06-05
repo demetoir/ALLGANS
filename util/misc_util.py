@@ -25,7 +25,7 @@ def dump_pickle(obj, path):
     :param obj: target data to dump
     """
     head, _ = os.path.split(path)
-    check_path(head)
+    setup_file(head)
     with open(path, 'wb') as f:
         pickle.dump(obj, f)
 
@@ -124,7 +124,7 @@ def dump_json(obj, path):
     :param path: path to dump
     """
     head, _ = os.path.split(path)
-    check_path(head)
+    setup_file(head)
     with open(path, 'w') as f:
         json.dump(obj, f, indent=4, separators=(',', ': '))
 
@@ -214,17 +214,30 @@ def time_stamp():
 
 
 def check_path(path):
-    tail = None
-    if os.path.isfile(path):
-        path, tail = os.path.split(path)
+    # if os.path.isfile(path):
+    #     path, tail = os.path.split(path)
 
-    if not os.path.isdir(path):
-        if tail is not None:
-            path = os.path.join(path, tail)
-        raise IsADirectoryError("{} is not directory".format(path))
+    # if not os.path.isdir(path):
+    #     if tail is not None:
+    #         path = os.path.join(path, tail)
+    #     raise IsADirectoryError("{} is not directory".format(path))
 
+    head, _ = os.path.split(path)
+    if not os.path.exists(head):
+        os.makedirs(head)
     if not os.path.exists(path):
-        os.mkdir(path)
+        os.makedirs(path)
+
+
+def setup_file(path):
+    head, _ = os.path.split(path)
+    if not os.path.exists(head):
+        os.makedirs(head)
+
+
+def setup_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
 
 def open_chrome(url):

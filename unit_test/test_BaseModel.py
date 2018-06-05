@@ -1,192 +1,608 @@
+from model.sklearn_like_model.AE.AAE import AAE
+from model.sklearn_like_model.AE.CVAE import CVAE
+from model.sklearn_like_model.AE.DVAE import DVAE
+from model.sklearn_like_model.AE.VAE import VAE
+from model.sklearn_like_model.AE.DAE import DAE
+from model.sklearn_like_model.MLPClassifier import MLPClassifier
+from model.sklearn_like_model.AE.AutoEncoder import AutoEncoder
 from data_handler.DatasetLoader import DatasetLoader
 import numpy as np
 
-GAN = {
-    "model": "GAN",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('image_tile', 100),
-        ('log_GAN_loss', 20),
-    ],
-    "epoch": 40
 
-}
+class test_MLPClassifier:
+    def __init__(self):
+        self.test()
 
-C_GAN = {
-    "model": "C_GAN",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('image_C_GAN', 100),
-        ('log_C_GAN_loss', 20),
-    ],
-    "epoch": 40
+    def test(self):
+        dataset = DatasetLoader().load_dataset("titanic")
+        input_shapes = dataset.train_set.input_shapes
 
-}
+        Xs, Ys = dataset.train_set.full_batch(
+            batch_keys=["Xs", "Ys"],
+        )
 
-info_GAN = {
-    "model": "InfoGAN",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('image_tile', 100),
-        ('log_GAN_loss', 20),
-    ],
-    "epoch": 40
+        model = MLPClassifier(input_shapes)
+        model.build()
+        model.train(Xs, Ys, epoch=1)
 
-}
+        Xs, Ys = dataset.train_set.next_batch(
+            5,
+            batch_keys=["Xs", "Ys"],
+        )
 
-AE = {
-    "model": "AE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AE', 100),
-        ('image_AE', 100),
-    ],
-    "epoch": 40
+        predict = model.predict(Xs)
+        print("predict {}".format(predict))
 
-}
+        loss = model.metric(Xs, Ys)
+        print("loss {}".format(loss))
 
-VAE = {
-    "model": "VAE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AE', 100),
-        ('image_AE', 100),
-    ],
-    "epoch": 40
+        proba = model.proba(Xs)
+        print('prob {}'.format(proba))
 
-}
+        score = model.score(Xs, Ys)
+        print('score {}'.format(score))
 
-AAE = {
-    "model": "AAE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AAE', 100),
-        ('image_AE', 100),
-        ('image_AAE_Ys', 100),
-    ],
-    "epoch": 40
+        path = model.save()
+        model = MLPClassifier()
+        model.load(path)
 
-}
+        predict = model.predict(Xs)
+        print("predict {}".format(predict))
 
-DAE = {
-    "model": "DAE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AAE', 100),
-        ('image_DAE', 100),
-    ],
-    "epoch": 40
+        loss = model.metric(Xs, Ys)
+        print("loss {}".format(loss))
 
-}
+        proba = model.proba(Xs)
+        print('prob {}'.format(proba))
 
-DVAE = {
-    "model": "DAE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AAE', 100),
-        ('image_DAE', 100),
-    ],
-    "epoch": 40
-
-}
-
-CVAE = {
-    "model": "CVAE",
-    "dataset": "MNIST",
-    "visuliziers": [
-        ('log_AE', 100),
-        ('image_AE', 100),
-        ('image_CVAE_Ys', 100),
-    ],
-    "epoch": 40
-
-}
-
-MLPClassifier = {
-    "model": "MLPClassifier",
-    "dataset": "titanic",
-    "visuliziers": [
-        ('log_titanic_loss', 25),
-        ('log_confusion_matrix', 400),
-    ],
-    "epoch": 400
-
-}
+        score = model.score(Xs, Ys)
+        print('score {}'.format(score))
 
 
-def test_MLPClassifier():
-    dataset = DatasetLoader().load_dataset("titanic")
-    input_shapes = dataset.train_set.input_shapes
-    from model.sklearn_like_model.MLPClassifier import MLPClassifier
-    # model = ModelClassLoader.load_model_class('MLPClassifier')
+class test_AE:
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
 
-    Xs, Ys = dataset.train_set.full_batch(
-        batch_keys=["Xs", "Ys"],
-    )
+    def test_mnist(self):
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
 
-    model = MLPClassifier(input_shapes)
-    model.build()
-    model.train(Xs, Ys, epoch=10)
-    path = model.save()
+        model = AutoEncoder(dataset.input_shapes)
+        model.build()
 
-    Xs, Ys = dataset.train_set.next_batch(
-        10,
-        batch_keys=["Xs", "Ys"],
-    )
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
 
-    predict = model.predict(Xs)
-    print(predict)
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
 
-    loss = model.metric(Xs, Ys)
-    print(loss)
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
 
-    proba = model.proba(Xs)
-    print(proba)
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
 
-    score = model.score(Xs, Ys)
-    print(score)
+        path = model.save()
 
-    model = MLPClassifier(input_shapes)
-    model.load(path)
+        model = AutoEncoder()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+    def test_titanic(self):
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+
+        model = AutoEncoder(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = AutoEncoder()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
 
 
-def test_sklike_AE_test():
-    from data_handler.DatasetLoader import DatasetLoader
-    from model.sklearn_like_model.AutoEncoder import AutoEncoder
+class test_VAE:
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
 
-    dataset = DatasetLoader().load_dataset("MNIST")
-    dataset = dataset.train_set
+    def test_mnist(self):
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
 
-    model = AutoEncoder(dataset.input_shapes)
-    model.build()
+        model = VAE(dataset.input_shapes)
+        model.build()
 
-    Xs = dataset.full_batch(['Xs'])
-    model.train(Xs, epoch=1)
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
 
-    sample_X = Xs[:2]
-    code = model.code(sample_X)
-    print("code {code}".format(code=code))
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
 
-    recon = model.recon(sample_X)
-    print("recon {recon}".format(recon=recon))
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
 
-    loss = model.metric(Xs)
-    loss = np.mean(loss)
-    print("loss {:.4}".format(loss))
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
 
-    path = model.save()
+        path = model.save()
 
-    model = AutoEncoder()
-    model.load(path)
-    print('model reloaded')
+        model = VAE()
+        model.load(path)
+        print('model reloaded')
 
-    sample_X = Xs[:2]
-    code = model.code(sample_X)
-    print("code {code}".format(code=code))
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
 
-    recon = model.recon(sample_X)
-    print("recon {recon}".format(recon=recon))
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
 
-    loss = model.metric(Xs)
-    loss = np.mean(loss)
-    print("loss {:.4}".format(loss))
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+    def test_titanic(self):
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+
+        model = VAE(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = VAE()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+
+class test_DAE:
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
+
+    def test_mnist(self):
+        class_ = DAE
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+    def test_titanic(self):
+        class_ = DAE
+
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+
+class test_CVAE:
+    class_ = CVAE
+
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
+
+    def test_mnist(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
+        Xs, Ys = dataset.full_batch(['Xs', 'Ys'])
+        sample_X = Xs[:2]
+        sample_Y = Ys[:2]
+
+        model = class_(dataset.input_shapes)
+        model.build()
+        model.train(Xs, Ys, epoch=1)
+
+        code = model.code(sample_X, sample_Y)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        code = model.code(sample_X, sample_Y)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+    def test_titanic(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+        Xs, Ys = dataset.full_batch(['Xs', 'Ys'])
+        sample_X = Xs[:2]
+        sample_Y = Ys[:2]
+
+        model = class_(dataset.input_shapes)
+        model.build()
+        model.train(Xs, Ys, epoch=1)
+
+        code = model.code(sample_X, sample_Y)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        code = model.code(sample_X, sample_Y)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+
+class test_DVAE:
+    class_ = DVAE
+
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
+
+    def test_mnist(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+    def test_titanic(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        Xs = dataset.full_batch(['Xs'])
+        model.train(Xs, epoch=1)
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        sample_X = Xs[:2]
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(Xs)
+        loss = np.mean(loss)
+        print("loss {:.4}".format(loss))
+
+
+class test_AAE:
+    class_ = AAE
+
+    def __init__(self):
+        self.test_mnist()
+        self.test_titanic()
+
+    def test_mnist(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("MNIST")
+        dataset = dataset.train_set
+        Xs, Ys = dataset.full_batch(['Xs', 'Ys'])
+        sample_X = Xs[:2]
+        sample_Y = Ys[:2]
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        model.train(Xs, Ys, epoch=1)
+
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        print("loss {}".format(loss))
+
+        # generate(self, zs, Ys)
+
+        proba = model.proba(sample_X)
+        print("proba {}".format(proba))
+
+        predict = model.predict(sample_X)
+        print("predict {}".format(predict))
+
+        score = model.score(sample_X, sample_Y)
+        print("score {}".format(score))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        print("loss {}".format(loss))
+
+        # generate(self, zs, Ys)
+
+        proba = model.proba(sample_X)
+        print("proba {}".format(proba))
+
+        predict = model.predict(sample_X)
+        print("predict {}".format(predict))
+
+        score = model.score(sample_X, sample_Y)
+        print("score {}".format(score))
+
+    def test_titanic(self):
+        class_ = self.class_
+        dataset = DatasetLoader().load_dataset("titanic")
+        dataset = dataset.train_set
+        Xs, Ys = dataset.full_batch(['Xs', 'Ys'])
+        sample_X = Xs[:2]
+        sample_Y = Ys[:2]
+
+        model = class_(dataset.input_shapes)
+        model.build()
+
+        model.train(Xs, Ys, epoch=1)
+
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        print("loss {:}".format(loss))
+
+        # generate(self, zs, Ys)
+
+        proba = model.proba(sample_X)
+        print("proba {}".format(proba))
+
+        predict = model.predict(sample_X)
+        print("predict {}".format(predict))
+
+        score = model.score(sample_X, sample_Y)
+        print("score {}".format(score))
+
+        path = model.save()
+
+        model = class_()
+        model.load(path)
+        print('model reloaded')
+
+        code = model.code(sample_X)
+        print("code {code}".format(code=code))
+
+        recon = model.recon(sample_X, sample_Y)
+        print("recon {recon}".format(recon=recon))
+
+        loss = model.metric(sample_X, sample_Y)
+        print("loss {:}".format(loss))
+
+        # generate(self, zs, Ys)
+
+        proba = model.proba(sample_X)
+        print("proba {}".format(proba))
+
+        predict = model.predict(sample_X)
+        print("predict {}".format(predict))
+
+        score = model.score(sample_X, sample_Y)
+        print("score {}".format(score))
+
+
+if __name__ == '__main__':
+    pass
