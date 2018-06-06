@@ -161,9 +161,12 @@ class ClassifierPack(BaseClass):
         "LightGBM": LightGBM,
     }
 
-    def __init__(self):
+    def __init__(self, pack_keys=None):
+        if pack_keys is None:
+            pack_keys = self.class_pack.keys()
+
         self.pack = {}
-        for key in self.class_pack:
+        for key in pack_keys:
             cls = self.class_pack[key]
             obj = cls()
             setattr(self, cls.__name__, obj)
@@ -200,7 +203,7 @@ class ClassifierPack(BaseClass):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.predict(Xs)
+            result[key] = clf.predict(Xs)
         return result
 
     def fit(self, Xs, Ys, Ys_type=None):
@@ -212,14 +215,14 @@ class ClassifierPack(BaseClass):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.score(Xs, Ys, Ys_type=Ys_type)
+            result[key] = clf.score(Xs, Ys, Ys_type=Ys_type)
         return result
 
     def proba(self, Xs, transpose_shape=True):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.proba(Xs, transpose_shape=transpose_shape)
+            result[key] = clf.proba(Xs, transpose_shape=transpose_shape)
         return result
 
     def import_params(self, params_pack):
