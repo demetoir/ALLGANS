@@ -1,6 +1,5 @@
 from model.sklearn_like_model.BaseModel import BaseModel
 import numpy as np
-import tqdm
 from model.sklearn_like_model.DummyDataset import DummyDataset
 
 
@@ -60,7 +59,8 @@ class BaseAutoEncoder(BaseModel):
         iter_per_epoch = dataset.size // batch_size
         self.log.info("train epoch {}, iter/epoch {}".format(epoch, iter_per_epoch))
 
-        for e in tqdm.tqdm(range(epoch)):
+        for e in range(epoch):
+            dataset.shuffle()
             for i in range(iter_per_epoch):
                 iter_num += 1
 
