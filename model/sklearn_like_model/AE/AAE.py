@@ -1,5 +1,3 @@
-from tqdm import tqdm, trange
-
 from model.sklearn_like_model.BaseModel import BaseModel
 from model.sklearn_like_model.DummyDataset import DummyDataset
 from util.Stacker import Stacker
@@ -298,19 +296,37 @@ class AAE(BaseModel):
         iter_per_epoch = dataset.size // batch_size
         self.log.info("train epoch {}, iter/epoch {}".format(epoch, iter_per_epoch))
 
-        for e in trange(epoch, desc='epoch', position=0):
-            for i in trange(iter_per_epoch, desc='iter', position=1):
+        for e in range(epoch):
+            dataset.shuffle()
+            total_AE = 0
+            total_G_gauss = 0
+            total_G_cate = 0
+            total_D_gauss = 0
+            total_D_cate = 0
+            total_clf = 0
+            for i in range(iter_per_epoch):
                 iter_num += 1
 
                 Xs, Ys = dataset.next_batch(batch_size, batch_keys=['Xs', 'Ys'])
                 # print([batch_size, self.z_size])
                 zs = self.get_z_noise([batch_size, self.z_size])
                 self.sess.run(self._train_ops, feed_dict={self._Xs: Xs, self._Ys: Ys, self._zs: zs})
+                loss = self.sess.run(self._metric_ops, feed_dict={self._Xs: Xs, self._Ys: Ys, self._zs: zs})
 
+                loss_AE, loss_G_gauss, loss_G_cate, loss_D_gauss, loss_D_cate, loss_clf = loss
+                total_AE += np.sum(loss_AE) / dataset.size
+                total_G_gauss += np.sum(loss_G_gauss) / dataset.size
+                total_G_cate += np.sum(loss_G_cate) / dataset.size
+                total_D_gauss += np.sum(loss_D_gauss) / dataset.size
+                total_D_cate += np.sum(loss_D_cate) / dataset.size
+                total_clf += np.sum(loss_clf) / dataset.size
+
+            self.log.info(
+                "e:{} loss AE={}, G_gauss={}, G_cate={}, D_gauss={}, D_cate={}, "
+                "clf={}".format(e, total_AE, total_G_gauss, total_G_cate, total_D_gauss, total_D_cate, total_clf))
             # Xs, Ys = dataset.next_batch(batch_size, batch_keys=['Xs', 'Ys'], look_up=False)
             # zs = self.get_z_noise([batch_size, self.z_size])
             # loss = self.sess.run(self._metric_ops, feed_dict={self._Xs: Xs, self._Ys: Ys, self._zs: zs})
-            # self.log.info("e:{e} loss : {loss}".format(e=e, loss=loss))
 
             if save_interval is not None and e % save_interval == 0:
                 self.save()
