@@ -7,6 +7,14 @@ import numpy as np
 import tensorflow as tf
 
 
+class TrainFailError(BaseException):
+    pass
+
+
+class InputShapeError(BaseException):
+    pass
+
+
 class GAN(BaseModel):
     def hyper_param_key(self):
         return [
@@ -48,9 +56,11 @@ class GAN(BaseModel):
     def hyper_parameter(self):
         self.n_noise = 256
         self.batch_size = 64
-        self.learning_rate = 0.0001
-        self.D_net_shape = (512, 512)
-        self.G_net_shape = (512, 512)
+        self.learning_rate = 0.0002
+        self.D_net_shape = (128, 128)
+        self.G_net_shape = (128, 128)
+        self.D_learning_rate = 0.0001
+        self.G_learning_rate = 0.0001
 
     def build_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
@@ -124,10 +134,10 @@ class GAN(BaseModel):
         self.G_loss_mean = tf.reduce_mean(self.G_loss)
 
     def build_train_ops(self):
-        self.train_D = tf.train.AdamOptimizer(learning_rate=self.learning_rate * 0.1) \
+        self.train_D = tf.train.AdamOptimizer(learning_rate=self.D_learning_rate) \
             .minimize(self.D_loss, var_list=self.D_vals)
 
-        self.train_G = tf.train.AdamOptimizer(learning_rate=self.learning_rate) \
+        self.train_G = tf.train.AdamOptimizer(learning_rate=self.G_learning_rate) \
             .minimize(self.G_loss, var_list=self.G_vals)
 
     def get_z_noise(self, shape):
@@ -147,7 +157,9 @@ class GAN(BaseModel):
         self.log.info("train epoch {}, iter/epoch {}".format(epoch, iter_per_epoch))
 
         for e in range(epoch):
-            dataset.shuffle()
+            if shuffle:
+                dataset.shuffle()
+
             total_G = 0
             total_D = 0
             for i in range(iter_per_epoch):
@@ -156,8 +168,13 @@ class GAN(BaseModel):
                 Xs = dataset.next_batch(batch_size)
                 zs = self.get_z_noise([batch_size, self.n_noise])
                 self.sess.run(self._train_ops, feed_dict={self._Xs: Xs, self._zs: zs})
+
                 loss_D, loss_G = self.sess.run([self.D_loss_mean, self.G_loss_mean],
                                                feed_dict={self._Xs: Xs, self._zs: zs})
+
+                if np.isnan(loss_D) or np.isnan(loss_G):
+                    self.log.error('loss is nan D loss={}, G loss={}'.format(loss_D, loss_G))
+                    raise TrainFailError('loss is nan D loss={}, G loss={}'.format(loss_D, loss_G))
 
                 # self.log.info("D={} G={}".format(loss_D, loss_G))
                 total_D += loss_D / iter_per_epoch
