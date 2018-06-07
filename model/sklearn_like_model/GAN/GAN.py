@@ -64,23 +64,7 @@ class GAN(BaseModel):
 
     def build_input_shapes(self, input_shapes):
         self.X_batch_key = 'Xs'
-        X_shape = input_shapes[self.X_batch_key]
-        if len(X_shape) == 3:
-            self.X_shape = X_shape
-            H, W, C = X_shape
-            self.input_size = W * H * C
-            self.input_w = W
-            self.input_h = H
-            self.input_c = C
-        elif len(X_shape) == 2:
-            self.X_shape = X_shape + [1]
-            H, W = X_shape
-            self.input_size = W * H
-            self.input_w = W
-            self.input_h = H
-            self.input_c = 1
-        elif len(X_shape) == 1:
-            self.X_shape = X_shape
+        self.X_shape = input_shapes[self.X_batch_key]
         self.Xs_shape = [None] + self.X_shape
         self.X_flatten_size = reduce(lambda x, y: x * y, self.X_shape)
 
@@ -113,11 +97,11 @@ class GAN(BaseModel):
         return layer.last_layer
 
     def build_main_graph(self):
-        self.Xs = placeholder(tf.float32, self.Xs_shape, name="Xs")
-        self.zs = placeholder(tf.float32, self.zs_shape, name="zs")
+        self.Xs = placeholder(tf.float32, self.Xs_shape, "Xs")
+        self.zs = placeholder(tf.float32, self.zs_shape, "zs")
 
         self.G = self.generator(self.zs, self.G_net_shape)
-        self.Xs_gen = self.G
+        self.Xs_gen = tf.identity(self.G, 'Xs_gen')
         self.D_real = self.discriminator(self.Xs, self.D_net_shape)
         self.D_gen = self.discriminator(self.Xs_gen, self.D_net_shape, reuse=True)
 
@@ -125,8 +109,8 @@ class GAN(BaseModel):
         self.D_vals = collect_vars(join_scope(get_scope(), 'discriminator'))
 
     def build_loss_function(self):
-        self.D_real_loss = tf.identity(self.D_real, name='loss_D_real')
-        self.D_gen_loss = tf.identity(self.D_gen, name='loss_D_gen')
+        self.D_real_loss = tf.identity(self.D_real, 'loss_D_real')
+        self.D_gen_loss = tf.identity(self.D_gen, 'loss_D_gen')
 
         self.D_loss = tf.identity(-tf.log(self.D_real) - tf.log(1. - self.D_gen), name='loss_D')
         self.G_loss = tf.identity(-tf.log(self.D_gen), name='loss_G')
