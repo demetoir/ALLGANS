@@ -1,5 +1,6 @@
 from sklearn_like_toolkit.sklearn_wrapper import BaseSklearnClassifier
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX
+import warnings
 
 
 class XGBoost(BaseSklearnClassifier):
@@ -45,7 +46,6 @@ class XGBoost(BaseSklearnClassifier):
 
     def __init__(self, **params):
         super().__init__(**params)
-        import warnings
         warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
         # params.update({"tree_method": 'gpu_hist'})
         # params.update({"tree_method": 'hist'})
