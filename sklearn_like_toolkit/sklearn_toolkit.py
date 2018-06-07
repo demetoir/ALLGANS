@@ -176,12 +176,15 @@ class ClassifierPack(BaseClass):
         self.log = self.logger.get_log()
 
     def param_search(self, train_xs, train_ys, test_xs, test_ys):
-        for key in self.class_pack:
+        for key in self.pack:
             cls = self.class_pack[key]
             obj = cls()
 
             optimizer = ParamOptimizer(obj, obj.tuning_grid)
             optimizer.optimize(train_xs, test_xs, train_ys, test_ys)
+
+            setattr(self, cls.__name__, optimizer.best_estimator)
+            self.pack[key] = optimizer.best_estimator
 
             path = os.path.join('.', 'param_search_result')
             if not os.path.exists(path):
@@ -194,8 +197,6 @@ class ClassifierPack(BaseClass):
             self.log("top 5 result")
             for result in optimizer.top_k_result():
                 self.log(pprint.pformat(result))
-
-            setattr(self, cls.__name__, optimizer.best_estimator)
 
         self.log(pprint.pformat(self.__dict__))
 
