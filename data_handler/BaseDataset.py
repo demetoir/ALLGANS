@@ -314,6 +314,8 @@ class BaseDataset(metaclass=MetaDataset):
             a_set.add_data(key, self.data[key][:index])
             b_set.add_data(key, self.data[key][index:])
 
+        a_set.batch_keys = self.data.keys()
+        b_set.batch_keys = self.data.keys()
         if shuffle:
             a_set.shuffle()
             b_set.shuffle()
