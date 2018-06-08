@@ -3,6 +3,7 @@ import pprint
 import sklearn
 import progressbar
 
+from env_settting import SKLEARN_PARAMS_SAVE_PATH
 from sklearn_like_toolkit.base import BaseSklearn, BaseClass
 from sklearn_like_toolkit.lightGBM_wrapper import LightGBM
 from sklearn_like_toolkit.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, skBernoulli_NB, skMultinomial_NB, \
@@ -10,6 +11,7 @@ from sklearn_like_toolkit.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, sk
     skRBF_SVM, skGaussianProcess
 from sklearn_like_toolkit.xgboost_wrapper import XGBoost
 from util.Logger import StdoutOnlyLogger
+from util.misc_util import time_stamp, dump_pickle, load_pickle, setup_directory
 from util.numpy_utils import reformat_np_arr
 
 
@@ -173,7 +175,9 @@ class ClassifierPack(BaseClass):
             self.pack[key] = obj
 
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
-        self.log = self.logger.get_log()
+        self.log = self.logger
+
+        self.params_save_path = SKLEARN_PARAMS_SAVE_PATH
 
     def param_search(self, train_xs, train_ys, test_xs, test_ys):
         for key in self.pack:
@@ -191,14 +195,12 @@ class ClassifierPack(BaseClass):
                 os.mkdir(path)
             file_name = str(obj) + '.csv'
 
-            self.log("param search result csv saved at %s" % os.path.join(path, file_name))
+            self.log.info("param search result csv saved at %s" % os.path.join(path, file_name))
             optimizer.result_to_csv(os.path.join(path, file_name))
 
-            self.log("top 5 result")
+            self.log.info("top 5 result")
             for result in optimizer.top_k_result():
-                self.log(pprint.pformat(result))
-
-        self.log(pprint.pformat(self.__dict__))
+                self.log.info(pprint.pformat(result))
 
     def predict(self, Xs):
         result = {}
@@ -237,3 +239,23 @@ class ClassifierPack(BaseClass):
             clf = self.pack[key]
             params[key] = clf.get_params()
         return params
+
+    def save_params(self, path=None):
+
+        if path is None:
+            path = os.path.join(self.params_save_path, time_stamp())
+
+        params = self.export_params()
+
+        pickle_path = path + '.pkl'
+        dump_pickle(params, pickle_path)
+
+        self.log.info('save params at {}'.format([pickle_path]))
+
+        return pickle_path
+
+    def load_params(self, path):
+        self.log.info('load params from {}'.format(path))
+        params = load_pickle(path)
+
+        self.import_params(params)
