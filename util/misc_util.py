@@ -258,3 +258,7 @@ def print_lines(lines, max_line=50, split_print=True):
             input("remain {} lines, press key to continue".format(remain_lines))
 
     print("print lines end\n")
+
+
+def path_join(*args):
+    return os.path.join(*args)
