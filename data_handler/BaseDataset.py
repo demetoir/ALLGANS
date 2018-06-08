@@ -322,12 +322,13 @@ class BaseDataset(metaclass=MetaDataset):
 
     def merge(self, a_set, b_set):
         """merge to dataset"""
-        new_set = self.__class__()
-        if a_set.keys() is not b_set.keys():
+        if set(a_set.batch_keys) is set(b_set.batch_keys):
             raise KeyError("dataset can not merge, key does not match")
 
-        for key in a_set:
-            new_set.add_data(key, a_set.data[key] + b_set.data[key])
+        new_set = a_set.__class__()
+        for key in a_set.batch_keys:
+            concated = np.concatenate((a_set.data[key], b_set.data[key]), axis=0)
+            new_set.add_data(key, concated)
 
         return new_set
 
