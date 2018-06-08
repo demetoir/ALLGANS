@@ -375,6 +375,11 @@ class DatasetCollection:
         self.train_set = train_set
         self.test_set = test_set
         self.validation_set = validation_set
+        self.set = {
+            'train': self.train_set,
+            'validation': self.validation_set,
+            'test': self.test_set
+        }
 
     def load(self, path, **kwargs):
         if self.train_set is not None:
