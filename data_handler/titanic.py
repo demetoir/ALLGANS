@@ -1,3 +1,6 @@
+from pprint import pprint
+
+from util.misc_util import path_join
 from util.numpy_utils import *
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
 import os
@@ -216,7 +219,17 @@ class titanic(DatasetCollection):
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
         self.train_set.shuffle()
-        self.test_set.shuffle()
-        ratio = (7, 3)
-        self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
-        self.log("split train set to train and validation set ratio=%s" % str(ratio))
+
+        rate = (7, 3)
+        self.split('train', 'train', 'validation', (7, 3))
+
+        self.log("split train set to train and validation set ratio=%s" % str(rate))
+
+    def to_kaggle_submit_csv(self, path, Ys, index=None):
+        df = pd.DataFrame()
+
+        df[PASSENGERID] = [i for i in range(892, 1309 + 1)]
+        df[SURVIVED] = Ys
+
+        pprint(df.head())
+        df.to_csv(path_join('.', 'submit.csv'), index=False)
