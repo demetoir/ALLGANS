@@ -210,6 +210,8 @@ class titanic(DatasetCollection):
         self.train_set = titanic_train()
         self.test_set = titanic_test()
         self.validation_set = None
+        self.set['train'] = self.train_set
+        self.set['test'] = self.test_set
 
     def load(self, path, **kwargs):
         super().load(path, **kwargs)
