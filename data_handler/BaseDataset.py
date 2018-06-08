@@ -398,3 +398,24 @@ class DatasetCollection:
             self.test_set.shuffle()
         if self.validation_set is not None:
             self.validation_set.shuffle()
+
+    def split(self, from_key, a_key, b_key, rate):
+        from_set = self.set[from_key]
+        self.set.pop(from_key)
+
+        a_set, b_set = from_set.split(rate)
+        self.set[a_key] = a_set
+        self.set[b_key] = b_set
+        return a_set, b_set
+
+    def merge_shuffle(self, a_key, b_key, rate):
+        a_set = self.set[a_key]
+        b_set = self.set[b_key]
+
+        merge_set = a_set.merge(a_set, b_set)
+        merge_set.shuffle()
+        a_set, b_set = merge_set.split(rate, shuffle=True)
+
+        self.set[a_key] = a_set
+        self.set[b_key] = b_set
+        return a_set, b_set
