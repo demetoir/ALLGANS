@@ -1,5 +1,5 @@
 import os
-from pprint import pprint, pformat
+from pprint import pformat
 import sklearn
 import progressbar
 
@@ -98,17 +98,16 @@ class ParamOptimizer(BaseSklearn):
 
             yield param
 
-    # def optimize(self, Xs, Ys, Ys_type=None, split_rate=0.7):
-    #     Ys = reformat_np_arr(Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
-    #     dataset = Dataset()
-    #     dataset.add_data('Xs', Xs)
-    #     dataset.add_data('Ys', Ys)
-    #
-    #     train_set, test_set = dataset.split((0.7, 0.3), shuffle=False)
-    #     train_Xs, train_Ys = train_set.full_batch()
-    #     test_Xs, test_Ys = test_set.full_batch()
+    def optimize(self, Xs, Ys, Ys_type=None, split_rate=0.7):
+        Ys = reformat_np_arr(Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
+        dataset = Dataset()
+        dataset.add_data('Xs', Xs)
+        dataset.add_data('Ys', Ys)
 
-    def optimize(self, train_Xs, train_Ys, test_Xs, test_Ys, Ys_type=None):
+        train_set, test_set = dataset.split((0.8, 0.2), shuffle=False)
+        train_Xs, train_Ys = train_set.full_batch()
+        test_Xs, test_Ys = test_set.full_batch()
+
         train_Ys = reformat_np_arr(train_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
         test_Ys = reformat_np_arr(test_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
 
@@ -199,7 +198,7 @@ class ClassifierPack(BaseClass):
 
         self.params_save_path = SKLEARN_PARAMS_SAVE_PATH
 
-    def param_search(self, train_Xs, train_Ys, test_Xs, test_Ys):
+    def param_search(self, Xs, Ys):
         save_path = path_join('.', 'param_search_result', time_stamp())
         setup_directory(save_path)
 
@@ -208,7 +207,7 @@ class ClassifierPack(BaseClass):
             obj = cls()
 
             optimizer = ParamOptimizer(obj, obj.tuning_grid)
-            self.pack[key] = optimizer.optimize(train_Xs, train_Ys, test_Xs, test_Ys)
+            self.pack[key] = optimizer.optimize(Xs, Ys)
 
             file_name = str(obj) + '.csv'
             csv_path = path_join(save_path, file_name)
