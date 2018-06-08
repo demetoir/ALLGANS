@@ -387,6 +387,6 @@ class DatasetCollection:
         if self.train_set is not None:
             self.train_set.shuffle()
         if self.test_set is not None:
-            self.train_set.shuffle()
+            self.test_set.shuffle()
         if self.validation_set is not None:
             self.validation_set.shuffle()
