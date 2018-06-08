@@ -161,9 +161,12 @@ class ClassifierPack(BaseClass):
         "LightGBM": LightGBM,
     }
 
-    def __init__(self):
+    def __init__(self, pack_keys=None):
+        if pack_keys is None:
+            pack_keys = self.class_pack.keys()
+
         self.pack = {}
-        for key in self.class_pack:
+        for key in pack_keys:
             cls = self.class_pack[key]
             obj = cls()
             setattr(self, cls.__name__, obj)
@@ -173,12 +176,15 @@ class ClassifierPack(BaseClass):
         self.log = self.logger.get_log()
 
     def param_search(self, train_xs, train_ys, test_xs, test_ys):
-        for key in self.class_pack:
+        for key in self.pack:
             cls = self.class_pack[key]
             obj = cls()
 
             optimizer = ParamOptimizer(obj, obj.tuning_grid)
             optimizer.optimize(train_xs, test_xs, train_ys, test_ys)
+
+            setattr(self, cls.__name__, optimizer.best_estimator)
+            self.pack[key] = optimizer.best_estimator
 
             path = os.path.join('.', 'param_search_result')
             if not os.path.exists(path):
@@ -192,15 +198,13 @@ class ClassifierPack(BaseClass):
             for result in optimizer.top_k_result():
                 self.log(pprint.pformat(result))
 
-            setattr(self, cls.__name__, optimizer.best_estimator)
-
         self.log(pprint.pformat(self.__dict__))
 
     def predict(self, Xs):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.predict(Xs)
+            result[key] = clf.predict(Xs)
         return result
 
     def fit(self, Xs, Ys, Ys_type=None):
@@ -212,14 +216,14 @@ class ClassifierPack(BaseClass):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.score(Xs, Ys, Ys_type=Ys_type)
+            result[key] = clf.score(Xs, Ys, Ys_type=Ys_type)
         return result
 
     def proba(self, Xs, transpose_shape=True):
         result = {}
         for key in self.pack:
             clf = self.pack[key]
-            result[clf.__name__] = clf.proba(Xs, transpose_shape=transpose_shape)
+            result[key] = clf.proba(Xs, transpose_shape=transpose_shape)
         return result
 
     def import_params(self, params_pack):

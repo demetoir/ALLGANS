@@ -1,3 +1,5 @@
+import warnings
+
 from sklearn_like_toolkit.sklearn_wrapper import BaseSklearnClassifier
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX
 
@@ -55,6 +57,7 @@ class LightGBM(BaseSklearnClassifier):
 
     def __init__(self, **params):
         super().__init__(**params)
+        warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
 
         import lightgbm as lgbm
         params.update(self.param)

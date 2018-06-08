@@ -54,7 +54,7 @@ class BaseSklearnClassifier(BaseSklearn):
 
 
 class skMLP(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'activation': ['identity', 'logistic', 'tanh', 'relu'],
         'alpha': [0.01, 0.1, 1, 10],

@@ -97,9 +97,10 @@ class VAE(BaseAutoEncoder):
         self.zs = placeholder(tf.float32, self.zs_shape, name='zs')
 
         self.h = self.encoder(self.Xs, self.encoder_net_shapes)
+        self.h = tf.identity(self.h, 'h')
 
-        self.mean = self.h[:, :self.z_size]
-        self.std = tf.nn.softplus(self.h[:, self.z_size:])
+        self.mean = tf.identity(self.h[:, :self.z_size], 'mean')
+        self.std = tf.identity(tf.nn.softplus(self.h[:, self.z_size:]), 'std')
         self.latent_code = self.mean + self.std * tf.random_normal(tf.shape(self.mean), 0, 1, dtype=tf.float32)
 
         self.Xs_recon = self.decoder(self.latent_code, self.decoder_net_shapes)

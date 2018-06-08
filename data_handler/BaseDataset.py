@@ -109,6 +109,7 @@ class BaseDataset(metaclass=MetaDataset):
         self.data[key] = data
         self.cursor = 0
         self.data_size = len(data)
+        self.batch_keys += [key]
 
     def get_data(self, key):
         """return data
