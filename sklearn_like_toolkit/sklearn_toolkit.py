@@ -1,5 +1,5 @@
 import os
-import pprint
+from pprint import pprint, pformat
 import sklearn
 import progressbar
 
@@ -11,8 +11,21 @@ from sklearn_like_toolkit.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, sk
     skRBF_SVM, skGaussianProcess
 from sklearn_like_toolkit.xgboost_wrapper import XGBoost
 from util.Logger import StdoutOnlyLogger
-from util.misc_util import time_stamp, dump_pickle, load_pickle, setup_directory
+from util.misc_util import time_stamp, dump_pickle, load_pickle, setup_directory, path_join
 from util.numpy_utils import reformat_np_arr
+from data_handler.BaseDataset import BaseDataset
+
+
+class Dataset(BaseDataset):
+
+    def load(self, path, limit=None):
+        pass
+
+    def save(self):
+        pass
+
+    def preprocess(self):
+        pass
 
 
 class ParamOptimizer(BaseSklearn):
@@ -85,7 +98,17 @@ class ParamOptimizer(BaseSklearn):
 
             yield param
 
-    def optimize(self, train_Xs, test_Xs, train_Ys, test_Ys, Ys_type=None):
+    # def optimize(self, Xs, Ys, Ys_type=None, split_rate=0.7):
+    #     Ys = reformat_np_arr(Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
+    #     dataset = Dataset()
+    #     dataset.add_data('Xs', Xs)
+    #     dataset.add_data('Ys', Ys)
+    #
+    #     train_set, test_set = dataset.split((0.7, 0.3), shuffle=False)
+    #     train_Xs, train_Ys = train_set.full_batch()
+    #     test_Xs, test_Ys = test_set.full_batch()
+
+    def optimize(self, train_Xs, train_Ys, test_Xs, test_Ys, Ys_type=None):
         train_Ys = reformat_np_arr(train_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
         test_Ys = reformat_np_arr(test_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
 
@@ -99,7 +122,6 @@ class ParamOptimizer(BaseSklearn):
             param = next(gen_param)
 
             estimator = class_(**param)
-            estimator.set_params(**param)
             estimator.fit(train_Xs, train_Ys)
             train_score = estimator.score(train_Xs, train_Ys)
             test_score = estimator.score(test_Xs, test_Ys)
@@ -120,9 +142,8 @@ class ParamOptimizer(BaseSklearn):
         )
         self.best_param = self.result[0]["param"]
         estimator = class_(**self.best_param)
-        estimator.set_params(**self.best_param)
         estimator.fit(train_Xs, train_Ys)
-        self.best_estimator = estimator
+        return estimator
 
     def result_to_csv(self, path):
         if self.result is None:
@@ -171,7 +192,6 @@ class ClassifierPack(BaseClass):
         for key in pack_keys:
             cls = self.class_pack[key]
             obj = cls()
-            setattr(self, cls.__name__, obj)
             self.pack[key] = obj
 
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
@@ -179,28 +199,25 @@ class ClassifierPack(BaseClass):
 
         self.params_save_path = SKLEARN_PARAMS_SAVE_PATH
 
-    def param_search(self, train_xs, train_ys, test_xs, test_ys):
+    def param_search(self, train_Xs, train_Ys, test_Xs, test_Ys):
+        save_path = path_join('.', 'param_search_result', time_stamp())
+        setup_directory(save_path)
+
         for key in self.pack:
             cls = self.class_pack[key]
             obj = cls()
 
             optimizer = ParamOptimizer(obj, obj.tuning_grid)
-            optimizer.optimize(train_xs, test_xs, train_ys, test_ys)
+            self.pack[key] = optimizer.optimize(train_Xs, train_Ys, test_Xs, test_Ys)
 
-            setattr(self, cls.__name__, optimizer.best_estimator)
-            self.pack[key] = optimizer.best_estimator
-
-            path = os.path.join('.', 'param_search_result')
-            if not os.path.exists(path):
-                os.mkdir(path)
             file_name = str(obj) + '.csv'
-
-            self.log.info("param search result csv saved at %s" % os.path.join(path, file_name))
-            optimizer.result_to_csv(os.path.join(path, file_name))
+            csv_path = path_join(save_path, file_name)
+            self.log.info("param search result csv saved at %s" % csv_path)
+            optimizer.result_to_csv(csv_path)
 
             self.log.info("top 5 result")
             for result in optimizer.top_k_result():
-                self.log.info(pprint.pformat(result))
+                self.log.info(pformat(result))
 
     def predict(self, Xs):
         result = {}
@@ -230,8 +247,8 @@ class ClassifierPack(BaseClass):
 
     def import_params(self, params_pack):
         for key in self.pack:
-            clf = self.pack[key]
-            clf.set_params(**params_pack[key])
+            class_ = self.class_pack[key]
+            self.pack[key] = class_(**params_pack[key])
 
     def export_params(self):
         params = {}
