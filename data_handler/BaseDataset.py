@@ -343,7 +343,7 @@ class BaseDataset(metaclass=MetaDataset):
         """reset cursor"""
         self.cursor = 0
 
-    def full_batch(self, batch_keys):
+    def full_batch(self, batch_keys=None):
         if batch_keys is None:
             batch_keys = self.batch_keys
 
