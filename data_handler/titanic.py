@@ -225,11 +225,13 @@ class titanic(DatasetCollection):
 
         self.log("split train set to train and validation set ratio=%s" % str(rate))
 
-    def to_kaggle_submit_csv(self, path, Ys, index=None):
+    def to_kaggle_submit_csv(self, path, Ys):
+        if path is None:
+            path = path_join('.', 'submit.csv')
         df = pd.DataFrame()
 
         df[PASSENGERID] = [i for i in range(892, 1309 + 1)]
         df[SURVIVED] = Ys
 
         pprint(df.head())
-        df.to_csv(path_join('.', 'submit.csv'), index=False)
+        df.to_csv(path, index=False)
