@@ -432,3 +432,16 @@ class DatasetCollection:
         self.set[a_key] = a_set
         self.set[b_key] = b_set
         return a_set, b_set
+
+    def merge(self, a_key, b_key, merge_set_key):
+        a_set = self.set[a_key]
+        b_set = self.set[b_key]
+        self.set.pop(a_key)
+        self.set.pop(b_key)
+
+        merge_set = a_set.merge(a_set, b_set)
+        self.set[merge_set_key] = merge_set
+
+    def sort(self, sort_key=None):
+        for key in self.set:
+            self.set[key].sort(sort_key)
