@@ -409,12 +409,8 @@ class DatasetCollection:
             self.validation_set.load(path, **kwargs)
 
     def shuffle(self):
-        if self.train_set is not None:
-            self.train_set.shuffle()
-        if self.test_set is not None:
-            self.test_set.shuffle()
-        if self.validation_set is not None:
-            self.validation_set.shuffle()
+        for key in self.set:
+            self.set[key].shuffle()
 
     def split(self, from_key, a_key, b_key, rate):
         from_set = self.set[from_key]
