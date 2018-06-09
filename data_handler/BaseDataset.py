@@ -198,6 +198,8 @@ class BaseDataset(metaclass=MetaDataset):
             self.data_size = max(len(self.data[key]), self.data_size)
             self.log("batch data '%s' %d item(s) loaded" % (key, len(self.data[key])))
 
+        self.data['id_'] = np.array([i for i in range(1, self.data_size + 1)])
+
         self.log('%s fully loaded' % self.__str__())
 
         self.log('%s preprocess end' % self.__str__())
