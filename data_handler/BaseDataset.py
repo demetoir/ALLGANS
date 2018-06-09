@@ -368,6 +368,21 @@ class BaseDataset(metaclass=MetaDataset):
             size = max(len(self.data[key]), size)
         return size
 
+    def sort(self, sort_key=None):
+        if sort_key is None:
+            sort_key = 'id_'
+
+        for key in self.data:
+            if key is sort_key:
+                continue
+
+            zipped = list(zip(self.data[sort_key], self.data[key]))
+            data = sorted(zipped, key=lambda a: a[0])
+            a, data = zip(*data)
+            self.data[key] = np.array(data)
+
+        self.data[sort_key] = np.array(sorted(self.data[sort_key]))
+
 
 class DatasetCollection:
     def __init__(self, train_set=None, test_set=None, validation_set=None):
