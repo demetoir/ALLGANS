@@ -385,18 +385,11 @@ class BaseDataset(metaclass=MetaDataset):
 
 
 class DatasetCollection:
-    def __init__(self, train_set=None, test_set=None, validation_set=None):
+    def __init__(self):
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
-        self.train_set = train_set
-        self.test_set = test_set
-        self.validation_set = validation_set
-        self.set = {
-            'train': self.train_set,
-            'validation': self.validation_set,
-            'test': self.test_set
-        }
+        self.set = {}
 
     def load(self, path, **kwargs):
         for k in self.set:
