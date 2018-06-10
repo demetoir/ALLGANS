@@ -43,6 +43,6 @@ class skBagging(_BaggingClassifier):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, sample_weight)
 
-    def _set_oob_score(self, X, y):
+    def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
-        super()._set_oob_score(X, y)
+        return super().score(X, y, sample_weight)
