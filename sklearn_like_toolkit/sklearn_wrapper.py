@@ -15,7 +15,6 @@ from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as _skQD
 from sklearn.svm import LinearSVC as _skLinearSVC
 from sklearn.svm import SVC as _skSVC
 from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_INDEX
-import numpy as np
 
 
 class skMLP(_skMLPClassifier):
@@ -66,14 +65,6 @@ class skMLP(_skMLPClassifier):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y)
 
-    def predict_proba(self, X, transpose_shape=False):
-        probs = np.array(super().predict_proba(X))
-
-        if transpose_shape is True:
-            probs = np.transpose(probs, axes=(1, 0, 2))
-
-        return probs
-
     def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().score(X, y, sample_weight)
@@ -89,14 +80,6 @@ class skGaussian_NB(_skGaussianNB):
     def fit(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, sample_weight)
-
-    def predict_proba(self, X, transpose_shape=False):
-        probs = np.array(super().predict_proba(X))
-
-        if transpose_shape is True:
-            probs = np.transpose(probs, axes=(1, 0, 2))
-
-        return probs
 
     def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
@@ -119,14 +102,6 @@ class skBernoulli_NB(_skBernoulliNB):
     def fit(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, sample_weight)
-
-    def predict_proba(self, X, transpose_shape=False):
-        probs = np.array(super().predict_proba(X))
-
-        if transpose_shape is True:
-            probs = np.transpose(probs, axes=(1, 0, 2))
-
-        return probs
 
     def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
@@ -502,10 +477,6 @@ class skSGD(_skSGDClassifier):
     def fit(self, X, y, coef_init=None, intercept_init=None, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, coef_init, intercept_init, sample_weight)
-
-    @property
-    def predict_proba(self):
-        return super().predict_proba()
 
     def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
