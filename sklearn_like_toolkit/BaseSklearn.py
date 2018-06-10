@@ -5,14 +5,14 @@ class BaseSklearn(BaseClass):
     def __init__(self, *args, **kwargs):
         pass
 
-    def fit(self, Xs, Ys, Ys_type=None):
+    def fit(self, Xs, Ys, **kwargs):
         pass
 
-    def predict(self, Xs):
+    def predict(self, Xs, **kwargs):
         pass
 
-    def score(self, Xs, Ys, Ys_type):
+    def score(self, Xs, Ys, Ys_type, **kwargs):
         pass
 
-    def proba(self, Xs, transpose_shape=True):
+    def proba(self, Xs, **kwargs):
         pass
