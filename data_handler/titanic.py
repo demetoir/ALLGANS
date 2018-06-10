@@ -35,6 +35,9 @@ Ys = 'Ys'
 
 def x_preprocess(self):
     x_dict = {}
+    data = self.data[PASSENGERID]
+    data = data.astype(np.int)
+    self.data[PASSENGERID] = data
 
     data = self.data[SEX]
     x_dict["Sex_male"] = np.where(data == "male", 1, 0).reshape([-1, 1])
@@ -145,12 +148,7 @@ class titanic_train(BaseDataset):
         data = self.data[SURVIVED]
         data = data.astype(np.int)
         data = np_index_to_onehot(data)
-        self.data[SURVIVED] = data
-
-        data = self.get_datas([
-            SURVIVED
-        ])
-        self.add_data(Ys, data[0])
+        self.add_data(Ys, data)
 
 
 class titanic_test(BaseDataset):
