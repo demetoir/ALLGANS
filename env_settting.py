@@ -23,6 +23,9 @@ INSTANCE_PATH = os.path.join(ROOT_PATH, 'instance')
 # log
 LOG_PATH = os.path.join(ROOT_PATH, 'log')
 
+# sklearn_params
+SKLEARN_PARAMS_SAVE_PATH = os.path.join(ROOT_PATH, 'sklearn_param_save')
+
 
 def tensorboard_dir():
     import tensorboard

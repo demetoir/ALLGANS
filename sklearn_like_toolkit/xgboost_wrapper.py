@@ -58,3 +58,6 @@ class XGBoost(BaseSklearnClassifier):
         import xgboost as xgb
         self.model = xgb.XGBClassifier(**params)
         del xgb
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)

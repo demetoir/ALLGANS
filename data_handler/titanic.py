@@ -1,3 +1,6 @@
+from pprint import pprint
+
+from util.misc_util import path_join
 from util.numpy_utils import *
 from data_handler.BaseDataset import BaseDataset, DatasetCollection
 import os
@@ -32,6 +35,9 @@ Ys = 'Ys'
 
 def x_preprocess(self):
     x_dict = {}
+    data = self.data[PASSENGERID]
+    data = data.astype(np.int)
+    self.data[PASSENGERID] = data
 
     data = self.data[SEX]
     x_dict["Sex_male"] = np.where(data == "male", 1, 0).reshape([-1, 1])
@@ -142,12 +148,7 @@ class titanic_train(BaseDataset):
         data = self.data[SURVIVED]
         data = data.astype(np.int)
         data = np_index_to_onehot(data)
-        self.data[SURVIVED] = data
-
-        data = self.get_datas([
-            SURVIVED
-        ])
-        self.add_data(Ys, data[0])
+        self.add_data(Ys, data)
 
 
 class titanic_test(BaseDataset):
@@ -209,12 +210,16 @@ class titanic(DatasetCollection):
         super().__init__()
         self.train_set = titanic_train()
         self.test_set = titanic_test()
-        self.validation_set = None
+        self.set['train'] = self.train_set
+        self.set['test'] = self.test_set
 
-    def load(self, path, **kwargs):
-        super().load(path, **kwargs)
-        self.train_set.shuffle()
-        self.test_set.shuffle()
-        ratio = (7, 3)
-        self.train_set, self.validation_set = self.train_set.split(ratio=ratio)
-        self.log("split train set to train and validation set ratio=%s" % str(ratio))
+    def to_kaggle_submit_csv(self, path, Ys):
+        if path is None:
+            path = path_join('.', 'submit.csv')
+        df = pd.DataFrame()
+
+        df[PASSENGERID] = [i for i in range(892, 1309 + 1)]
+        df[SURVIVED] = Ys
+
+        pprint(df.head())
+        df.to_csv(path, index=False)

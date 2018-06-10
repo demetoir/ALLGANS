@@ -198,6 +198,8 @@ class BaseDataset(metaclass=MetaDataset):
             self.data_size = max(len(self.data[key]), self.data_size)
             self.log("batch data '%s' %d item(s) loaded" % (key, len(self.data[key])))
 
+        self.data['id_'] = np.array([i for i in range(1, self.data_size + 1)])
+
         self.log('%s fully loaded' % self.__str__())
 
         self.log('%s preprocess end' % self.__str__())
@@ -314,6 +316,8 @@ class BaseDataset(metaclass=MetaDataset):
             a_set.add_data(key, self.data[key][:index])
             b_set.add_data(key, self.data[key][index:])
 
+        a_set.batch_keys = self.data.keys()
+        b_set.batch_keys = self.data.keys()
         if shuffle:
             a_set.shuffle()
             b_set.shuffle()
@@ -322,12 +326,13 @@ class BaseDataset(metaclass=MetaDataset):
 
     def merge(self, a_set, b_set):
         """merge to dataset"""
-        new_set = self.__class__()
-        if a_set.keys() is not b_set.keys():
+        if set(a_set.batch_keys) is set(b_set.batch_keys):
             raise KeyError("dataset can not merge, key does not match")
 
-        for key in a_set:
-            new_set.add_data(key, a_set.data[key] + b_set.data[key])
+        new_set = a_set.__class__()
+        for key in a_set.batch_keys:
+            concated = np.concatenate((a_set.data[key], b_set.data[key]), axis=0)
+            new_set.add_data(key, concated)
 
         return new_set
 
@@ -343,7 +348,7 @@ class BaseDataset(metaclass=MetaDataset):
         """reset cursor"""
         self.cursor = 0
 
-    def full_batch(self, batch_keys):
+    def full_batch(self, batch_keys=None):
         if batch_keys is None:
             batch_keys = self.batch_keys
 
@@ -363,30 +368,67 @@ class BaseDataset(metaclass=MetaDataset):
             size = max(len(self.data[key]), size)
         return size
 
+    def sort(self, sort_key=None):
+        if sort_key is None:
+            sort_key = 'id_'
+
+        for key in self.data:
+            if key is sort_key:
+                continue
+
+            zipped = list(zip(self.data[sort_key], self.data[key]))
+            data = sorted(zipped, key=lambda a: a[0])
+            a, data = zip(*data)
+            self.data[key] = np.array(data)
+
+        self.data[sort_key] = np.array(sorted(self.data[sort_key]))
+
 
 class DatasetCollection:
-    def __init__(self, train_set=None, test_set=None, validation_set=None):
+    def __init__(self):
         self.logger = StdoutOnlyLogger(self.__class__.__name__)
         self.log = self.logger.get_log()
 
-        self.train_set = train_set
-        self.test_set = test_set
-        self.validation_set = validation_set
+        self.set = {}
 
     def load(self, path, **kwargs):
-        if self.train_set is not None:
-            self.train_set.load(path, **kwargs)
-
-        if self.test_set is not None:
-            self.test_set.load(path, **kwargs)
-
-        if self.validation_set is not None:
-            self.validation_set.load(path, **kwargs)
+        for k in self.set:
+            self.set[k].load(path, **kwargs)
 
     def shuffle(self):
-        if self.train_set is not None:
-            self.train_set.shuffle()
-        if self.test_set is not None:
-            self.train_set.shuffle()
-        if self.validation_set is not None:
-            self.validation_set.shuffle()
+        for key in self.set:
+            self.set[key].shuffle()
+
+    def split(self, from_key, a_key, b_key, rate):
+        from_set = self.set[from_key]
+        self.set.pop(from_key)
+
+        a_set, b_set = from_set.split(rate)
+        self.set[a_key] = a_set
+        self.set[b_key] = b_set
+        return a_set, b_set
+
+    def merge_shuffle(self, a_key, b_key, rate):
+        a_set = self.set[a_key]
+        b_set = self.set[b_key]
+
+        merge_set = a_set.merge(a_set, b_set)
+        merge_set.shuffle()
+        a_set, b_set = merge_set.split(rate, shuffle=True)
+
+        self.set[a_key] = a_set
+        self.set[b_key] = b_set
+        return a_set, b_set
+
+    def merge(self, a_key, b_key, merge_set_key):
+        a_set = self.set[a_key]
+        b_set = self.set[b_key]
+        self.set.pop(a_key)
+        self.set.pop(b_key)
+
+        merge_set = a_set.merge(a_set, b_set)
+        self.set[merge_set_key] = merge_set
+
+    def sort(self, sort_key=None):
+        for key in self.set:
+            self.set[key].sort(sort_key)

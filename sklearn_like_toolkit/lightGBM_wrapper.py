@@ -63,3 +63,6 @@ class LightGBM(BaseSklearnClassifier):
         params.update(self.param)
         self.model = lgbm.LGBMClassifier(**params)
         del lgbm
+
+    def predict_proba(self, Xs):
+        return self.proba(Xs, transpose_shape=False )

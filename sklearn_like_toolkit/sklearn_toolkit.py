@@ -1,239 +1,63 @@
-import os
-import pprint
-import sklearn
-import progressbar
-
-from sklearn_like_toolkit.base import BaseSklearn, BaseClass
-from sklearn_like_toolkit.lightGBM_wrapper import LightGBM
-from sklearn_like_toolkit.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, skBernoulli_NB, skMultinomial_NB, \
-    skDecisionTree, skRandomForest, skExtraTrees, skAdaBoost, skGradientBoosting, skQDA, skKNeighbors, skLinear_SVC, \
-    skRBF_SVM, skGaussianProcess
-from sklearn_like_toolkit.xgboost_wrapper import XGBoost
-from util.Logger import StdoutOnlyLogger
-from util.numpy_utils import reformat_np_arr
+from sklearn_like_toolkit.Base import BaseClass
+from util.Logger import Logger
+from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
+import numpy as np
 
 
-class ParamOptimizer(BaseSklearn):
+class VotingClassifier(BaseClass):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
 
-    def __init__(self, estimator, param_grid=None, **kwargs):
-        super().__init__(estimator, param_grid, **kwargs)
-        self.estimator = estimator
-        if param_grid is None:
-            self.param_grid = estimator.param_grid
-        else:
-            self.param_grid = param_grid
+    def __repr__(self):
+        return self.__class__.__name__
 
-        self.optimizer = None
-        self.result = None
+    def __str__(self):
+        return super().__str__()
 
-        self.logger = StdoutOnlyLogger(self.__class__.__name__)
-        self.log = self.logger.get_log()
-        self.best_param = None
-        self.best_estimator = None
+    def __init__(self, clfs, voting='hard', n_jobs=1):
+        self.log = Logger(self.__class__.__name__)
+        from sklearn.ensemble.voting_classifier import VotingClassifier
 
-    @property
-    def grid_lens(self):
-        grid_len = {}
-        for k in sorted(self.param_grid.keys()):
-            grid_len[k] = len(self.param_grid[k])
+        if voting is 'soft':
+            new_clfs = []
+            for k, v in clfs:
+                if hasattr(v, 'predict_proba'):
+                    new_clfs += [(k, v)]
+                else:
+                    self.log.info(f'drop clf {k}')
+            clfs = new_clfs
 
-        return grid_len
+        self.clfs = clfs
 
-    @property
-    def param_grid_size(self):
-        grid_len = self.grid_lens
-        size = 1
-        for k in grid_len:
-            size *= grid_len[k]
-        return size
-
-    def get_param_by_index(self, param_grid, index):
-        grid_len = self.grid_lens
-        base_ = self.param_grid_size
-        key_index = {}
-
-        for key in sorted(grid_len.keys()):
-            base_ //= grid_len[key]
-            p = index // base_
-            key_index[key] = p
-            index = index % base_
-
-        param = {}
-        for k in key_index:
-            param[k] = param_grid[k][key_index[k]]
-        return param
-
-    def gen_param(self):
-        grid_len = self.grid_lens
-        grid_size = self.param_grid_size
-        sorted_keys = sorted(self.grid_lens.keys())
-
-        for index in range(grid_size):
-            _grid_size = grid_size
-            key_index = {}
-            for k in sorted_keys:
-                _grid_size //= grid_len[k]
-                p = index // _grid_size
-                key_index[k] = p
-                index = index % _grid_size
-
-            param = {}
-            for k in sorted_keys:
-                param[k] = self.param_grid[k][key_index[k]]
-
-            yield param
-
-    def optimize(self, train_Xs, test_Xs, train_Ys, test_Ys, Ys_type=None):
-        train_Ys = reformat_np_arr(train_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
-        test_Ys = reformat_np_arr(test_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
-
-        param_grid_size = self.param_grid_size
-        self.log(("optimize [%s], total %s's candidate estimator" % (self.estimator, param_grid_size)))
-        self.result = []
-
-        class_ = self.estimator.__class__
-        gen_param = self.gen_param()
-        for _ in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
-            param = next(gen_param)
-
-            estimator = class_(**param)
-            estimator.set_params(**param)
-            estimator.fit(train_Xs, train_Ys)
-            train_score = estimator.score(train_Xs, train_Ys)
-            test_score = estimator.score(test_Xs, test_Ys)
-            predict = estimator.predict(test_Xs)
-            auc_score = sklearn.metrics.roc_auc_score(test_Ys, predict)
-
-            result = {
-                "train_score": train_score,
-                "test_score": test_score,
-                "param": param,
-                "auc_score": auc_score,
-            }
-            self.result += [result]
-
-        self.result = sorted(
-            self.result,
-            key=lambda a: (-a["auc_score"], -a["test_score"], -a["train_score"],)
-        )
-        self.best_param = self.result[0]["param"]
-        estimator = class_(**self.best_param)
-        estimator.set_params(**self.best_param)
-        estimator.fit(train_Xs, train_Ys)
-        self.best_estimator = estimator
-
-    def result_to_csv(self, path):
-        if self.result is None:
-            raise AttributeError("param optimizer does not have result")
-
-        import pandas as pd
-
-        result = self.result
-        for i in range(len(self.result)):
-            result[i].update(self.result[i]['param'])
-            result[i].pop('param')
-
-        df = pd.DataFrame(result)
-        df.to_csv(path)
-
-    def top_k_result(self, k=5):
-        return self.result[:k]
-
-
-class ClassifierPack(BaseClass):
-    class_pack = {
-        "skMLP": skMLP,
-        "skSGD": skSGD,
-        "skGaussian_NB": skGaussian_NB,
-        "skBernoulli_NB": skBernoulli_NB,
-        "skMultinomial_NB": skMultinomial_NB,
-        "skDecisionTree": skDecisionTree,
-        "skRandomForest": skRandomForest,
-        "skExtraTrees": skExtraTrees,
-        "skAdaBoost": skAdaBoost,
-        "skGradientBoosting": skGradientBoosting,
-        "skQDA": skQDA,
-        "skKNeighbors": skKNeighbors,
-        "skLinear_SVC": skLinear_SVC,
-        "skRBF_SVM": skRBF_SVM,
-        "skGaussianProcess": skGaussianProcess,
-        "XGBoost": XGBoost,
-        "LightGBM": LightGBM,
-    }
-
-    def __init__(self, pack_keys=None):
-        if pack_keys is None:
-            pack_keys = self.class_pack.keys()
-
-        self.pack = {}
-        for key in pack_keys:
-            cls = self.class_pack[key]
-            obj = cls()
-            setattr(self, cls.__name__, obj)
-            self.pack[key] = obj
-
-        self.logger = StdoutOnlyLogger(self.__class__.__name__)
-        self.log = self.logger.get_log()
-
-    def param_search(self, train_xs, train_ys, test_xs, test_ys):
-        for key in self.pack:
-            cls = self.class_pack[key]
-            obj = cls()
-
-            optimizer = ParamOptimizer(obj, obj.tuning_grid)
-            optimizer.optimize(train_xs, test_xs, train_ys, test_ys)
-
-            setattr(self, cls.__name__, optimizer.best_estimator)
-            self.pack[key] = optimizer.best_estimator
-
-            path = os.path.join('.', 'param_search_result')
-            if not os.path.exists(path):
-                os.mkdir(path)
-            file_name = str(obj) + '.csv'
-
-            self.log("param search result csv saved at %s" % os.path.join(path, file_name))
-            optimizer.result_to_csv(os.path.join(path, file_name))
-
-            self.log("top 5 result")
-            for result in optimizer.top_k_result():
-                self.log(pprint.pformat(result))
-
-        self.log(pprint.pformat(self.__dict__))
-
-    def predict(self, Xs):
-        result = {}
-        for key in self.pack:
-            clf = self.pack[key]
-            result[key] = clf.predict(Xs)
-        return result
+        self.model = VotingClassifier(clfs, voting=voting, n_jobs=n_jobs)
+        del VotingClassifier
 
     def fit(self, Xs, Ys, Ys_type=None):
-        for key in self.pack:
-            clf = self.pack[key]
-            clf.fit(Xs, Ys, Ys_type=Ys_type)
+        self.model.fit(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
+
+    def predict(self, Xs):
+        return self.model.predict(Xs)
 
     def score(self, Xs, Ys, Ys_type=None):
-        result = {}
-        for key in self.pack:
-            clf = self.pack[key]
-            result[key] = clf.score(Xs, Ys, Ys_type=Ys_type)
-        return result
+        return self.model.score(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
 
-    def proba(self, Xs, transpose_shape=True):
-        result = {}
-        for key in self.pack:
-            clf = self.pack[key]
-            result[key] = clf.proba(Xs, transpose_shape=transpose_shape)
-        return result
+    def proba(self, Xs, transpose_shape=False):
+        """
+        if multi label than output shape == (class, sample, prob)
+        need to transpose shape to (sample, class, prob)
 
-    def import_params(self, params_pack):
-        for key in self.pack:
-            clf = self.pack[key]
-            clf.set_params(**params_pack[key])
+        :param Xs:
+        :param transpose_shape:
+        :return:
+        """
+        probs = np.array(self.model.predict_proba(Xs))
 
-    def export_params(self):
-        params = {}
-        for key in self.pack:
-            clf = self.pack[key]
-            params[key] = clf.get_params()
-        return params
+        if transpose_shape is True:
+            probs = np.transpose(probs, axes=(1, 0, 2))
+
+        return probs
+
+    def get_params(self, deep=True):
+        return self.model.get_params(deep=deep)
+
+    def set_params(self, **params):
+        return self.model.set_params(**params)

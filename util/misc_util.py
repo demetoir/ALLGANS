@@ -25,7 +25,8 @@ def dump_pickle(obj, path):
     :param obj: target data to dump
     """
     head, _ = os.path.split(path)
-    setup_file(head)
+    setup_directory(head)
+
     with open(path, 'wb') as f:
         pickle.dump(obj, f)
 
@@ -124,7 +125,7 @@ def dump_json(obj, path):
     :param path: path to dump
     """
     head, _ = os.path.split(path)
-    setup_file(head)
+    setup_directory(head)
     with open(path, 'w') as f:
         json.dump(obj, f, indent=4, separators=(',', ': '))
 
@@ -257,3 +258,7 @@ def print_lines(lines, max_line=50, split_print=True):
             input("remain {} lines, press key to continue".format(remain_lines))
 
     print("print lines end\n")
+
+
+def path_join(*args):
+    return os.path.join(*args)

@@ -1,9 +1,9 @@
 from sklearn.gaussian_process.kernels import RBF
-from sklearn_like_toolkit.base import BaseSklearn
+from sklearn_like_toolkit.BaseSklearn import BaseSklearn
 import numpy as np
 import sklearn
 
-from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_ONEHOT, NP_ARRAY_TYPE_INDEX
+from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_INDEX
 
 
 class BaseSklearnClassifier(BaseSklearn):
@@ -30,7 +30,7 @@ class BaseSklearnClassifier(BaseSklearn):
     def score(self, Xs, Ys, Ys_type=None):
         return self.model.score(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
 
-    def proba(self, Xs, transpose_shape=True):
+    def proba(self, Xs, transpose_shape=False):
         """
         if multi label than output shape == (class, sample, prob)
         need to transpose shape to (sample, class, prob)
@@ -103,6 +103,9 @@ class skMLP(BaseSklearnClassifier):
         self.model = _MLP(alpha=1)
         del _MLP
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skGaussian_NB(BaseSklearnClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
@@ -116,6 +119,9 @@ class skGaussian_NB(BaseSklearnClassifier):
         from sklearn.naive_bayes import GaussianNB as _GaussianNB
         self.model = _GaussianNB(**params)
         del _GaussianNB
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
 
 
 class skBernoulli_NB(BaseSklearnClassifier):
@@ -137,6 +143,9 @@ class skBernoulli_NB(BaseSklearnClassifier):
         self.model = _BernoulliNB(**params)
         del _BernoulliNB
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skMultinomial_NB(BaseSklearnClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
@@ -154,6 +163,9 @@ class skMultinomial_NB(BaseSklearnClassifier):
         from sklearn.naive_bayes import MultinomialNB as _MultinomialNB
         self.model = _MultinomialNB(**params)
         del _MultinomialNB
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
 
 
 class skQDA(BaseSklearnClassifier):
@@ -180,12 +192,15 @@ class skQDA(BaseSklearnClassifier):
         self.model = _QDA(**params)
         del _QDA
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skDecisionTree(BaseSklearnClassifier):
     """
     sklearn base DecisionTreeClassifier
     """
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'max_depth': [i for i in range(1, 10)],
         'min_samples_leaf': [i for i in range(1, 5)],
@@ -219,9 +234,12 @@ class skDecisionTree(BaseSklearnClassifier):
         self.model = _DecisionTreeClassifier(**params)
         del _DecisionTreeClassifier
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skRandomForest(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
         'max_depth': [i for i in range(1, 10)],
@@ -261,9 +279,12 @@ class skRandomForest(BaseSklearnClassifier):
         self.model = _RandomForestClassifier(**params)
         del _RandomForestClassifier
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skExtraTrees(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
         'max_depth': [i for i in range(1, 10)],
@@ -307,6 +328,9 @@ class skExtraTrees(BaseSklearnClassifier):
         self.model = _ExtraTreesClassifier(**params)
         del _ExtraTreesClassifier
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skAdaBoost(BaseSklearnClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
@@ -332,6 +356,9 @@ class skAdaBoost(BaseSklearnClassifier):
         from sklearn.ensemble import AdaBoostClassifier as _AdaBoostClassifier
         self.model = _AdaBoostClassifier(**params)
         del _AdaBoostClassifier
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
 
 
 class skGradientBoosting(BaseSklearnClassifier):
@@ -378,6 +405,9 @@ class skGradientBoosting(BaseSklearnClassifier):
         self.model = _GradientBoostingClassifier(**params)
         del _GradientBoostingClassifier
 
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
+
 
 class skKNeighbors(BaseSklearnClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
@@ -404,6 +434,9 @@ class skKNeighbors(BaseSklearnClassifier):
         from sklearn.neighbors import KNeighborsClassifier as _KNeighborsClassifier
         self.model = sklearn.neighbors.KNeighborsClassifier(**params)
         del _KNeighborsClassifier
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
 
 
 class skLinear_SVC(BaseSklearnClassifier):
@@ -440,10 +473,6 @@ class skLinear_SVC(BaseSklearnClassifier):
         self.model = _LinearSVC(**params)
         del _LinearSVC
 
-    def proba(self, Xs, transpose_shape=True):
-        print("""linear_SVM does not have attr "prob" """)
-        return None
-
 
 class skRBF_SVM(BaseSklearnClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
@@ -477,10 +506,6 @@ class skRBF_SVM(BaseSklearnClassifier):
         # TODO **params
         self.model = _SVC(gamma=2, C=1)
         del _SVC
-
-    def proba(self, Xs, transpose_shape=True):
-        print("""linear_SVM does not have attr "prob" """)
-        return None
 
 
 class skGaussianProcess(BaseSklearnClassifier):
@@ -517,6 +542,9 @@ class skGaussianProcess(BaseSklearnClassifier):
         # TODO **params
         self.model = _GaussianProcessClassifier(1.0 * RBF(1.0))
         del _GaussianProcessClassifier
+
+    def predict_proba(self, Xs):
+        return self.model.predict_proba(Xs)
 
 
 class skSGD(BaseSklearnClassifier):
@@ -566,10 +594,5 @@ class skSGD(BaseSklearnClassifier):
         from sklearn.linear_model import SGDClassifier as _SGDClassifier
         self.model = _SGDClassifier(**params)
         del _SGDClassifier
-
-    def proba(self, Xs, transpose_shape=True):
-        # todo
-        return None
-        # return super().proba(Xs, transpose_shape)
 
 

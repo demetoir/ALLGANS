@@ -1,4 +1,4 @@
-from sklearn_like_toolkit.base import BaseClass
+from sklearn_like_toolkit.Base import BaseClass
 
 
 class BaseTFWrapperSklearn(BaseClass):
