@@ -140,12 +140,7 @@ class ParamOptimizer(BaseSklearn):
 
         import pandas as pd
 
-        result = self.result
-        for i in range(len(self.result)):
-            result[i].update(self.result[i]['param'])
-            result[i].pop('param')
-
-        df = pd.DataFrame(result)
+        df = pd.DataFrame(self.result)
         df.to_csv(path)
 
     def top_k_result(self, k=5):
