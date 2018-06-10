@@ -4,20 +4,21 @@
 ########################################################################################################################
 # print(built-in function) is not good for logging
 from data_handler.DatasetLoader import DatasetLoader
-from model.sklearn_like_model.AE.AAE import AAE
-from model.sklearn_like_model.AE.AutoEncoder import AutoEncoder
-from model.sklearn_like_model.AE.DAE import DAE
 from model.sklearn_like_model.AE.VAE import VAE
-from model.sklearn_like_model.GAN.GAN import GAN
 from util.Logger import StdoutOnlyLogger, pprint_logger
 import numpy as np
+import pandas as pd
+from tqdm import trange
+from util.misc_util import path_join
+from matplotlib import pyplot as plt
 
 bprint = print
 logger = StdoutOnlyLogger()
 print = logger.get_log()
 pprint = pprint_logger(print)
 
-from sklearn_like_toolkit.sklearn_toolkit import ClassifierPack
+from sklearn_like_toolkit.sklearn_toolkit import VotingClassifier
+from sklearn_like_toolkit.ClassifierPack import ClassifierPack
 
 
 #######################################################################################################################
@@ -49,34 +50,85 @@ def test_AE():
 
 
 def baseline_clf():
+    # predict_Ys = clf_pack.predict(test_Xs)[key]
+    # dataset.to_kaggle_submit_csv(path_join('.', 'submit.csv'), predict)
+
     dataset = DatasetLoader().load_dataset("titanic")
-    train_Xs, train_Ys = dataset.train_set.full_batch(['Xs', 'Ys'])
-    valid_Xs, valid_Ys = dataset.validation_set.full_batch(['Xs', 'Ys'])
+    test_set = dataset.set['test']
+    test_Xs = test_set.full_batch(['Xs'])
 
-    def onehot_smooth(Ys, smooth=0.03):
-        Ys *= (1 - smooth * 2)
-        Ys += smooth
-        return Ys
+    n_iter = 1
+    key = 'LightGBM'
 
-    smooth = 0.05
-    train_Ys = onehot_smooth(train_Ys, smooth)
-    train_scores = []
-    valid_scores = []
-    for i in range(10):
-        key = 'LightGBM'
-        key = 'skMLP'
-        # print('base line')
-        clf_pack = ClassifierPack([key])
-        # clf_pack = ClassifierPack(['skMLP'])
-        # clf_pack = ClassifierPack()
-        # clf_pack.fit(train_Xs, train_Ys)
-        clf_pack.param_search(train_Xs, train_Ys, valid_Xs, valid_Ys)
+    test_predicts = []
+    train_predicts = []
+    for _ in trange(n_iter):
+        dataset.shuffle()
+        train_set, valid_set = dataset.split('train', 'train', 'valid', (7, 3))
+        train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
+        valid_Xs, valid_Ys = valid_set.full_batch(['Xs', 'Ys'])
+
+        clf_pack = ClassifierPack()
+        # clf_pack.load_params(path)
+        clf_pack.fit(train_Xs, train_Ys)
         train_score = clf_pack.score(train_Xs, train_Ys)
-        train_scores += [train_score[key]]
         valid_score = clf_pack.score(valid_Xs, valid_Ys)
-        valid_scores += [valid_score[key]]
+        pprint(train_score, valid_score)
 
-    pprint(np.mean(train_scores), np.mean(valid_scores))
+        dataset.merge('train', 'valid', 'train')
+        dataset.sort()
+        train_set = dataset.set['train']
+        train_Xs = train_set.full_batch(['Xs'])
+
+        test_predict = clf_pack.predict(test_Xs)[key]
+        test_predicts += [test_predict]
+
+        train_predict = clf_pack.predict(train_Xs)[key]
+        train_predicts += [train_predict]
+
+        prob = clf_pack.proba(train_Xs)
+        pprint(prob)
+        pprint(clf_pack.predict(train_Xs))
+
+    test_sum = sum(test_predicts)
+    train_sum = sum(train_predicts)
+
+    df = pd.DataFrame()
+    df['sum'] = test_sum
+    df.to_csv(path_join('.', 'predict_sum.csv'), index=False)
+
+    df = pd.DataFrame()
+    df['sum'] = train_sum
+    train_Ys = train_set.full_batch(['Survived'])
+    pprint(train_Ys)
+    df['Y'] = train_Ys
+    df.to_csv(path_join('.', 'train_sum.csv'), index=False)
+
+    def count_mid(Xs, threashold=3):
+        pprint(Xs)
+        max_val = max(Xs)
+        print(max_val)
+        count = 0
+        for x in Xs:
+            if threashold < x < max_val - threashold:
+                count += 1
+        return count
+
+    hold = 10
+    # print("count mid train {}".format(count_mid(train_sum, hold)))
+    # print("count mid test {}".format(count_mid(test_sum, hold)))
+
+    filted_train = filter(lambda a: True if hold < a < 100 - hold else False, train_sum)
+    filted_train = list(sorted(filted_train))
+    filted_test = filter(lambda a: True if hold < a < 100 - hold else False, test_sum)
+    filted_test = list(sorted(filted_test))
+    # pprint(filted_train)
+    # pprint(filted_test)
+    #
+    # plt.hist(filted_test)
+    # plt.show()
+    # plt.hist(filted_train)
+    # plt.show()
 
 
 def test_Gumbel_Softmax():
@@ -103,7 +155,6 @@ def test_Gumbel_Softmax():
     learn_temp = False
 
     x = tf.placeholder(tf.float32, shape=(batch_size, 784), name='x')
-
 
     net = tf.cast(tf.random_uniform(tf.shape(x)) < x, x.dtype)  # dynamic binarization
     net = slim.stack(net, slim.fully_connected, [512, 256])
@@ -179,12 +230,23 @@ def test_Gumbel_Softmax():
     plt.grid('off')
 
 
+def onehot_label_smooth(Ys, smooth=0.05):
+    Ys *= (1 - smooth * 2)
+    Ys += smooth
+    return Ys
+
+
 def main():
+    pass
+    # dataset = DatasetLoader().load_dataset("titanic")
+    # train_set, valid_set = dataset.merge_shuffle('train', 'validation', (7, 3))
+    # dataset.sort('PassengerId')
+
     # test_AE()
 
     # baseline_clf()
 
-    test_Gumbel_Softmax()
+    # test_Gumbel_Softmax()
 
     # dataset = DatasetLoader().load_dataset("titanic")
     # train_Xs, train_Ys = dataset.train_set.full_batch(['Xs', 'Ys'])
