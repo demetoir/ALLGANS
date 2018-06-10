@@ -3,7 +3,7 @@ from sklearn_like_toolkit.base import BaseSklearn
 import numpy as np
 import sklearn
 
-from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_ONEHOT, NP_ARRAY_TYPE_INDEX
+from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_INDEX
 
 
 class BaseSklearnClassifier(BaseSklearn):
@@ -185,7 +185,7 @@ class skDecisionTree(BaseSklearnClassifier):
     """
     sklearn base DecisionTreeClassifier
     """
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'max_depth': [i for i in range(1, 10)],
         'min_samples_leaf': [i for i in range(1, 5)],
@@ -221,7 +221,7 @@ class skDecisionTree(BaseSklearnClassifier):
 
 
 class skRandomForest(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
         'max_depth': [i for i in range(1, 10)],
@@ -263,7 +263,7 @@ class skRandomForest(BaseSklearnClassifier):
 
 
 class skExtraTrees(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_ONEHOT
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
         'max_depth': [i for i in range(1, 10)],
