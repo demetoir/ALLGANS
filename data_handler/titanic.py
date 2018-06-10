@@ -212,7 +212,6 @@ class titanic(DatasetCollection):
         super().__init__()
         self.train_set = titanic_train()
         self.test_set = titanic_test()
-        self.validation_set = None
         self.set['train'] = self.train_set
         self.set['test'] = self.test_set
 
