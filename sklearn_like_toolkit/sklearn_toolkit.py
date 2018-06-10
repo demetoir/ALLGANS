@@ -1,63 +1,48 @@
-from sklearn_like_toolkit.Base import BaseClass
-from util.Logger import Logger
+from data_handler.BaseDataset import BaseDataset
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
-import numpy as np
+from sklearn.ensemble.voting_classifier import VotingClassifier as _skVotingClassifier
+from sklearn.ensemble import BaggingClassifier as _BaggingClassifier
 
 
-class VotingClassifier(BaseClass):
+class Dataset(BaseDataset):
+
+    def load(self, path, limit=None):
+        pass
+
+    def save(self):
+        pass
+
+    def preprocess(self):
+        pass
+
+
+class skVoting(_skVotingClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
 
-    def __repr__(self):
-        return self.__class__.__name__
+    def __init__(self, estimators, voting='hard', weights=None, n_jobs=1, flatten_transform=None):
+        super().__init__(estimators, voting, weights, n_jobs, flatten_transform)
 
-    def __str__(self):
-        return super().__str__()
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def __init__(self, clfs, voting='hard', n_jobs=1):
-        self.log = Logger(self.__class__.__name__)
-        from sklearn.ensemble.voting_classifier import VotingClassifier
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
-        if voting is 'soft':
-            new_clfs = []
-            for k, v in clfs:
-                if hasattr(v, 'predict_proba'):
-                    new_clfs += [(k, v)]
-                else:
-                    self.log.info(f'drop clf {k}')
-            clfs = new_clfs
 
-        self.clfs = clfs
+class skBagging(_BaggingClassifier):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
 
-        self.model = VotingClassifier(clfs, voting=voting, n_jobs=n_jobs)
-        del VotingClassifier
+    def __init__(self, base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True,
+                 bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=1, random_state=None, verbose=0):
+        super().__init__(base_estimator, n_estimators, max_samples, max_features, bootstrap, bootstrap_features,
+                         oob_score, warm_start, n_jobs, random_state, verbose)
 
-    def fit(self, Xs, Ys, Ys_type=None):
-        self.model.fit(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict(self, Xs):
-        return self.model.predict(Xs)
-
-    def score(self, Xs, Ys, Ys_type=None):
-        return self.model.score(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
-
-    def proba(self, Xs, transpose_shape=False):
-        """
-        if multi label than output shape == (class, sample, prob)
-        need to transpose shape to (sample, class, prob)
-
-        :param Xs:
-        :param transpose_shape:
-        :return:
-        """
-        probs = np.array(self.model.predict_proba(Xs))
-
-        if transpose_shape is True:
-            probs = np.transpose(probs, axes=(1, 0, 2))
-
-        return probs
-
-    def get_params(self, deep=True):
-        return self.model.get_params(deep=deep)
-
-    def set_params(self, **params):
-        return self.model.set_params(**params)
+    def _set_oob_score(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        super()._set_oob_score(X, y)
