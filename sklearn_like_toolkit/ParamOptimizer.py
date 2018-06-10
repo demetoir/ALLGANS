@@ -1,8 +1,9 @@
 import progressbar
 import sklearn
+import pandas as pd
 from data_handler.BaseDataset import BaseDataset
-from sklearn_like_toolkit.BaseSklearn import BaseSklearn
 from util.Logger import StdoutOnlyLogger
+from util.misc_util import time_stamp, setup_directory, path_join
 from util.numpy_utils import reformat_np_arr
 
 
@@ -18,10 +19,9 @@ class Dataset(BaseDataset):
         pass
 
 
-class ParamOptimizer(BaseSklearn):
+class ParamOptimizer:
 
-    def __init__(self, estimator, param_grid=None, **kwargs):
-        super().__init__(estimator, param_grid, **kwargs)
+    def __init__(self, estimator, param_grid=None):
         self.estimator = estimator
         if param_grid is None:
             self.param_grid = estimator.param_grid
@@ -31,8 +31,7 @@ class ParamOptimizer(BaseSklearn):
         self.optimizer = None
         self.result = None
 
-        self.logger = StdoutOnlyLogger(self.__class__.__name__)
-        self.log = self.logger.get_log()
+        self.log = StdoutOnlyLogger(self.__class__.__name__)
         self.best_param = None
         self.best_estimator = None
 
@@ -94,7 +93,7 @@ class ParamOptimizer(BaseSklearn):
         dataset.add_data('Xs', Xs)
         dataset.add_data('Ys', Ys)
 
-        train_set, test_set = dataset.split((0.8, 0.2), shuffle=False)
+        train_set, test_set = dataset.split((split_rate, 1 - split_rate), shuffle=False)
         train_Xs, train_Ys = train_set.full_batch()
         test_Xs, test_Ys = test_set.full_batch()
 
@@ -102,7 +101,7 @@ class ParamOptimizer(BaseSklearn):
         test_Ys = reformat_np_arr(test_Ys, self.estimator.model_Ys_type, from_np_arr_type=Ys_type)
 
         param_grid_size = self.param_grid_size
-        self.log(("optimize [%s], total %s's candidate estimator" % (self.estimator, param_grid_size)))
+        self.log.info(("optimize [%s], total %s's candidate estimator" % (self.estimator, param_grid_size)))
         self.result = []
 
         class_ = self.estimator.__class__
@@ -131,17 +130,21 @@ class ParamOptimizer(BaseSklearn):
         )
         self.best_param = self.result[0]["param"]
         estimator = class_(**self.best_param)
-        estimator.fit(train_Xs, train_Ys)
+        estimator.fit(train_Xs, train_Ys, )
         return estimator
 
-    def result_to_csv(self, path):
+    def result_to_csv(self, path=None):
         if self.result is None:
             raise AttributeError("param optimizer does not have result")
 
-        import pandas as pd
+        if path is None:
+            save_path = path_join('.', 'param_search_result', time_stamp())
+            setup_directory(save_path)
+            file_name = str(self.estimator.__class__.__name__) + '.csv'
+            path = path_join(save_path, file_name)
 
-        df = pd.DataFrame(self.result)
-        df.to_csv(path)
+        pd.DataFrame(self.result).to_csv(path)
+        self.log.info("param search result csv saved at %s" % path)
 
     def top_k_result(self, k=5):
         return self.result[:k]
