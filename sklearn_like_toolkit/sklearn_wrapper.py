@@ -1,5 +1,5 @@
 from sklearn.gaussian_process.kernels import RBF
-from sklearn_like_toolkit.base import BaseSklearn
+from sklearn_like_toolkit.BaseSklearn import BaseSklearn
 import numpy as np
 import sklearn
 
