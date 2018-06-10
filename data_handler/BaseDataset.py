@@ -399,14 +399,8 @@ class DatasetCollection:
         }
 
     def load(self, path, **kwargs):
-        if self.train_set is not None:
-            self.train_set.load(path, **kwargs)
-
-        if self.test_set is not None:
-            self.test_set.load(path, **kwargs)
-
-        if self.validation_set is not None:
-            self.validation_set.load(path, **kwargs)
+        for k in self.set:
+            self.set[k].load(path, **kwargs)
 
     def shuffle(self):
         for key in self.set:
