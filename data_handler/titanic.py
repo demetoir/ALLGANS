@@ -216,15 +216,6 @@ class titanic(DatasetCollection):
         self.set['train'] = self.train_set
         self.set['test'] = self.test_set
 
-    def load(self, path, **kwargs):
-        super().load(path, **kwargs)
-        self.train_set.shuffle()
-
-        rate = (7, 3)
-        self.split('train', 'train', 'validation', (7, 3))
-
-        self.log("split train set to train and validation set ratio=%s" % str(rate))
-
     def to_kaggle_submit_csv(self, path, Ys):
         if path is None:
             path = path_join('.', 'submit.csv')
