@@ -1,59 +1,24 @@
-from sklearn.gaussian_process.kernels import RBF
-from sklearn_like_toolkit.BaseSklearn import BaseSklearn
-import numpy as np
-import sklearn
-
+from sklearn.gaussian_process.kernels import RBF as _RBF
+from sklearn.neural_network import MLPClassifier as _skMLPClassifier
+from sklearn.naive_bayes import GaussianNB as _skGaussianNB
+from sklearn.naive_bayes import BernoulliNB as _skBernoulliNB
+from sklearn.naive_bayes import MultinomialNB as _skMultinomialNB
+from sklearn.linear_model import SGDClassifier as _skSGDClassifier
+from sklearn.gaussian_process import GaussianProcessClassifier as _skGaussianProcessClassifier
+from sklearn.neighbors import KNeighborsClassifier as _skKNeighborsClassifier
+from sklearn.ensemble import GradientBoostingClassifier as _skGradientBoostingClassifier
+from sklearn.ensemble import AdaBoostClassifier as _skAdaBoostClassifier
+from sklearn.ensemble import ExtraTreesClassifier as _skExtraTreesClassifier
+from sklearn.ensemble import RandomForestClassifier as _skRandomForestClassifier
+from sklearn.tree import DecisionTreeClassifier as _skDecisionTreeClassifier
+from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as _skQDA
+from sklearn.svm import LinearSVC as _skLinearSVC
+from sklearn.svm import SVC as _skSVC
 from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_INDEX
+import numpy as np
 
 
-class BaseSklearnClassifier(BaseSklearn):
-    model_Ys_type = None
-    tuning_params = None
-    tuning_grid = None
-
-    def __repr__(self):
-        return self.__class__.__name__
-
-    def __str__(self):
-        return super().__str__()
-
-    def __init__(self, **params):
-        super().__init__(**params)
-        self.model = None
-
-    def fit(self, Xs, Ys, Ys_type=None):
-        self.model.fit(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
-
-    def predict(self, Xs):
-        return self.model.predict(Xs)
-
-    def score(self, Xs, Ys, Ys_type=None):
-        return self.model.score(Xs, reformat_np_arr(Ys, self.model_Ys_type, from_np_arr_type=Ys_type))
-
-    def proba(self, Xs, transpose_shape=False):
-        """
-        if multi label than output shape == (class, sample, prob)
-        need to transpose shape to (sample, class, prob)
-
-        :param Xs:
-        :param transpose_shape:
-        :return:
-        """
-        probs = np.array(self.model.predict_proba(Xs))
-
-        if transpose_shape is True:
-            probs = np.transpose(probs, axes=(1, 0, 2))
-
-        return probs
-
-    def get_params(self, deep=True):
-        return self.model.get_params(deep=deep)
-
-    def set_params(self, **params):
-        return self.model.set_params(**params)
-
-
-class skMLP(BaseSklearnClassifier):
+class skMLP(_skMLPClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'activation': ['identity', 'logistic', 'tanh', 'relu'],
@@ -97,34 +62,48 @@ class skMLP(BaseSklearnClassifier):
 
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.neural_network import MLPClassifier as _MLP
-        self.model = _MLP(alpha=1)
-        del _MLP
+    def fit(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def predict_proba(self, X, transpose_shape=False):
+        probs = np.array(super().predict_proba(X))
+
+        if transpose_shape is True:
+            probs = np.transpose(probs, axes=(1, 0, 2))
+
+        return probs
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skGaussian_NB(BaseSklearnClassifier):
+class skGaussian_NB(_skGaussianNB):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {}
     tuning_params = {
         'priors': None
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.naive_bayes import GaussianNB as _GaussianNB
-        self.model = _GaussianNB(**params)
-        del _GaussianNB
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def predict_proba(self, X, transpose_shape=False):
+        probs = np.array(super().predict_proba(X))
+
+        if transpose_shape is True:
+            probs = np.transpose(probs, axes=(1, 0, 2))
+
+        return probs
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skBernoulli_NB(BaseSklearnClassifier):
+class skBernoulli_NB(_skBernoulliNB):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
@@ -137,17 +116,24 @@ class skBernoulli_NB(BaseSklearnClassifier):
         'fit_prior': True
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.naive_bayes import BernoulliNB as _BernoulliNB
-        self.model = _BernoulliNB(**params)
-        del _BernoulliNB
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def predict_proba(self, X, transpose_shape=False):
+        probs = np.array(super().predict_proba(X))
+
+        if transpose_shape is True:
+            probs = np.transpose(probs, axes=(1, 0, 2))
+
+        return probs
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skMultinomial_NB(BaseSklearnClassifier):
+class skMultinomial_NB(_skMultinomialNB):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'alpha': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10.0],
@@ -158,17 +144,16 @@ class skMultinomial_NB(BaseSklearnClassifier):
         'fit_prior': True
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.naive_bayes import MultinomialNB as _MultinomialNB
-        self.model = _MultinomialNB(**params)
-        del _MultinomialNB
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skQDA(BaseSklearnClassifier):
+class skQDA(_skQDA):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
 
@@ -176,7 +161,7 @@ class skQDA(BaseSklearnClassifier):
     tuning_params = {
 
     }
-    param = {
+    remain_param = {
         # TODO
         # ? ..
         'priors': None,
@@ -186,17 +171,16 @@ class skQDA(BaseSklearnClassifier):
         'tol': 0.0001
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.discriminant_analysis import QuadraticDiscriminantAnalysis as _QDA
-        self.model = _QDA(**params)
-        del _QDA
+    def fit(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skDecisionTree(BaseSklearnClassifier):
+class skDecisionTree(_skDecisionTreeClassifier):
     """
     sklearn base DecisionTreeClassifier
     """
@@ -228,17 +212,16 @@ class skDecisionTree(BaseSklearnClassifier):
         'random_state': None,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.tree import DecisionTreeClassifier as _DecisionTreeClassifier
-        self.model = _DecisionTreeClassifier(**params)
-        del _DecisionTreeClassifier
+    def fit(self, X, y, sample_weight=None, check_input=True, X_idx_sorted=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight, check_input, X_idx_sorted)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skRandomForest(BaseSklearnClassifier):
+class skRandomForest(_skRandomForestClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
@@ -273,17 +256,16 @@ class skRandomForest(BaseSklearnClassifier):
         'bootstrap': True,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.ensemble import RandomForestClassifier as _RandomForestClassifier
-        self.model = _RandomForestClassifier(**params)
-        del _RandomForestClassifier
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skExtraTrees(BaseSklearnClassifier):
+class skExtraTrees(_skExtraTreesClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_estimators': [2, 4, 8, 16, 32, 64],
@@ -319,20 +301,16 @@ class skExtraTrees(BaseSklearnClassifier):
         'warm_start': False,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.ensemble import ExtraTreesClassifier as _ExtraTreesClassifier
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-        params.update(self.etc_param)
-        # print(params)
-        self.model = _ExtraTreesClassifier(**params)
-        del _ExtraTreesClassifier
-
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skAdaBoost(BaseSklearnClassifier):
+class skAdaBoost(_skAdaBoostClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'learning_rate': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10],
@@ -351,17 +329,16 @@ class skAdaBoost(BaseSklearnClassifier):
         'algorithm': ['SAMME.R', 'SAMME'],
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.ensemble import AdaBoostClassifier as _AdaBoostClassifier
-        self.model = _AdaBoostClassifier(**params)
-        del _AdaBoostClassifier
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skGradientBoosting(BaseSklearnClassifier):
+class skGradientBoosting(_skGradientBoostingClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'learning_rate': [0.001, 0.01, 0.1, 1],
@@ -399,17 +376,19 @@ class skGradientBoosting(BaseSklearnClassifier):
         'warm_start': False,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.ensemble import GradientBoostingClassifier as _GradientBoostingClassifier
-        self.model = _GradientBoostingClassifier(**params)
-        del _GradientBoostingClassifier
+    def fit(self, X, y, sample_weight=None, monitor=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight, monitor)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
+
+    def _make_estimator(self, append=True):
+        pass
 
 
-class skKNeighbors(BaseSklearnClassifier):
+class skKNeighbors(_skKNeighborsClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'n_neighbors': [i for i in range(1, 32)],
@@ -429,86 +408,16 @@ class skKNeighbors(BaseSklearnClassifier):
         'metric_params': None,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.neighbors import KNeighborsClassifier as _KNeighborsClassifier
-        self.model = sklearn.neighbors.KNeighborsClassifier(**params)
-        del _KNeighborsClassifier
+    def fit(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
-
-
-class skLinear_SVC(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_INDEX
-    tuning_grid = {
-        'C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10],
-        'max_iter': [2 ** i for i in range(6, 13)],
-    }
-    tuning_params = {
-        'C': 1.0,
-        'max_iter': 1000,
-    }
-    only_default_params = {
-        'fit_intercept': True,
-        'intercept_scaling': 1,
-
-        # todo ???
-        'multi_class': ['ovr', 'crammer_singer'],
-        'loss': ['squared_hinge', 'hinge'],
-        'penalty': ['l2', 'l1'],
-        'class_weight': None,
-        'dual': True,
-
-    }
-    etc_param = {
-        'random_state': None,
-        'tol': 0.0001,
-        'verbose': 1e-4,
-    }
-
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.svm import LinearSVC as _LinearSVC
-        self.model = _LinearSVC(**params)
-        del _LinearSVC
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skRBF_SVM(BaseSklearnClassifier):
-    model_Ys_type = NP_ARRAY_TYPE_INDEX
-    tuning_grid = {
-        'C': [1 ** i for i in range(-5, 5)],
-        'gamma': [1 ** i for i in range(-5, 5)],
-    }
-    tuning_params = {
-        'C': 1,
-        'gamma': 2,
-    }
-    # todo
-    param = {
-        'cache_size': 200,
-        'class_weight': None,
-        'coef0': 0.0,
-        'decision_function_shape': 'ovr',
-        'degree': 3,
-        'kernel': 'rbf',
-        'max_iter': -1,
-        'probability': False,
-        'random_state': None,
-        'shrinking': True,
-        'tol': 0.001,
-        'verbose': False
-    }
-
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.svm import SVC as _SVC
-        # TODO **params
-        self.model = _SVC(gamma=2, C=1)
-        del _SVC
-
-
-class skGaussianProcess(BaseSklearnClassifier):
+class skGaussianProcess(_skGaussianProcessClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     # todo
     tuning_grid = {
@@ -517,12 +426,12 @@ class skGaussianProcess(BaseSklearnClassifier):
     tuning_params = {
 
     }
-    param = {
-        'kernel': 1 ** 2 * RBF(length_scale=1),
+    remain_param = {
+        'kernel': 1 ** 2 * _RBF(length_scale=1),
         'kernel__k1': 1 ** 2,
         'kernel__k1__constant_value': 1.0,
         'kernel__k1__constant_value_bounds': (1e-05, 100000.0),
-        'kernel__k2': RBF(length_scale=1),
+        'kernel__k2': _RBF(length_scale=1),
         'kernel__k2__length_scale': 1.0,
         'kernel__k2__length_scale_bounds': (1e-05, 100000.0),
         'max_iter_predict': 100,
@@ -536,18 +445,19 @@ class skGaussianProcess(BaseSklearnClassifier):
         'copy_X_train': True,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.gaussian_process import GaussianProcessClassifier as _GaussianProcessClassifier
-        # TODO **params
-        self.model = _GaussianProcessClassifier(1.0 * RBF(1.0))
-        del _GaussianProcessClassifier
+    def fit(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y)
 
-    def predict_proba(self, Xs):
-        return self.model.predict_proba(Xs)
+    def predict_proba(self, X):
+        return super().predict_proba(X)
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
-class skSGD(BaseSklearnClassifier):
+class skSGD(_skSGDClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
 
     # todo wtf?
@@ -560,7 +470,7 @@ class skSGD(BaseSklearnClassifier):
     tuning_params = {
         'alpha': 0.0001,
     }
-    params = {
+    remain_param = {
         # TODO
         'tol': None,
         'learning_rate': ['optimal', 'constant', 'invscaling'],
@@ -589,10 +499,86 @@ class skSGD(BaseSklearnClassifier):
         'shuffle': True,
     }
 
-    def __init__(self, **params):
-        super().__init__(**params)
-        from sklearn.linear_model import SGDClassifier as _SGDClassifier
-        self.model = _SGDClassifier(**params)
-        del _SGDClassifier
+    def fit(self, X, y, coef_init=None, intercept_init=None, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, coef_init, intercept_init, sample_weight)
+
+    @property
+    def predict_proba(self):
+        return super().predict_proba()
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
 
 
+class skLinear_SVC(_skLinearSVC):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
+    tuning_grid = {
+        'C': [0.00001, 0.0001, 0.001, 0.01, 0.1, 1.0, 10],
+        'max_iter': [2 ** i for i in range(6, 13)],
+    }
+    tuning_params = {
+        'C': 1.0,
+        'max_iter': 1000,
+    }
+    only_default_params = {
+        'fit_intercept': True,
+        'intercept_scaling': 1,
+
+        # todo ???
+        'multi_class': ['ovr', 'crammer_singer'],
+        'loss': ['squared_hinge', 'hinge'],
+        'penalty': ['l2', 'l1'],
+        'class_weight': None,
+        'dual': True,
+
+    }
+    etc_param = {
+        'random_state': None,
+        'tol': 0.0001,
+        'verbose': 1e-4,
+    }
+
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
+
+
+class skRBF_SVM(_skSVC):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
+    tuning_grid = {
+        'C': [1 ** i for i in range(-5, 5)],
+        'gamma': [1 ** i for i in range(-5, 5)],
+    }
+    tuning_params = {
+        'C': 1,
+        'gamma': 2,
+    }
+    # todo
+    remain_param = {
+        'cache_size': 200,
+        'class_weight': None,
+        'coef0': 0.0,
+        'decision_function_shape': 'ovr',
+        'degree': 3,
+        'kernel': 'rbf',
+        'max_iter': -1,
+        'probability': False,
+        'random_state': None,
+        'shrinking': True,
+        'tol': 0.001,
+        'verbose': False
+    }
+
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
