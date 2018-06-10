@@ -511,6 +511,10 @@ class skLinear_SVC(_skLinearSVC):
         'verbose': 1e-4,
     }
 
+    @property
+    def predict_proba(self):
+        return self._predict_proba_lr
+
     def fit(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, sample_weight)
@@ -521,6 +525,12 @@ class skLinear_SVC(_skLinearSVC):
 
 
 class skRBF_SVM(_skSVC):
+    def __init__(self, C=1.0, kernel='rbf', degree=3, gamma='auto', coef0=0.0, shrinking=True, probability=True,
+                 tol=1e-3, cache_size=200, class_weight=None, verbose=False, max_iter=-1, decision_function_shape='ovr',
+                 random_state=None):
+        super().__init__(C, kernel, degree, gamma, coef0, shrinking, probability, tol, cache_size, class_weight,
+                         verbose, max_iter, decision_function_shape, random_state)
+
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'C': [1 ** i for i in range(-5, 5)],
