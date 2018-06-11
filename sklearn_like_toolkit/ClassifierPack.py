@@ -3,11 +3,14 @@ from pprint import pformat
 from env_settting import SKLEARN_PARAMS_SAVE_PATH
 from sklearn_like_toolkit.ParamOptimizer import ParamOptimizer
 from sklearn_like_toolkit.Base import BaseClass
-from sklearn_like_toolkit.warpper.lightGBM_wrapper import LightGBM
+from sklearn_like_toolkit.warpper.catboost_wrapper import CatBoostClf
+from sklearn_like_toolkit.warpper.lightGBM_wrapper import LightGBMClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxAdalineClf, mlxLogisticRegressionClf, \
+    mlxMLPClf, mlxPerceptronClf, mlxSoftmaxRegressionClf, mlxStackingCVClf, mlxStackingClf
 from sklearn_like_toolkit.warpper.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, skBernoulli_NB, skMultinomial_NB, \
     skDecisionTree, skRandomForest, skExtraTrees, skAdaBoost, skGradientBoosting, skQDA, skKNeighbors, skLinear_SVC, \
     skRBF_SVM, skGaussianProcess, skVoting, skBagging
-from sklearn_like_toolkit.warpper.xgboost_wrapper import XGBoost
+from sklearn_like_toolkit.warpper.xgboost_wrapper import XGBoostClf
 from util.Logger import Logger
 from util.misc_util import time_stamp, dump_pickle, load_pickle
 
@@ -32,8 +35,14 @@ class ClassifierPack(BaseClass):
         "skRBF_SVM": skRBF_SVM,
         "skGaussianProcess": skGaussianProcess,
         "skBagging": skBagging,
-        "XGBoost": XGBoost,
-        "LightGBM": LightGBM,
+        "XGBoost": XGBoostClf,
+        "LightGBM": LightGBMClf,
+        "CatBoost": CatBoostClf,
+        'mlxAdaline': mlxAdalineClf,
+        'mlxLogisticRegression': mlxLogisticRegressionClf,
+        'mlxMLP': mlxMLPClf,
+        'mlxPerceptronClf': mlxPerceptronClf,
+        'mlxSoftmaxRegressionClf': mlxSoftmaxRegressionClf,
     }
 
     def __init__(self, pack_keys=None):
