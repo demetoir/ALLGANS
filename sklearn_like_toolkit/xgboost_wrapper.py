@@ -1,7 +1,6 @@
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
 import warnings
 import xgboost as xgb
-import numpy as np
 
 
 class XGBoost(xgb.XGBClassifier):
@@ -49,8 +48,6 @@ class XGBoost(xgb.XGBClassifier):
                  booster='gbtree', n_jobs=1, nthread=None, gamma=0, min_child_weight=1, max_delta_step=0, subsample=1,
                  colsample_bytree=1, colsample_bylevel=1, reg_alpha=0, reg_lambda=1, scale_pos_weight=1, base_score=0.5,
                  random_state=0, seed=None, missing=None, **kwargs):
-
-
         super().__init__(max_depth, learning_rate, n_estimators, silent, objective, booster, n_jobs, nthread, gamma,
                          min_child_weight, max_delta_step, subsample, colsample_bytree, colsample_bylevel, reg_alpha,
                          reg_lambda, scale_pos_weight, base_score, random_state, seed, missing, **kwargs)
@@ -65,17 +62,13 @@ class XGBoost(xgb.XGBClassifier):
         # params.update({"silent": 1})
 
     def fit(self, X, y, sample_weight=None, eval_set=None, eval_metric=None, early_stopping_rounds=None, verbose=True,
-            xgb_model=None):
+            xgb_model=None, sample_weight_eval_set=None):
         y = reformat_np_arr(y, self.model_Ys_type)
-        return super().fit(X, y, sample_weight, eval_set, eval_metric, early_stopping_rounds, verbose, xgb_model)
+        return super().fit(X, y, sample_weight, eval_set, eval_metric, early_stopping_rounds, verbose, xgb_model,
+                           sample_weight_eval_set)
 
-    def predict_proba(self, data, output_margin=False, ntree_limit=0, transpose_shape=False):
-        ret = super().predict_proba(data, output_margin, ntree_limit)
-
-        if transpose_shape is True:
-            ret = np.transpose(ret, axes=(1, 0, 2))
-
-        return ret
+    def predict_proba(self, data, ntree_limit=0):
+        return super().predict_proba(data, ntree_limit)
 
     def score(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
