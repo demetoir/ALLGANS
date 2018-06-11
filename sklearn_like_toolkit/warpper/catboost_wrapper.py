@@ -1,11 +1,14 @@
+import warnings
+
 from catboost import CatBoostClassifier as _CatBoostClassifier
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
+import numpy as np
 
 
 class CatBoostClf(_CatBoostClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
-        'iterations': [2, 4, 8,],
+        'iterations': [2, 4, 8, ],
         'depth': [i for i in range(4, 10 + 1, 2)],
         # 'random_strength': [1, 2, 4, 0.5, ],
         'bagging_temperature': [i / 100.0 for i in range(1, 10 + 1, 3)],
@@ -42,6 +45,7 @@ class CatBoostClf(_CatBoostClassifier):
                  num_trees=None, colsample_bylevel=None, random_state=None, reg_lambda=None, objective=None, eta=None,
                  max_bin=None, scale_pos_weight=None, gpu_cat_features_storage=None, data_partition=None, **kwargs):
         logging_level = 'Silent'
+        warnings.filterwarnings(module='sklearn*', action='ignore', category=DeprecationWarning)
 
         super().__init__(iterations, learning_rate, depth, l2_leaf_reg, model_size_reg, rsm, loss_function,
                          border_count, feature_border_type, fold_permutation_block_size, od_pval, od_wait, od_type,
@@ -66,3 +70,7 @@ class CatBoostClf(_CatBoostClassifier):
     def score(self, X, y):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().score(X, y)
+
+    def predict(self, data, prediction_type='Class', ntree_start=0, ntree_end=0, thread_count=-1, verbose=None):
+        ret = super().predict(data, prediction_type, ntree_start, ntree_end, thread_count, verbose)
+        return ret.astype(np.int64)
