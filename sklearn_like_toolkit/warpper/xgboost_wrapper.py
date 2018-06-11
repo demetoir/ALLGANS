@@ -3,7 +3,7 @@ import warnings
 import xgboost as xgb
 
 
-class XGBoost(xgb.XGBClassifier):
+class XGBoostClf(xgb.XGBClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'max_depth': [4, 6, 8],

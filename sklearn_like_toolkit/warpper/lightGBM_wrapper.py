@@ -4,7 +4,7 @@ import lightgbm
 import numpy as np
 
 
-class LightGBM(lightgbm.LGBMClassifier):
+class LightGBMClf(lightgbm.LGBMClassifier):
     model_Ys_type = NP_ARRAY_TYPE_INDEX
     tuning_grid = {
         'num_leaves': [4, 8, 16, 32],
