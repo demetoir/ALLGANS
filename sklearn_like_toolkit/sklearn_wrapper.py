@@ -1,4 +1,5 @@
 from sklearn.gaussian_process.kernels import RBF as _RBF
+from sklearn.linear_model.stochastic_gradient import DEFAULT_EPSILON
 from sklearn.neural_network import MLPClassifier as _skMLPClassifier
 from sklearn.naive_bayes import GaussianNB as _skGaussianNB
 from sklearn.naive_bayes import BernoulliNB as _skBernoulliNB
@@ -473,6 +474,13 @@ class skSGD(_skSGDClassifier):
         'warm_start': False,
         'shuffle': True,
     }
+
+    def __init__(self, loss="hinge", penalty='l2', alpha=0.0001, l1_ratio=0.15, fit_intercept=True, max_iter=1000,
+                 tol=None, shuffle=True, verbose=0, epsilon=DEFAULT_EPSILON, n_jobs=1, random_state=None,
+                 learning_rate="optimal", eta0=0.0, power_t=0.5, class_weight=None, warm_start=False, average=False,
+                 n_iter=None):
+        super().__init__(loss, penalty, alpha, l1_ratio, fit_intercept, max_iter, tol, shuffle, verbose, epsilon,
+                         n_jobs, random_state, learning_rate, eta0, power_t, class_weight, warm_start, average, n_iter)
 
     def fit(self, X, y, coef_init=None, intercept_init=None, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)
