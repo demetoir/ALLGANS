@@ -1,5 +1,6 @@
 """misc utils
 pickle, import module, zip, etc ..."""
+import traceback
 import webbrowser
 from glob import glob
 from importlib._bootstrap_external import SourceFileLoader
@@ -262,3 +263,15 @@ def print_lines(lines, max_line=50, split_print=True):
 
 def path_join(*args):
     return os.path.join(*args)
+
+
+def log_error_trace(log_func, e, head=""):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    msg = '%s\n %s %s : %s \n' % (
+        head,
+        "".join(traceback.format_tb(exc_traceback)),
+        e.__class__.__name__,
+        e,
+    )
+    log_func(msg)

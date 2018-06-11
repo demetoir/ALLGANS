@@ -54,7 +54,7 @@ class Logger:
     PRINT_LOGGER_FORMAT = '%(asctime)s> %(message)s'
     NO_FORMAT = ""
 
-    def __init__(self, name, path=None, file_name=None, level=logging.INFO, with_file=True, no_format=False):
+    def __init__(self, name, path=None, file_name=None, level=logging.INFO, with_file=True, no_format=True):
         """create logger
 
         :param name:name of logger

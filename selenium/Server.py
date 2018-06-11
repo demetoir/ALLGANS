@@ -3,7 +3,7 @@ import subprocess
 import time
 
 from util.Logger import StdoutOnlyLogger
-from util.deco import log_error_trace
+from util.misc_util import log_error_trace
 
 JAVA_PATH = 'C:\\Program Files\\Java\\jre-10.0.1\\bin\\java.exe'
 SELENIUM_SERVER_JAR_PATH = 'C:\\Users\\demetoir_desktop\\PycharmProjects\\kaggle-MLtools\\selenium\\bin\\selenium-server\\selenium-server-standalone-3.12.0.jar'

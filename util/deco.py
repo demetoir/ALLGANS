@@ -1,7 +1,7 @@
 import codecs
-import sys
 import time
-import traceback
+
+from util.misc_util import log_error_trace
 
 
 def file_lines_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF8'):
@@ -75,18 +75,6 @@ def file_str_job(func, in_file='input.txt', out_file='output.txt', encoding='UTF
 
     wrapper.__name__ = func.__name__
     return wrapper
-
-
-def log_error_trace(log_func, e, head=""):
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-
-    msg = '%s\n %s %s : %s \n' % (
-        head,
-        "".join(traceback.format_tb(exc_traceback)),
-        e.__class__.__name__,
-        e,
-    )
-    log_func(msg)
 
 
 def deco_exception_handle(func):
