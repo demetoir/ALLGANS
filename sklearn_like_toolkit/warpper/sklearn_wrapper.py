@@ -7,7 +7,8 @@ from sklearn.naive_bayes import MultinomialNB as _skMultinomialNB
 from sklearn.linear_model import SGDClassifier as _skSGDClassifier
 from sklearn.gaussian_process import GaussianProcessClassifier as _skGaussianProcessClassifier
 from sklearn.neighbors import KNeighborsClassifier as _skKNeighborsClassifier
-from sklearn.ensemble import GradientBoostingClassifier as _skGradientBoostingClassifier
+from sklearn.ensemble import GradientBoostingClassifier as _skGradientBoostingClassifier, \
+    VotingClassifier as _skVotingClassifier, BaggingClassifier as _BaggingClassifier
 from sklearn.ensemble import AdaBoostClassifier as _skAdaBoostClassifier
 from sklearn.ensemble import ExtraTreesClassifier as _skExtraTreesClassifier
 from sklearn.ensemble import RandomForestClassifier as _skRandomForestClassifier
@@ -563,6 +564,38 @@ class skRBF_SVM(_skSVC):
         'tol': 0.001,
         'verbose': False
     }
+
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
+
+
+class skVoting(_skVotingClassifier):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
+
+    def __init__(self, estimators, voting='hard', weights=None, n_jobs=1, flatten_transform=None):
+        super().__init__(estimators, voting, weights, n_jobs, flatten_transform)
+
+    def fit(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().fit(X, y, sample_weight)
+
+    def score(self, X, y, sample_weight=None):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return super().score(X, y, sample_weight)
+
+
+class skBagging(_BaggingClassifier):
+    model_Ys_type = NP_ARRAY_TYPE_INDEX
+
+    def __init__(self, base_estimator=None, n_estimators=10, max_samples=1.0, max_features=1.0, bootstrap=True,
+                 bootstrap_features=False, oob_score=False, warm_start=False, n_jobs=1, random_state=None, verbose=0):
+        super().__init__(base_estimator, n_estimators, max_samples, max_features, bootstrap, bootstrap_features,
+                         oob_score, warm_start, n_jobs, random_state, verbose)
 
     def fit(self, X, y, sample_weight=None):
         y = reformat_np_arr(y, self.model_Ys_type)

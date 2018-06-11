@@ -1,6 +1,5 @@
-import warnings
-
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
+import warnings
 import lightgbm
 import numpy as np
 
