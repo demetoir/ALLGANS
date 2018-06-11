@@ -3,7 +3,7 @@ import sklearn
 import pandas as pd
 from data_handler.BaseDataset import BaseDataset
 from util.Logger import StdoutOnlyLogger
-from util.misc_util import time_stamp, setup_directory, path_join
+from util.misc_util import time_stamp, setup_directory, path_join, log_error_trace
 from util.numpy_utils import reformat_np_arr
 
 
@@ -107,22 +107,28 @@ class ParamOptimizer:
         class_ = self.estimator.__class__
         gen_param = self.gen_param()
         for _ in progressbar.progressbar(range(param_grid_size), redirect_stdout=False):
-            param = next(gen_param)
+            try:
+                param = next(gen_param)
 
-            estimator = class_(**param)
-            estimator.fit(train_Xs, train_Ys)
-            train_score = estimator.score(train_Xs, train_Ys)
-            test_score = estimator.score(test_Xs, test_Ys)
-            predict = estimator.predict(test_Xs)
-            auc_score = sklearn.metrics.roc_auc_score(test_Ys, predict)
+                estimator = class_(**param)
+                estimator.fit(train_Xs, train_Ys)
+                train_score = estimator.score(train_Xs, train_Ys)
+                test_score = estimator.score(test_Xs, test_Ys)
+                predict = estimator.predict(test_Xs)
+                auc_score = sklearn.metrics.roc_auc_score(test_Ys, predict)
 
-            result = {
-                "train_score": train_score,
-                "test_score": test_score,
-                "param": param,
-                "auc_score": auc_score,
-            }
-            self.result += [result]
+                result = {
+                    "train_score": train_score,
+                    "test_score": test_score,
+                    "param": param,
+                    "auc_score": auc_score,
+                }
+                self.result += [result]
+            except KeyboardInterrupt as e:
+                log_error_trace(self.log.error, e)
+                raise KeyboardInterrupt
+            except BaseException as e:
+                self.log.warn(f'while optimize param {param} raise {e}')
 
         self.result = sorted(
             self.result,
