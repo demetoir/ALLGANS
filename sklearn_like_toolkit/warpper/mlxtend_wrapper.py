@@ -1,3 +1,4 @@
+
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
 from mlxtend.classifier import Adaline as _Adaline
 from mlxtend.classifier import EnsembleVoteClassifier as _EnsembleVoteClassifier
@@ -14,7 +15,7 @@ class mlxAdalineClf(_Adaline):
     tuning_grid = {
         'eta': [i / 10.0 for i in range(1, 10 + 1, 3)],
         'epochs': [64, 128, 256],
-        'minibatches': [None, 1, 2, 4, 8],
+        'minibatches': [1, 2, 4, 8],
     }
     tuning_params = {
     }
@@ -22,6 +23,7 @@ class mlxAdalineClf(_Adaline):
     }
 
     def __init__(self, eta=0.01, epochs=50, minibatches=None, random_seed=None, print_progress=0):
+        minibatches = 1
         super().__init__(eta, epochs, minibatches, random_seed, print_progress)
 
     def fit(self, X, y, init_params=True):
