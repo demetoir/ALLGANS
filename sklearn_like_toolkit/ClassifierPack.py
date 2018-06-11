@@ -12,6 +12,8 @@ from util.Logger import Logger
 from util.misc_util import time_stamp, dump_pickle, load_pickle
 
 
+# 'mlxStackingCVClf': mlxStackingCVClf,
+# 'mlxStackingClf': mlxStackingClf
 class ClassifierPack(BaseClass):
     class_pack = {
         "skMLP": skMLP,
@@ -65,12 +67,18 @@ class ClassifierPack(BaseClass):
     def predict(self, Xs):
         result = {}
         for key in self.pack:
-            result[key] = self.pack[key].predict(Xs)
+            try:
+                result[key] = self.pack[key].predict(Xs)
+            except BaseException as e:
+                self.log.warn(f'while fitting, {key} raise {e}')
         return result
 
     def fit(self, Xs, Ys):
         for key in self.pack:
-            self.pack[key].fit(Xs, Ys)
+            try:
+                self.pack[key].fit(Xs, Ys)
+            except BaseException as e:
+                self.log.warn(f'while fitting, {key} raise {e}')
 
     def score(self, Xs, Ys):
         result = {}
@@ -78,7 +86,7 @@ class ClassifierPack(BaseClass):
             try:
                 result[key] = self.pack[key].score(Xs, Ys)
             except BaseException as e:
-                self.log.error(f'while score, {key} raise {e}')
+                self.log.warn(f'while score, {key} raise {e}')
 
         return result
 
@@ -88,7 +96,7 @@ class ClassifierPack(BaseClass):
             try:
                 result[key] = self.pack[key].predict_proba(Xs)
             except BaseException as e:
-                self.log.error(f'while predict_proba, {key} raise {e}')
+                self.log.warn(f'while predict_proba, {key} raise {e}')
         return result
 
     def import_params(self, params_pack):
@@ -121,3 +129,37 @@ class ClassifierPack(BaseClass):
         params = load_pickle(path)
 
         self.import_params(params)
+
+    def make_voting_clf(self, voting):
+        return skVoting([(k, v) for k, v in self.pack.items()], voting=voting)
+
+    def clone_top_k_tuned(self, k=5):
+        for key in self.pack:
+            results = self.optimize_result[key][1:k]
+
+            for i, result in enumerate(results):
+                param = result["param"]
+                cls = self.pack[key].__class__
+                new_key = str(cls.__name__) + '_' + str(i + 1)
+                clf = cls(**param)
+                self.pack[new_key] = clf
+
+            return self.pack
+
+    def drop_clf(self, key):
+        self.pack.pop(key)
+
+    def add_clf(self, key, clf):
+        if key in self.pack:
+            raise KeyError(f"key '{key}' is not unique")
+
+        self.pack[key] = clf
+
+    def clone_clf(self, key, n=1, param=None):
+        if key not in self.pack:
+            raise KeyError(f"key '{key}' not exist")
+
+        # check_origin()
+        #
+        # for i in range(n):
+        #     clone()
