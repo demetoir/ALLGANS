@@ -10,8 +10,8 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from util.Crawler import Crawler
 from util.PbarPooling import PbarPooling
-from util.deco import deco_timeit, file_lines_job, log_error_trace
-from util.misc_util import check_path, print_lines
+from util.deco import deco_timeit, file_lines_job
+from util.misc_util import check_path, print_lines, log_error_trace
 
 
 def url_query_parser(url):

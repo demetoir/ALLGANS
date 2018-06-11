@@ -4,8 +4,7 @@ from multiprocessing import Pool
 from queue import Queue
 from tqdm import tqdm
 from util.Logger import Logger
-from util.deco import log_error_trace
-from util.misc_util import dump_pickle, dump_json, time_stamp
+from util.misc_util import dump_pickle, dump_json, time_stamp, log_error_trace
 
 
 def init_worker(*args):
