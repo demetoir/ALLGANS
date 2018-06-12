@@ -14,6 +14,8 @@ def finger_print(size, head=''):
 class test_clf_pack:
 
     def setup(self):
+        print('reset current dir')
+
         print('cur dir')
         print(os.getcwd())
         head, tail = os.path.split(os.getcwd())
@@ -29,7 +31,6 @@ class test_clf_pack:
         train_set, valid_set = dataset.split('train', 'train', 'valid', (7, 3))
         train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
         valid_Xs, valid_Ys = valid_set.full_batch(['Xs', 'Ys'])
-
         self.dataset = dataset
         self.train_Xs = train_Xs
         self.train_Ys = train_Ys
@@ -170,11 +171,15 @@ class test_clf_pack:
 
         clf = ClassifierPack()
         clf.fit(train_Xs, train_Ys)
-        score = clf.score(valid_Xs, valid_Ys)
-        pprint('test score', score)
         predict = clf.predict(valid_Xs[:2])
         pprint('predict', predict)
         proba = clf.predict_proba(valid_Xs[:2])
         pprint('predict_proba', proba)
+
+        score = clf.score(valid_Xs, valid_Ys)
+        pprint('test score', score)
+
+        score_pack = clf.score_pack(valid_Xs, valid_Ys)
+        pprint('score pack', score_pack)
 
         # initialize data
