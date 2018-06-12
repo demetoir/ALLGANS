@@ -1,12 +1,13 @@
 import os
 from pprint import pformat
 from env_settting import SKLEARN_PARAMS_SAVE_PATH
+from sklearn_like_toolkit.FoldingHardVote import FoldingHardVote
 from sklearn_like_toolkit.ParamOptimizer import ParamOptimizer
 from sklearn_like_toolkit.Base import BaseClass
 from sklearn_like_toolkit.warpper.catboost_wrapper import CatBoostClf
 from sklearn_like_toolkit.warpper.lightGBM_wrapper import LightGBMClf
 from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxAdalineClf, mlxLogisticRegressionClf, \
-    mlxMLPClf, mlxPerceptronClf, mlxSoftmaxRegressionClf, mlxStackingCVClf, mlxStackingClf
+    mlxMLPClf, mlxPerceptronClf, mlxSoftmaxRegressionClf, mlxStackingCVClf, mlxStackingClf, mlxVotingClf
 from sklearn_like_toolkit.warpper.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, skBernoulli_NB, skMultinomial_NB, \
     skDecisionTree, skRandomForest, skExtraTrees, skAdaBoost, skGradientBoosting, skQDA, skKNeighbors, skLinear_SVC, \
     skRBF_SVM, skGaussianProcess, skVoting, skBagging
@@ -139,11 +140,22 @@ class ClassifierPack(BaseClass):
 
         self.import_params(params)
 
-    def make_voting_clf(self, voting):
-        return skVoting([(k, v) for k, v in self.pack.items()], voting=voting)
+    def make_FoldingHardVote(self):
+        clfs = [v for k, v in self.pack.items()]
+        return FoldingHardVote(clfs)
+
+    def make_stackingClf(self, meta_clf):
+        clfs = [clf for k, clf in self.pack.items() if hasattr(clf, 'get_params')]
+        return mlxStackingClf(clfs, meta_clf)
+
+    def make_stackingCVClf(self, meta_clf):
+        clfs = [clf for k, clf in self.pack.items() if hasattr(clf, 'get_params')]
+        return mlxStackingCVClf(clfs, meta_clf)
 
     def clone_top_k_tuned(self, k=5):
+        new_pack = {}
         for key in self.pack:
+            new_pack[key] = self.pack[key]
             results = self.optimize_result[key][1:k]
 
             for i, result in enumerate(results):
@@ -151,9 +163,10 @@ class ClassifierPack(BaseClass):
                 cls = self.pack[key].__class__
                 new_key = str(cls.__name__) + '_' + str(i + 1)
                 clf = cls(**param)
-                self.pack[new_key] = clf
+                new_pack[new_key] = clf
 
-            return self.pack
+        self.pack = new_pack
+        return self.pack
 
     def drop_clf(self, key):
         self.pack.pop(key)
