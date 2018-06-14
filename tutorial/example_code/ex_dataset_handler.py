@@ -1,5 +1,5 @@
 # usage
-from DatasetLoader import DatasetLoader
+from data_handler.DatasetLoader import DatasetLoader
 from InstanceManger import InstanceManager
 
 # load dataset by calling DatasetLoader

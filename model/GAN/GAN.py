@@ -1,8 +1,6 @@
 from model.AbstractGANModel import AbstractGANModel
 from util.Stacker import Stacker
 from util.tensor_ops import *
-from util.summary_func import summary_loss
-from dict_keys.dataset_batch_keys import *
 import numpy as np
 import tensorflow as tf
 
@@ -11,10 +9,28 @@ class GAN(AbstractGANModel):
     VERSION = 1.0
     AUTHOR = 'demetoir'
 
-    def __str__(self):
-        return "%s_%s_%f" % (self.AUTHOR, self.__class__.__name__, self.VERSION)
+    def load_input_shapes(self, input_shapes):
+        self.X_batch_key = 'Xs'
+        X_shape = input_shapes[self.X_batch_key]
+        if len(X_shape) == 3:
+            self.X_shape = X_shape
+            H, W, C = X_shape
+            self.input_size = W * H * C
+            self.input_w = W
+            self.input_h = H
+            self.input_c = C
+        elif len(X_shape) == 2:
+            self.X_shape = X_shape + [1]
+            H, W = X_shape
+            self.input_size = W * H
+            self.input_w = W
+            self.input_h = H
+            self.input_c = 1
+        self.Xs_shape = [self.batch_size] + self.X_shape
+        self.z_shape = [self.n_noise]
+        self.zs_shape = [self.batch_size] + self.z_shape
 
-    def load_hyper_parameter(self):
+    def load_hyper_parameter(self, params=None):
         self.n_noise = 256
         self.batch_size = 64
         self.learning_rate = 0.0002
@@ -22,80 +38,41 @@ class GAN(AbstractGANModel):
     def generator(self, z, reuse=False):
         with tf.variable_scope('generator', reuse=reuse):
             layer = Stacker(z)
-            layer.add_layer(linear, 4 * 4 * 512)
-            layer.add_layer(tf.reshape, [self.batch_size, 4, 4, 512])
+            layer.add_layer(linear, 7 * 7 * 128)
+            layer.reshape([self.batch_size, 7, 7, 128])
+            layer.upscale_2x_block(256, CONV_FILTER_5522, relu)
+            layer.conv2d_transpose(self.Xs_shape, CONV_FILTER_5522)
+            layer.conv2d(self.input_c, CONV_FILTER_3311)
+            layer.sigmoid()
 
-            layer.add_layer(conv2d_transpose, [self.batch_size, 8, 8, 256], CONV_FILTER_5522)
-            layer.add_layer(bn)
-            layer.add_layer(relu)
+        return layer.last_layer
 
-            layer.add_layer(conv2d_transpose, [self.batch_size, 16, 16, 128], CONV_FILTER_5522)
-            layer.add_layer(bn)
-            layer.add_layer(relu)
-
-            layer.add_layer(conv2d_transpose, [self.batch_size, 32, 32, 3], CONV_FILTER_5522)
-
-            layer.add_layer(conv2d, self.input_c, CONV_FILTER_3311)
-            layer.add_layer(tf.sigmoid)
-            net = layer.last_layer
-
-        return net
-
-    def discriminator(self, x, reuse=None):
+    def discriminator(self, X, reuse=False):
         with tf.variable_scope('discriminator', reuse=reuse):
-            layer = Stacker(x)
-            layer.add_layer(conv2d, 64, CONV_FILTER_5522)
-            layer.add_layer(bn)
-            layer.add_layer(lrelu)
+            layer = Stacker(X)
+            layer.conv_block(128, CONV_FILTER_5522, lrelu)
+            layer.conv_block(256, CONV_FILTER_5522, lrelu)
+            layer.reshape([self.batch_size, -1])
+            layer.linear(1)
+            layer.sigmoid()
 
-            layer.add_layer(conv2d, 128, CONV_FILTER_5522)
-            layer.add_layer(bn)
-            layer.add_layer(lrelu)
-
-            layer.add_layer(conv2d, 256, CONV_FILTER_5522)
-            layer.add_layer(bn)
-            layer.add_layer(lrelu)
-
-            layer.add_layer(tf.reshape, [self.batch_size, -1])
-            out_logit = layer.add_layer(linear, 1)
-            out = layer.add_layer(tf.sigmoid)
-
-        return out, out_logit
+        return layer.last_layer
 
     def load_main_tensor_graph(self):
-        self.X = tf.placeholder(tf.float32, [self.batch_size] + self.shape_data_x)
-        self.z = tf.placeholder(tf.float32, [self.batch_size, self.n_noise])
+        self.Xs = tf.placeholder(tf.float32, self.Xs_shape, name="Xs")
+        self.zs = tf.placeholder(tf.float32, self.zs_shape, name="zs")
 
-        self.G = self.generator(self.z)
-        self.D_real, self.D_real_logit = self.discriminator(self.X)
-        self.D_gen, self.D_gene_logit = self.discriminator(self.G, True)
+        self.G = self.generator(self.zs)
+        self.Xs_gen = self.G
+        self.D_real = self.discriminator(self.Xs)
+        self.D_gen = self.discriminator(self.Xs_gen, reuse=True)
 
     def load_loss_function(self):
-        with tf.variable_scope('loss'):
-            with tf.variable_scope('loss_D_real'):
-                self.loss_D_real = tf.reduce_mean(self.D_real)
+        self.loss_D_real = tf.reduce_mean(self.D_real, name='loss_D_real')
+        self.loss_D_gen = tf.reduce_mean(self.D_gen, name='loss_D_gen')
 
-            with tf.variable_scope('loss_D_gen'):
-                self.loss_D_gen = tf.reduce_mean(self.D_gen)
-
-            with tf.variable_scope('loss_D'):
-                self.loss_D = - tf.reduce_mean(tf.log(self.D_real)) - tf.reduce_mean(tf.log(1. - self.D_gen))
-
-            with tf.variable_scope('loss_G'):
-                self.loss_G = - tf.reduce_mean(tf.log(self.D_gen))
-
-    def loss_alternative(self):
-        self.loss_D_real = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=self.D_real_logit, labels=tf.ones_like(self.D_real)))
-        self.loss_D_gen = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=self.D_gene_logit, labels=tf.zeros_like(self.D_gen)))
-        self.loss_D = self.loss_D_real + self.loss_D_gen
-
-        self.loss_G = tf.reduce_mean(
-            tf.nn.sigmoid_cross_entropy_with_logits(
-                logits=self.D_gene_logit, labels=tf.ones_like(self.D_gen)))
+        self.loss_D = tf.reduce_mean(-tf.log(self.D_real) - tf.log(1. - self.D_gen), name='loss_D')
+        self.loss_G = tf.reduce_mean(-tf.log(self.D_gen), name='loss_G')
 
     def load_train_ops(self):
         self.vars_D = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES,
@@ -112,26 +89,37 @@ class GAN(AbstractGANModel):
         super().load_misc_ops()
 
     def train_model(self, sess=None, iter_num=None, dataset=None):
-        noise = self.get_noise()
-        batch_xs = dataset.next_batch(self.batch_size, batch_keys=[BATCH_KEY_TRAIN_X])
-        sess.run(self.train_G, feed_dict={self.z: noise})
-        sess.run(self.train_D, feed_dict={self.X: batch_xs, self.z: noise})
-        sess.run([self.op_inc_global_step])
+        Xs = dataset.train_set.next_batch(
+            self.batch_size,
+            batch_keys=[self.X_batch_key]
+        )
+        sess.run(
+            [self.train_G, self.train_D, self.op_inc_global_step],
+            feed_dict={
+                self.Xs: Xs,
+                self.zs: self.get_noise()
+            }
+        )
+
+    def run(self, sess, fetches, dataset):
+        Xs = dataset.train_set.next_batch(
+            self.batch_size,
+            batch_keys=[self.X_batch_key],
+            look_up=True
+        )
+        return sess.run(
+            fetches,
+            feed_dict={
+                self.Xs: Xs,
+                self.zs: self.get_noise()
+            }
+        )
 
     def get_noise(self):
-        return np.random.uniform(-1.0, 1.0, size=[self.batch_size, self.n_noise])
+        return np.random.uniform(-1.0, 1.0, size=self.zs_shape)
 
     def load_summary_ops(self):
-        summary_loss(self.loss_D_gen)
-        summary_loss(self.loss_D_real)
-        summary_loss(self.loss_D)
-        summary_loss(self.loss_G)
-
-        self.op_merge_summary = tf.summary.merge_all()
+        pass
 
     def write_summary(self, sess=None, iter_num=None, dataset=None, summary_writer=None):
-        noise = self.get_noise()
-        batch_xs = dataset.next_batch(self.batch_size, batch_keys=[BATCH_KEY_TRAIN_X])
-        summary, global_step = sess.run([self.op_merge_summary, self.global_step],
-                                        feed_dict={self.X: batch_xs, self.z: noise})
-        summary_writer.add_summary(summary, global_step)
+        pass

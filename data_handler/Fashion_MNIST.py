@@ -1,26 +1,24 @@
-from data_handler.AbstractDataset import AbstractDataset, DownloadInfo, AbstractDatasetHelper
 from tensorflow.examples.tutorials.mnist import input_data
-from env_settting import FASHION_MNIST_PATH
-from dict_keys.dataset_batch_keys import *
-from dict_keys.input_shape_keys import *
+from data_handler.BaseDataset import BaseDataset, DatasetCollection, DownloadInfo
 import numpy as np
 
 
-class Fashion_MNIST(AbstractDataset):
-    LABEL_SIZE = 10
+def X_transform(x):
+    shape = x.shape
+    x = np.reshape(x, [shape[0], 28, 28])
+    npad = ((0, 0), (2, 2), (2, 2))
+    x = np.pad(x, pad_width=npad, mode='constant', constant_values=0)
+    x = np.reshape(x, [shape[0], 32, 32, 1])
+    return x
+
+
+class Fashion_MNIST_train(BaseDataset):
     TRAIN_SIZE = 60000
-    TEST_SIZE = 10000
+    LABEL_SIZE = 10
 
-    def __init__(self, preprocess=None, batch_after_task=None):
-        super().__init__(preprocess, batch_after_task)
-        self.batch_keys = [
-            BATCH_KEY_TRAIN_X,
-            BATCH_KEY_TRAIN_LABEL,
-            BATCH_KEY_TEST_X,
-            BATCH_KEY_TEST_LABEL
-        ]
-
-        self.download_infos = [
+    @property
+    def downloadInfos(self):
+        return [
             DownloadInfo(
                 url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/',
                 is_zipped=True,
@@ -29,63 +27,52 @@ class Fashion_MNIST(AbstractDataset):
             )
         ]
 
-        def dummy():
-            pass
+    def load(self, path, limit=None):
+        fashion_mnist = input_data.read_data_sets(path,
+                                                  source_url=self.downloadInfos[0].url,
+                                                  one_hot=True)
+        # load train data
+        Xs, Ys = fashion_mnist.train.next_batch(self.TRAIN_SIZE)
+        self.data['Xs'] = Xs
+        self.data['Ys'] = Ys
 
-        self.before_load_task = dummy
+    def save(self):
+        pass
+
+    def preprocess(self):
+        self.data['Xs'] = X_transform(self.data['Xs'])
+
+
+class Fashion_MNIST_test(BaseDataset):
+    TEST_SIZE = 10000
+    LABEL_SIZE = 10
+    download_infos = [
+        DownloadInfo(
+            url='http://fashion-mnist.s3-website.eu-central-1.amazonaws.com/',
+            is_zipped=True,
+            download_file_name='...',
+            extracted_file_names=[]
+        )
+    ]
 
     def load(self, path, limit=None):
-        # fashion_mnist = input_data.read_data_sets(path, one_hot=True)
         fashion_mnist = input_data.read_data_sets(path,
                                                   source_url=self.download_infos[0].url,
                                                   one_hot=True)
-        # load train data
-        train_x, train_label = fashion_mnist.train.next_batch(self.TRAIN_SIZE)
-        self.data[BATCH_KEY_TRAIN_X] = train_x
-        self.data[BATCH_KEY_TRAIN_LABEL] = train_label
-
-        # load test data
-        test_x, test_label = fashion_mnist.test.next_batch(self.TEST_SIZE)
-        self.data[BATCH_KEY_TEST_X] = test_x
-        self.data[BATCH_KEY_TEST_LABEL] = test_label
+        Xs, Ys = fashion_mnist.test.next_batch(self.TEST_SIZE)
+        self.data['Xs'] = Xs
+        self.data['Ys'] = Ys
 
     def save(self):
-        raise NotImplementedError
+        pass
+
+    def preprocess(self):
+        self.data['Xs'] = X_transform(self.data['Xs'])
 
 
-class Fashion_MNISTHelper(AbstractDatasetHelper):
-    @staticmethod
-    def preprocess(dataset):
-        # original fashion_mnist image size is 28*28 but need to resize 32*32
-        data = dataset.data[BATCH_KEY_TRAIN_X]
-        shape = data.shape
-        data = np.reshape(data, [shape[0], 28, 28])
-        npad = [(0, 0), (2, 2), (2, 2)]
-        data = np.pad(data, pad_width=npad, mode='constant', constant_values=0.0)
-        data = np.reshape(data, [shape[0], 32, 32, 1])
-        dataset.data[BATCH_KEY_TRAIN_X] = data
+class Fashion_MNIST(DatasetCollection):
 
-        data = dataset.data[BATCH_KEY_TEST_X]
-        shape = data.shape
-        data = np.reshape(data, [shape[0], 28, 28])
-        npad = ((0, 0), (2, 2), (2, 2))
-        data = np.pad(data, pad_width=npad, mode='constant', constant_values=0)
-        data = np.reshape(data, [shape[0], 32, 32, 1])
-        dataset.data[BATCH_KEY_TEST_X] = data
-
-    @staticmethod
-    def load_dataset(limit=None):
-        dataset = Fashion_MNIST(preprocess=Fashion_MNISTHelper.preprocess)
-        dataset.load(FASHION_MNIST_PATH, limit=limit)
-        input_shapes = {
-            INPUT_SHAPE_KEY_DATA_X: [32, 32, 1],
-            INPUT_SHAPE_KEY_LABEL: [10],
-            INPUT_SHAPE_KEY_LABEL_SIZE: 10,
-        }
-
-        return dataset, input_shapes
-
-    @staticmethod
-    def next_batch_task(batch):
-        x = batch[0]
-        return x
+    def __init__(self, train_set=None, test_set=None, validation_set=None):
+        super().__init__(train_set, test_set, validation_set)
+        self.train_set = Fashion_MNIST_train()
+        self.test_set = Fashion_MNIST_test()

@@ -1,7 +1,10 @@
 """misc utils
 pickle, import module, zip, etc ..."""
+import traceback
+import webbrowser
 from glob import glob
 from importlib._bootstrap_external import SourceFileLoader
+from time import strftime, localtime
 import tarfile
 import zipfile
 import requests
@@ -12,18 +15,21 @@ import json
 import sys
 
 
-def dump_pickle(path, data):
+def dump_pickle(obj, path):
     """dump pickle
 
     * [warning] use pickle module python3, python2 may incompatible
 
     :type path: str
-    :type data: object
+    :type obj: object
     :param path: dump path
-    :param data: target data to dump
+    :param obj: target data to dump
     """
+    head, _ = os.path.split(path)
+    setup_directory(head)
+
     with open(path, 'wb') as f:
-        pickle.dump(data, f)
+        pickle.dump(obj, f)
 
 
 def load_pickle(path):
@@ -119,8 +125,10 @@ def dump_json(obj, path):
     :param obj: object to dump
     :param path: path to dump
     """
+    head, _ = os.path.split(path)
+    setup_directory(head)
     with open(path, 'w') as f:
-        json.dump(obj, f)
+        json.dump(obj, f, indent=4, separators=(',', ': '))
 
 
 def load_json(path):
@@ -155,8 +163,8 @@ def download_from_url(url, path):
             for data in response.iter_content(chunk_size=4096):
                 dl += len(data)
                 f.write(data)
-                done = int(50 * dl / total_length)
-                sys.stdout.write("\r[%s%s] %s%%" % ('=' * done, ' ' * (50 - done), done * 2))
+                done = int(100 * dl / total_length)
+                sys.stdout.write("\r[%s%s] %s%%" % ('=' * (done // 2), ' ' * (50 - (done // 2)), done))
                 sys.stdout.flush()
 
 
@@ -201,3 +209,69 @@ def extract_file(source_path, destination_path):
         extract_tar(source_path, destination_path)
     elif extend in extender_zip:
         extract_zip(source_path, destination_path)
+
+
+def time_stamp():
+    return strftime("%Y-%m-%d_%H-%M-%S", localtime())
+
+
+def check_path(path):
+    # if os.path.isfile(path):
+    #     path, tail = os.path.split(path)
+
+    # if not os.path.isdir(path):
+    #     if tail is not None:
+    #         path = os.path.join(path, tail)
+    #     raise IsADirectoryError("{} is not directory".format(path))
+
+    head, _ = os.path.split(path)
+    if not os.path.exists(head):
+        os.makedirs(head)
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+def setup_file(path):
+    head, _ = os.path.split(path)
+    if not os.path.exists(head):
+        os.makedirs(head)
+
+
+def setup_directory(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+
+
+def open_chrome(url):
+    webbrowser.open(url)
+
+
+def print_lines(lines, max_line=50, split_print=True):
+    remain_lines = len(lines)
+    line_count = 0
+    for line in lines:
+        print("<{}>[{}]".format(line_count, line))
+        line_count += 1
+        remain_lines -= 1
+
+        if split_print and line_count == max_line:
+            line_count = 0
+            input("remain {} lines, press key to continue".format(remain_lines))
+
+    print("print lines end\n")
+
+
+def path_join(*args):
+    return os.path.join(*args)
+
+
+def log_error_trace(log_func, e, head=""):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+
+    msg = '%s\n %s %s : %s \n' % (
+        head,
+        "".join(traceback.format_tb(exc_traceback)),
+        e.__class__.__name__,
+        e,
+    )
+    log_func(msg)
