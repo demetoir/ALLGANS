@@ -72,7 +72,7 @@ class Logger:
             if path is None:
                 path = os.path.join('.', 'log')
             if file_name is None:
-                file_name = "{name}_{time}.log".format(name=name, time=time_stamp())
+                file_name = "{name}.log".format(name=name)
 
             check_path(path)
             self.file_handler = logging.FileHandler(os.path.join(path, file_name))
