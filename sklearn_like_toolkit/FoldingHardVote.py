@@ -1,11 +1,11 @@
 import numpy as np
-from sklearn.metrics import accuracy_score
 from data_handler.DummyDataset import DummyDataset
-from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_ONEHOT, NP_ARRAY_TYPE_INDEX
+from sklearn_like_toolkit.base._base import _clf_metric, _Reformat_Ys
 
 
-class FoldingHardVote:
+class FoldingHardVote(_Reformat_Ys, _clf_metric):
     def __init__(self, clfs, split_rate=0.8):
+        super().__init__()
         self.clfs = [self._clone(clf) for clf in clfs]
         self.n = len(self.clfs)
         self.class_size = None
@@ -15,17 +15,11 @@ class FoldingHardVote:
     def _clone(self, clf):
         return clf.__class__()
 
-    def _check_is_fitted(self):
-        return self._is_fitted
-
     def _collect_predict(self, Xs):
         return np.array([clf.predict(Xs) for clf in self.clfs])
 
-    def _collect_proba(self, Xs):
-        pass
-
     def fit(self, Xs, Ys):
-        self.class_size = reformat_np_arr(Ys, NP_ARRAY_TYPE_ONEHOT).shape[1]
+        self.class_size = self._reformat_to_onehot(Ys).shape[1]
         dset = DummyDataset({'Xs': Xs, 'Ys': Ys})
 
         for clf in self.clfs:
@@ -53,6 +47,10 @@ class FoldingHardVote:
             axis=1, arr=predicts)
         return maj
 
-    def score(self, Xs, Ys, sample_weight=None):
-        Ys = reformat_np_arr(Ys, NP_ARRAY_TYPE_INDEX)
-        return accuracy_score(Ys, self.predict(Xs), sample_weight=sample_weight)
+    def score(self, Xs, Ys, metric='accuracy'):
+        Ys = self._reformat_to_index(Ys)
+        return self._apply_metric(Ys, self.predict(Xs), metric)
+
+    def score_pack(self, Xs, Ys):
+        Ys = self._reformat_to_index(Ys)
+        return self._apply_metric_pack(Ys, self.predict(Xs))
