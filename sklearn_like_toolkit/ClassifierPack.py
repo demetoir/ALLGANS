@@ -1,14 +1,10 @@
 import os
 from pprint import pformat
-from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_score
-from sklearn.metrics import recall_score
-
 from env_settting import SKLEARN_PARAMS_SAVE_PATH
 from sklearn_like_toolkit.Base import BaseClass
 from sklearn_like_toolkit.FoldingHardVote import FoldingHardVote
 from sklearn_like_toolkit.ParamOptimizer import ParamOptimizer
+from sklearn_like_toolkit.base._base import _Reformat_Ys, _clf_metric
 from sklearn_like_toolkit.warpper.catboost_wrapper import CatBoostClf
 from sklearn_like_toolkit.warpper.lightGBM_wrapper import LightGBMClf
 from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxAdalineClf
@@ -37,27 +33,9 @@ from sklearn_like_toolkit.warpper.sklearn_wrapper import skBagging
 from sklearn_like_toolkit.warpper.xgboost_wrapper import XGBoostClf
 from util.Logger import Logger
 from util.misc_util import time_stamp, dump_pickle, load_pickle
-from util.numpy_utils import reformat_np_arr, NP_ARRAY_TYPE_INDEX, NP_ARRAY_TYPE_ONEHOT
-
-CLF_METRICS = {
-    'accuracy': accuracy_score,
-    'confusion_matrix': confusion_matrix,
-    'roc_auc_score': roc_auc_score,
-    'recall_score': recall_score,
-    'precision_score': precision_score,
-}
 
 
-class _Reformat_Ys:
-
-    def _reformat_to_index(self, Xs):
-        return reformat_np_arr(Xs, NP_ARRAY_TYPE_INDEX)
-
-    def _reformat_to_onehot(self, Xs):
-        return reformat_np_arr(Xs, NP_ARRAY_TYPE_ONEHOT)
-
-
-class ClassifierPack(BaseClass, _Reformat_Ys):
+class ClassifierPack(BaseClass, _Reformat_Ys, _clf_metric):
     class_pack = {
         "skMLP": skMLP,
         "skSGD": skSGD,
@@ -86,6 +64,7 @@ class ClassifierPack(BaseClass, _Reformat_Ys):
     }
 
     def __init__(self, pack_keys=None):
+        super().__init__()
         self.log = Logger(self.__class__.__name__)
         if pack_keys is None:
             pack_keys = self.class_pack.keys()
@@ -97,8 +76,6 @@ class ClassifierPack(BaseClass, _Reformat_Ys):
         self.optimize_result = {}
 
         self.params_save_path = SKLEARN_PARAMS_SAVE_PATH
-
-        self._metrics = CLF_METRICS
 
     def param_search(self, Xs, Ys):
         Ys = self._reformat_to_index(Ys)
@@ -136,9 +113,6 @@ class ClassifierPack(BaseClass, _Reformat_Ys):
             except BaseException as e:
                 self.log.warn(f'while fitting, {key} raise {e}')
 
-    def _apply_metric(self, Y_true, Y_predict, metric):
-        return self._metrics[metric](Y_true, Y_predict)
-
     def score(self, Xs, Ys, metric='accuracy'):
         Ys = self._reformat_to_index(Ys)
         scores = {}
@@ -150,7 +124,7 @@ class ClassifierPack(BaseClass, _Reformat_Ys):
         Ys = self._reformat_to_index(Ys)
         ret = {}
         for clf_k, predict in self._collect_predict(Xs).items():
-            ret[clf_k] = {metric: self._apply_metric(Ys, predict, metric) for metric in self._metrics}
+            ret[clf_k] = self._apply_metric_pack(Ys, predict)
         return ret
 
     def predict_proba(self, Xs):
@@ -233,8 +207,3 @@ class ClassifierPack(BaseClass, _Reformat_Ys):
     def clone_clf(self, key, n=1, param=None):
         if key not in self.pack:
             raise KeyError(f"key '{key}' not exist")
-
-        # check_origin()
-        #
-        # for i in range(n):
-        #     clone()
