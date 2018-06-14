@@ -1,3 +1,4 @@
+import warnings
 
 from util.numpy_utils import NP_ARRAY_TYPE_INDEX, reformat_np_arr
 from mlxtend.classifier import Adaline as _Adaline
@@ -72,8 +73,12 @@ class mlxMLPClf(_MultiLayerPerceptron):
     remain_param = {
     }
 
-    def __init__(self, eta=0.5, epochs=50, hidden_layers=[50], n_classes=None, momentum=0.0, l1=0.0, l2=0.0,
+    def __init__(self, eta=0.5, epochs=50, hidden_layers=None, n_classes=None, momentum=0.0, l1=0.0, l2=0.0,
                  dropout=1.0, decrease_const=0.0, minibatches=1, random_seed=None, print_progress=0):
+        warnings.filterwarnings(module='mlxtend*', action='ignore', category=FutureWarning)
+        warnings.filterwarnings(module='mlxtend*', action='ignore', category=RuntimeWarning)
+        if hidden_layers is None:
+            hidden_layers = [50]
         super().__init__(eta, epochs, hidden_layers, n_classes, momentum, l1, l2, dropout, decrease_const, minibatches,
                          random_seed, print_progress)
 
