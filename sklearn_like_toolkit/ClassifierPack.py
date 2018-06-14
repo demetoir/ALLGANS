@@ -11,11 +11,29 @@ from sklearn_like_toolkit.FoldingHardVote import FoldingHardVote
 from sklearn_like_toolkit.ParamOptimizer import ParamOptimizer
 from sklearn_like_toolkit.warpper.catboost_wrapper import CatBoostClf
 from sklearn_like_toolkit.warpper.lightGBM_wrapper import LightGBMClf
-from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxAdalineClf, mlxLogisticRegressionClf, \
-    mlxMLPClf, mlxPerceptronClf, mlxSoftmaxRegressionClf, mlxStackingCVClf, mlxStackingClf
-from sklearn_like_toolkit.warpper.sklearn_wrapper import skMLP, skSGD, skGaussian_NB, skBernoulli_NB, skMultinomial_NB, \
-    skDecisionTree, skRandomForest, skExtraTrees, skAdaBoost, skGradientBoosting, skQDA, skKNeighbors, skLinear_SVC, \
-    skRBF_SVM, skGaussianProcess, skBagging
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxAdalineClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxLogisticRegressionClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxMLPClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxPerceptronClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxSoftmaxRegressionClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxStackingCVClf
+from sklearn_like_toolkit.warpper.mlxtend_wrapper import mlxStackingClf
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skMLP
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skLinear_SVC
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skSGD
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skGaussian_NB
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skBernoulli_NB
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skMultinomial_NB
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skDecisionTree
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skRandomForest
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skExtraTrees
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skAdaBoost
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skGradientBoosting
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skQDA
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skKNeighbors
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skGaussianProcess
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skRBF_SVM
+from sklearn_like_toolkit.warpper.sklearn_wrapper import skBagging
 from sklearn_like_toolkit.warpper.xgboost_wrapper import XGBoostClf
 from util.Logger import Logger
 from util.misc_util import time_stamp, dump_pickle, load_pickle
