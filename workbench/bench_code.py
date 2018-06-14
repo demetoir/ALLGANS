@@ -4,7 +4,6 @@
 ########################################################################################################################
 # print(built-in function) is not good for logging
 from sklearn_like_toolkit.ClassifierPack import ClassifierPack
-from sklearn_like_toolkit.FoldingHardvote import FoldingHardVote
 
 from data_handler.DatasetLoader import DatasetLoader
 from util.Logger import StdoutOnlyLogger, pprint_logger
@@ -119,61 +118,128 @@ def finger_print(size, head='_'):
     return ret
 
 
-def test_clf_pack_param_search():
+def exp_stacking_metaclf():
     dataset = DatasetLoader().load_dataset("titanic")
-
-    clf = ClassifierPack()
-    train_set = dataset.set['train']
-    train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
-    clf.param_search(train_Xs, train_Xs)
-
-    dataset.shuffle()
-    train_set, valid_set = dataset.split('train', 'train', 'valid', (7, 3))
-    train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
-    valid_Xs, valid_Ys = valid_set.full_batch(['Xs', 'Ys'])
-
-    pprint('train score', clf.score(train_Xs, train_Ys))
-    pprint('test score', clf.score(valid_Xs, valid_Ys))
-    pprint('predict', clf.predict(valid_Xs[:2]))
-    pprint('predict_proba', clf.predict_proba(valid_Xs[:2]))
-
-
-def test_foldVote():
-    dataset = DatasetLoader().load_dataset("titanic")
-    dataset.shuffle()
     train_set, valid_set = dataset.split('train', 'train', 'valid', (7, 3))
     train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
     valid_Xs, valid_Ys = valid_set.full_batch(['Xs', 'Ys'])
 
     clf = ClassifierPack()
-    lightgbm = clf.pack['LightGBM']
+    clf.drop_clf('mlxMLP')
+    clf.drop_clf('mlxAdaline')
+    clf.drop_clf('mlxSoftmaxRegressionClf')
+    clf.drop_clf('skGaussian_NB')
+    clf.drop_clf('skQDA')
 
-    base_clf = lightgbm
-    base_clf.fit(train_Xs, train_Ys)
-    score = base_clf.score(valid_Xs, valid_Ys)
-    print(f'base score {score}')
+    pack = clf.pack
+    for key, meta_clf in pack.items():
+        if 'mlx' in key:
+            continue
 
-    clf = FoldingHardVote(lightgbm, 1000)
+        pprint(f'meta clf = {key}')
+        stacking = clf.make_stackingClf(meta_clf)
+        stacking.fit(train_Xs, train_Ys)
+        score = stacking.score(valid_Xs, valid_Ys)
+        pprint(f'score {score}')
+
+
+def exp_voting():
+    dataset = DatasetLoader().load_dataset("titanic")
+    train_set, valid_set = dataset.split('train', 'train', 'valid', (7, 3))
+    train_Xs, train_Ys = train_set.full_batch(['Xs', 'Ys'])
+    valid_Xs, valid_Ys = valid_set.full_batch(['Xs', 'Ys'])
+
+    clf = ClassifierPack()
+    clf.drop_clf('mlxMLP')
+    clf.drop_clf('mlxAdaline')
+    clf.drop_clf('mlxSoftmaxRegressionClf')
+    clf.drop_clf('skGaussian_NB')
+    clf.drop_clf('skQDA')
+
     clf.fit(train_Xs, train_Ys)
+    score_pack = clf.score_pack(valid_Xs, valid_Ys)
+    pprint(score_pack)
 
-    predict = clf.predict(valid_Xs)
-    # print(f'predict {predict}')
+    voting = clf.make_FoldingHardVote()
+    voting.fit(train_Xs, train_Ys)
+    score = voting.score(valid_Xs, valid_Ys)
+    pprint(score)
+    bincount = voting.predict_bincount(valid_Xs[:5])
+    pprint(bincount)
 
-    proba = clf.predict_proba(valid_Xs)
-    # print(f'proba {proba}')
+    # metaclf = clf.pack['LightGBM']
+    # stacking = clf.make_stackingClf(metaclf)
 
-    predict_bincount = clf.predict_bincount(valid_Xs)
-    # print(f'predict_bincount {predict_bincount}')
+    """
+    default param clf pack
+    default param clf pack to hard voting
+    default param clf pack to stacking
+    dcfault praam clf pack to stacking cv
 
-    score = clf.score(valid_Xs, valid_Ys)
-    print(f'score {score}')
+    default param clf pack * 10 to hard voting    
+    default param clf pack * 10 to stacking    
+    default param clf pack * 10 to stacking cv
+    
+    default param clf pack * 100 to hard voting    
+    default param clf pack * 100 to stacking    
+    default param clf pack * 100 to stacking cv
+    
+    optimize param clf pack top1 
+    optimize param clf pack top1 to hard voting
+    optimize param clf pack top1 to stacking
+    optimize param clf pack top1 to stacking cv
+    
+    optimize param clf pack top1 *10 to hard voting
+    optimize param clf pack top1 *10 to stacking
+    optimize param clf pack top1 *10 to stacking cv
+    
+    optimize param clf pack top5 *100 to hard voting
+    optimize param clf pack top5 *100 to stacking
+    optimize param clf pack top5 *100 to stacking cv
+    
+    out 
+    score,
+    score_pack
+    predict 
+    
+    csv to save 
+    
+    
+    
+    
+    
+    
+    
+    
+    
+        
+    
+    """
+
+    # todo
+    # voting and check recall p
+
+    pass
+
+
+def exp_titanic_statistic():
+    # todo
+    # variant clf
+    # check which clf predict each data with id
+
+    # result save to csv
+
+    # fit clfs
+
+    # predict clfs
+
+    # save predic
+
+    pass
 
 
 def main():
-    ret = np.bincount([1, 2, 3, 5], minlength=7)
-    print(ret)
-    # test_pool()
-    # test_clfpack()
-    # test_clf_pack_param_search()
-    test_foldVote()
+    print(exp_titanic_statistic.__name__)
+    # exp_stacking_metaclf()
+    # exp_voting()
     pass
