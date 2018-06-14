@@ -9,6 +9,7 @@ from mlxtend.classifier import Perceptron as _Perceptron
 from mlxtend.classifier import SoftmaxRegression as _SoftmaxRegression
 from mlxtend.classifier import StackingCVClassifier as _StackingCVClassifier
 from mlxtend.classifier import StackingClassifier as _StackingClassifier
+from sklearn_like_toolkit.base._base import _clf_metric, _Reformat_Ys
 
 
 class mlxAdalineClf(_Adaline):
@@ -156,25 +157,31 @@ class mlxVotingClf(_EnsembleVoteClassifier):
         return super().score(X, y, sample_weight)
 
 
-class mlxStackingClf(_StackingClassifier):
+class mlxStackingClf(_StackingClassifier, _clf_metric, _Reformat_Ys):
     # todo add param grid
     model_Ys_type = NP_ARRAY_TYPE_INDEX
 
     def __init__(self, classifiers, meta_classifier, use_probas=False, average_probas=False, verbose=0,
                  use_features_in_secondary=False, store_train_meta_features=False, use_clones=True):
-        super().__init__(classifiers, meta_classifier, use_probas, average_probas, verbose, use_features_in_secondary,
-                         store_train_meta_features, use_clones)
+        _StackingClassifier.__init__(self, classifiers, meta_classifier, use_probas, average_probas, verbose,
+                                     use_features_in_secondary,
+                                     store_train_meta_features, use_clones)
+        _clf_metric.__init__(self)
 
     def fit(self, X, y):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y)
 
-    def score(self, X, y, sample_weight=None):
+    def score(self, X, y, metric='accuracy'):
         y = reformat_np_arr(y, self.model_Ys_type)
-        return super().score(X, y, sample_weight)
+        return self._apply_metric(y, self.predict(X), metric)
+
+    def score_pack(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return self._apply_metric_pack(y, self.predict(X))
 
 
-class mlxStackingCVClf(_StackingCVClassifier):
+class mlxStackingCVClf(_StackingCVClassifier, _clf_metric, _Reformat_Ys):
     # todo add param grid
     model_Ys_type = NP_ARRAY_TYPE_INDEX
 
@@ -187,6 +194,10 @@ class mlxStackingCVClf(_StackingCVClassifier):
         y = reformat_np_arr(y, self.model_Ys_type)
         return super().fit(X, y, groups)
 
-    def score(self, X, y, sample_weight=None):
+    def score(self, X, y, metric='accuracy'):
         y = reformat_np_arr(y, self.model_Ys_type)
-        return super().score(X, y, sample_weight)
+        return self._apply_metric(y, self.predict(X), metric)
+
+    def score_pack(self, X, y):
+        y = reformat_np_arr(y, self.model_Ys_type)
+        return self._apply_metric_pack(y, self.predict(X))
