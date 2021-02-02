@@ -48,7 +48,7 @@ install_requires_ = [
     'scikit-image==0.13.1',
     'pillow==5.0.0',
     'pandas==0.22.0',
-    'matplotlib==2.1.2',
+    'matplotlib==3.3.4',
 ]
 
 # ref : https://github.com/stunstunstun/awesome-algorithms
