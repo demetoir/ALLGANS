@@ -47,7 +47,7 @@ install_requires_ = [
     'scikit-learn==0.19.1',
     'scikit-image==0.13.1',
     'pillow==5.0.0',
-    'pandas==0.22.0',
+    'pandas==1.2.1',
     'matplotlib==2.2.5',
 ]
 
