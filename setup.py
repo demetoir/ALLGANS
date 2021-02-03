@@ -44,7 +44,7 @@ install_requires_ = [
     # 'tensorflow-gpu==1.4.1',
     'requests==2.18.4',
     'opencv-python==3.4.13.47',
-    'scikit-learn==0.19.1',
+    'scikit-learn==0.24.1',
     'scikit-image==0.13.1',
     'pillow==5.0.0',
     'pandas==0.22.0',
