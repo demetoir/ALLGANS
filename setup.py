@@ -46,7 +46,7 @@ install_requires_ = [
     'opencv-python==3.4.13.47',
     'scikit-learn==0.19.1',
     'scikit-image==0.13.1',
-    'pillow==5.0.0',
+    'pillow==10.0.1',
     'pandas==0.22.0',
     'matplotlib==2.2.5',
 ]
